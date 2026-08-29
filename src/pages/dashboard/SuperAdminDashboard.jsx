@@ -43,7 +43,7 @@ const SuperAdminDashboard = () => {
   const [apiAvailable, setApiAvailable] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('month');
 
-  const API_URL =  'https://crmserver-production-4a42.up.railway.app/api';
+  const API_URL = 'https://crmserver-production-4a42.up.railway.app/api';
 
   useEffect(() => {
     if (token) {
@@ -130,14 +130,16 @@ const SuperAdminDashboard = () => {
         totalRevenue = revenueRes.value.data.totalRevenue || 0;
       }
 
-      // Process Brands
+      // Process Brands - ensure it's an array
       if (brandsRes.status === 'fulfilled' && brandsRes.value.data) {
-        brandsData = brandsRes.value.data.data || brandsRes.value.data || [];
+        const data = brandsRes.value.data;
+        brandsData = Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [];
       }
 
-      // Process Activity
+      // Process Activity - ensure it's an array
       if (activityRes.status === 'fulfilled' && activityRes.value.data) {
-        activityData = activityRes.value.data.data || activityRes.value.data || [];
+        const data = activityRes.value.data;
+        activityData = Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [];
       }
 
       // Mock growth data
@@ -150,14 +152,19 @@ const SuperAdminDashboard = () => {
         productivityGrowth: 7,
       };
 
-      // Default brands if none fetched
-      if (brandsData.length === 0) {
+      // Default brands if none fetched or invalid
+      if (!brandsData || brandsData.length === 0) {
         brandsData = [
           { brandName: 'Tech Solutions', revenue: 125000, leads: 45, clients: 28, growth: 12 },
           { brandName: 'Creative Agency', revenue: 87500, leads: 32, clients: 19, growth: 8 },
           { brandName: 'Digital Marketing', revenue: 62000, leads: 28, clients: 15, growth: 15 },
           { brandName: 'Software Development', revenue: 156000, leads: 52, clients: 34, growth: 20 },
         ];
+      }
+
+      // Default activity if none fetched or invalid
+      if (!activityData || activityData.length === 0) {
+        activityData = getDefaultActivity();
       }
 
       setStats({
@@ -177,7 +184,7 @@ const SuperAdminDashboard = () => {
       });
 
       setBrands(brandsData);
-      setRecentActivity(activityData.length > 0 ? activityData : getDefaultActivity());
+      setRecentActivity(activityData);
       setApiAvailable(true);
 
     } catch (err) {
@@ -349,6 +356,44 @@ const SuperAdminDashboard = () => {
     return badges[status] || badges.new;
   };
 
+  // Safely render activity items - ensure recentActivity is an array
+  const renderActivityItems = () => {
+    if (!Array.isArray(recentActivity) || recentActivity.length === 0) {
+      return (
+        <div style={styles.emptyState}>
+          <Activity size={32} style={{ color: '#9ca3af', margin: '0 auto 8px', display: 'block' }} />
+          <p style={styles.emptyStateText}>No recent activity</p>
+        </div>
+      );
+    }
+
+    return recentActivity.map((activity) => {
+      const iconInfo = getActivityIcon(activity.type);
+      const IconComponent = iconInfo.icon;
+      const statusBadge = getStatusBadge(activity.status);
+      return (
+        <div key={activity.id || Math.random()} style={styles.activityItem}>
+          <div style={{ ...styles.activityIcon, backgroundColor: iconInfo.bg }}>
+            <IconComponent style={{ ...styles.activityIconSvg, color: iconInfo.color }} size={16} />
+          </div>
+          <div style={styles.activityContent}>
+            <p style={styles.activityTitle}>{activity.title || 'Unknown activity'}</p>
+            <div style={styles.activityMeta}>
+              <span style={styles.activityTime}>{activity.time || 'Just now'}</span>
+              <span style={{
+                ...styles.activityBadge,
+                backgroundColor: statusBadge.bg,
+                color: statusBadge.color,
+              }}>
+                {statusBadge.label}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    });
+  };
+
   return (
     <div style={styles.container}>
       {/* Welcome Section */}
@@ -447,38 +492,38 @@ const SuperAdminDashboard = () => {
           </div>
           <div style={styles.cardContent}>
             <div style={styles.brandsGrid}>
-              {brands.map((brand, index) => (
+              {Array.isArray(brands) && brands.map((brand, index) => (
                 <div key={index} style={styles.brandCard}>
                   <div style={styles.brandHeader}>
-                    <h3 style={styles.brandName}>{brand.brandName}</h3>
+                    <h3 style={styles.brandName}>{brand.brandName || 'Unknown'}</h3>
                     <span style={{
                       ...styles.brandBadge,
-                      backgroundColor: brand.revenue > 100000 ? '#f0fdf4' : '#fffbeb',
-                      color: brand.revenue > 100000 ? '#22c55e' : '#f59e0b',
+                      backgroundColor: (brand.revenue || 0) > 100000 ? '#f0fdf4' : '#fffbeb',
+                      color: (brand.revenue || 0) > 100000 ? '#22c55e' : '#f59e0b',
                     }}>
-                      {brand.revenue > 100000 ? 'High' : 'Medium'}
+                      {(brand.revenue || 0) > 100000 ? 'High' : 'Medium'}
                     </span>
                   </div>
                   <div style={styles.brandStats}>
                     <div style={styles.brandStat}>
                       <span style={styles.brandStatLabel}>Revenue</span>
-                      <span style={styles.brandStatValue}>${brand.revenue.toLocaleString()}</span>
+                      <span style={styles.brandStatValue}>${(brand.revenue || 0).toLocaleString()}</span>
                     </div>
                     <div style={styles.brandStat}>
                       <span style={styles.brandStatLabel}>Leads</span>
-                      <span style={styles.brandStatValue}>{brand.leads}</span>
+                      <span style={styles.brandStatValue}>{brand.leads || 0}</span>
                     </div>
                     <div style={styles.brandStat}>
                       <span style={styles.brandStatLabel}>Clients</span>
-                      <span style={styles.brandStatValue}>{brand.clients}</span>
+                      <span style={styles.brandStatValue}>{brand.clients || 0}</span>
                     </div>
                     <div style={styles.brandStat}>
                       <span style={styles.brandStatLabel}>Growth</span>
                       <span style={{
                         ...styles.brandStatValue,
-                        color: brand.growth > 10 ? '#22c55e' : '#f59e0b',
+                        color: (brand.growth || 0) > 10 ? '#22c55e' : '#f59e0b',
                       }}>
-                        {brand.growth}%
+                        {brand.growth || 0}%
                       </span>
                     </div>
                   </div>
@@ -500,31 +545,7 @@ const SuperAdminDashboard = () => {
           </div>
           <div style={styles.cardContent}>
             <div style={styles.activityList}>
-              {recentActivity.map((activity) => {
-                const iconInfo = getActivityIcon(activity.type);
-                const IconComponent = iconInfo.icon;
-                const statusBadge = getStatusBadge(activity.status);
-                return (
-                  <div key={activity.id} style={styles.activityItem}>
-                    <div style={{ ...styles.activityIcon, backgroundColor: iconInfo.bg }}>
-                      <IconComponent style={{ ...styles.activityIconSvg, color: iconInfo.color }} size={16} />
-                    </div>
-                    <div style={styles.activityContent}>
-                      <p style={styles.activityTitle}>{activity.title}</p>
-                      <div style={styles.activityMeta}>
-                        <span style={styles.activityTime}>{activity.time}</span>
-                        <span style={{
-                          ...styles.activityBadge,
-                          backgroundColor: statusBadge.bg,
-                          color: statusBadge.color,
-                        }}>
-                          {statusBadge.label}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              {renderActivityItems()}
             </div>
           </div>
         </div>
@@ -1012,6 +1033,15 @@ const styles = {
     fontSize: '14px',
     fontWeight: '500',
     color: '#374151',
+  },
+  emptyState: {
+    textAlign: 'center',
+    padding: '32px 16px',
+  },
+  emptyStateText: {
+    color: '#6b7280',
+    fontSize: '14px',
+    margin: 0,
   },
 };
 
