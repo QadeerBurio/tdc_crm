@@ -50,7 +50,7 @@ const Automation = () => {
   });
 
   // API base URL
-  const API_URL = 'http://localhost:5000/api';
+  const API_URL = 'https://crmserver-production-4a42.up.railway.app/api';
 
   useEffect(() => {
     fetchAutomations();
