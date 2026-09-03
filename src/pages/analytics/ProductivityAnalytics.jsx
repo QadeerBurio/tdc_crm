@@ -4,7 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import {
   TrendingUp, Users, Clock, CheckCircle,
   ArrowUp, ArrowDown, Activity,
-  RefreshCw, Download, Filter
+  RefreshCw, Download, Filter, Sparkles,
+  Zap, Target, Award, Crown, BarChart3
 } from 'lucide-react';
 import {
   BarChart, LineChart, RadarChart,
@@ -35,7 +36,7 @@ const ProductivityAnalytics = () => {
   });
 
   const API_URL = 'https://crmserver-production-4a42.up.railway.app/api';
-  const COLORS = ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444'];
+  const COLORS = ['#013E37', '#0A5C54', '#1A7A6E', '#FFEFB3', '#D4C89A'];
 
   useEffect(() => {
     fetchProductivityData();
@@ -76,15 +77,12 @@ const ProductivityAnalytics = () => {
           throw new Error(result.message || 'Failed to fetch data');
         }
       } else {
-        // If 404, use mock data instead of throwing error
         console.warn('Productivity API not available, using mock data');
         setMockData();
-        // Use toast.success or toast.error instead of toast.info
         toast.success('Showing sample productivity data');
       }
     } catch (error) {
       console.error('Error fetching productivity data:', error);
-      // Use toast.error instead of toast.info
       toast.error(error.message || 'Failed to load productivity data');
       setMockData();
       toast.success('Showing sample productivity data');
@@ -146,8 +144,8 @@ const ProductivityAnalytics = () => {
             <p className="pa-metric-subtitle">{subtitle}</p>
           )}
         </div>
-        <div className={`pa-metric-icon-wrapper pa-metric-icon-${color}`}>
-          <Icon className="pa-metric-icon" />
+        <div className={`pa-metric-icon-wrapper pa-metric-icon-${color}`} style={{ backgroundColor: '#FFEFB3' }}>
+          <Icon className="pa-metric-icon" color="#013E37" />
         </div>
       </div>
     </div>
@@ -178,7 +176,7 @@ const ProductivityAnalytics = () => {
   if (loading) {
     return (
       <div className="pa-loading">
-        <div className="pa-spinner"></div>
+        <div className="pa-loading-spinner"></div>
         <p className="pa-loading-text">Loading productivity data...</p>
       </div>
     );
@@ -189,11 +187,14 @@ const ProductivityAnalytics = () => {
       {/* Header */}
       <div className="pa-header">
         <div className="pa-header-left">
-          <div className="pa-header-icon">
+          <div className="pa-header-icon" style={{ background: 'linear-gradient(135deg, #013E37, #0A5C54)' }}>
             <Activity className="pa-header-svg" />
           </div>
           <div>
-            <h1 className="pa-title">Productivity Analytics</h1>
+            <h1 className="pa-title">
+              <Sparkles className="pa-title-icon" color="#013E37" />
+              Productivity Analytics
+            </h1>
             <p className="pa-subtitle">Track team performance and efficiency</p>
           </div>
         </div>
@@ -264,31 +265,31 @@ const ProductivityAnalytics = () => {
       <div className="pa-chart-card">
         <div className="pa-chart-header">
           <h3 className="pa-chart-title">Weekly Performance Trend</h3>
-          <span className="pa-chart-badge">Line Chart</span>
+          <span className="pa-chart-badge" style={{ backgroundColor: '#FFEFB3', color: '#013E37' }}>Line Chart</span>
         </div>
         <div className="pa-chart-body">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={weeklyTrend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="weekStart" stroke="#94a3b8" fontSize={12} />
-              <YAxis domain={[0, 100]} stroke="#94a3b8" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#FFEFB3" />
+              <XAxis dataKey="weekStart" stroke="#013E37" fontSize={12} opacity={0.6} />
+              <YAxis domain={[0, 100]} stroke="#013E37" fontSize={12} opacity={0.6} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: '#ffffff',
-                  border: '1px solid #e2e8f0',
+                  border: '1px solid #FFEFB3',
                   borderRadius: '8px',
                   padding: '12px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                  boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
                 }}
               />
               <Legend wrapperStyle={{ paddingTop: '10px' }} />
               <Line
                 type="monotone"
                 dataKey="averageScore"
-                stroke="#3B82F6"
-                strokeWidth={2}
+                stroke="#013E37"
+                strokeWidth={3}
                 name="Productivity Score"
-                dot={{ fill: '#3B82F6', strokeWidth: 2 }}
+                dot={{ fill: '#013E37', strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6 }}
               />
             </LineChart>
@@ -302,27 +303,27 @@ const ProductivityAnalytics = () => {
         <div className="pa-chart-card">
           <div className="pa-chart-header">
             <h3 className="pa-chart-title">Department Performance</h3>
-            <span className="pa-chart-badge">Bar Chart</span>
+            <span className="pa-chart-badge" style={{ backgroundColor: '#FFEFB3', color: '#013E37' }}>Bar Chart</span>
           </div>
           <div className="pa-chart-body">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={departmentStats} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="department" stroke="#94a3b8" fontSize={12} />
-                <YAxis domain={[0, 100]} stroke="#94a3b8" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#FFEFB3" />
+                <XAxis dataKey="department" stroke="#013E37" fontSize={12} opacity={0.6} />
+                <YAxis domain={[0, 100]} stroke="#013E37" fontSize={12} opacity={0.6} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: '#ffffff',
-                    border: '1px solid #e2e8f0',
+                    border: '1px solid #FFEFB3',
                     borderRadius: '8px',
                     padding: '12px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                    boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
                   }}
                 />
                 <Legend wrapperStyle={{ paddingTop: '10px' }} />
-                <Bar dataKey="productivity" fill="#3B82F6" name="Productivity" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="taskCompletion" fill="#10B981" name="Task Completion" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="qaPass" fill="#8B5CF6" name="QA Pass Rate" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="productivity" fill="#013E37" name="Productivity" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="taskCompletion" fill="#0A5C54" name="Task Completion" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="qaPass" fill="#FFEFB3" name="QA Pass Rate" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -332,42 +333,42 @@ const ProductivityAnalytics = () => {
         <div className="pa-chart-card">
           <div className="pa-chart-header">
             <h3 className="pa-chart-title">Department Radar</h3>
-            <span className="pa-chart-badge">Radar Chart</span>
+            <span className="pa-chart-badge" style={{ backgroundColor: '#FFEFB3', color: '#013E37' }}>Radar Chart</span>
           </div>
           <div className="pa-chart-body">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={departmentStats} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <PolarGrid stroke="#e2e8f0" />
-                <PolarAngleAxis dataKey="department" stroke="#94a3b8" fontSize={12} />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#94a3b8" fontSize={12} />
+                <PolarGrid stroke="#FFEFB3" />
+                <PolarAngleAxis dataKey="department" stroke="#013E37" fontSize={12} opacity={0.6} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#013E37" fontSize={12} opacity={0.6} />
                 <Radar
                   name="Productivity"
                   dataKey="productivity"
-                  stroke="#3B82F6"
-                  fill="#3B82F6"
-                  fillOpacity={0.4}
+                  stroke="#013E37"
+                  fill="#013E37"
+                  fillOpacity={0.3}
                 />
                 <Radar
                   name="Task Completion"
                   dataKey="taskCompletion"
-                  stroke="#10B981"
-                  fill="#10B981"
-                  fillOpacity={0.4}
+                  stroke="#0A5C54"
+                  fill="#0A5C54"
+                  fillOpacity={0.3}
                 />
                 <Radar
                   name="QA Pass Rate"
                   dataKey="qaPass"
-                  stroke="#8B5CF6"
-                  fill="#8B5CF6"
-                  fillOpacity={0.4}
+                  stroke="#FFEFB3"
+                  fill="#FFEFB3"
+                  fillOpacity={0.3}
                 />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: '#ffffff',
-                    border: '1px solid #e2e8f0',
+                    border: '1px solid #FFEFB3',
                     borderRadius: '8px',
                     padding: '12px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                    boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
                   }}
                 />
                 <Legend wrapperStyle={{ paddingTop: '10px' }} />
@@ -380,8 +381,11 @@ const ProductivityAnalytics = () => {
       {/* Top Performers */}
       <div className="pa-performers-card">
         <div className="pa-performers-header">
-          <h3 className="pa-chart-title">Top Performers</h3>
-          <Users className="pa-performers-icon" />
+          <h3 className="pa-chart-title">
+            <Award className="pa-performers-title-icon" color="#013E37" />
+            Top Performers
+          </h3>
+          <Users className="pa-performers-icon" color="#013E37" />
         </div>
         <div className="pa-performers-body">
           {productivityData.topPerformers?.length > 0 ? (
@@ -426,7 +430,7 @@ const ProductivityAnalytics = () => {
                             endAngle={-270}
                           >
                             <Cell fill={color} />
-                            <Cell fill="#e2e8f0" />
+                            <Cell fill="#FFEFB3" />
                           </Pie>
                         </PieChart>
                       </ResponsiveContainer>
@@ -437,7 +441,9 @@ const ProductivityAnalytics = () => {
             })
           ) : (
             <div className="pa-empty-state">
-              <Users className="pa-empty-icon" />
+              <div className="pa-empty-icon-wrapper" style={{ backgroundColor: '#FFEFB3' }}>
+                <Users className="pa-empty-icon" color="#013E37" />
+              </div>
               <p className="pa-empty-text">No performer data available</p>
               <p className="pa-empty-subtext">Start tracking performance to see top performers</p>
             </div>
@@ -445,7 +451,6 @@ const ProductivityAnalytics = () => {
         </div>
       </div>
 
-      {/* Custom CSS */}
       <style>{`
         /* ============================================
            CONTAINER
@@ -454,7 +459,7 @@ const ProductivityAnalytics = () => {
           padding: 24px 32px;
           max-width: 1400px;
           margin: 0 auto;
-          background: #f8fafc;
+          background: #FFFFFF;
           min-height: 100vh;
           animation: paFadeIn 0.4s ease;
         }
@@ -466,6 +471,16 @@ const ProductivityAnalytics = () => {
 
         @keyframes paSpin {
           to { transform: rotate(360deg); }
+        }
+
+        @keyframes paSlideUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes paPulse {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 1; }
         }
 
         .pa-spin {
@@ -484,17 +499,18 @@ const ProductivityAnalytics = () => {
           gap: 16px;
         }
 
-        .pa-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #8b5cf6;
+        .pa-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
           animation: paSpin 0.8s linear infinite;
         }
 
         .pa-loading-text {
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           font-size: 14px;
           font-weight: 500;
         }
@@ -520,12 +536,16 @@ const ProductivityAnalytics = () => {
         .pa-header-icon {
           width: 48px;
           height: 48px;
-          background: linear-gradient(135deg, #8b5cf6, #6d28d9);
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.25);
+          transition: all 0.3s ease;
+        }
+
+        .pa-header-icon:hover {
+          transform: scale(1.05) rotate(-5deg);
         }
 
         .pa-header-svg {
@@ -537,14 +557,24 @@ const ProductivityAnalytics = () => {
         .pa-title {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
           letter-spacing: -0.5px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .pa-title-icon {
+          width: 24px;
+          height: 24px;
+          animation: paPulse 2s ease-in-out infinite;
         }
 
         .pa-subtitle {
           font-size: 15px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
 
@@ -560,16 +590,17 @@ const ProductivityAnalytics = () => {
           align-items: center;
           justify-content: center;
           padding: 8px 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s ease;
+          color: #013E37;
         }
 
         .pa-btn-icon:hover:not(:disabled) {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .pa-btn-icon:disabled {
@@ -589,24 +620,24 @@ const ProductivityAnalytics = () => {
 
         .pa-select {
           padding: 8px 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           background: #ffffff;
-          color: #0f172a;
+          color: #013E37;
           outline: none;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           min-width: 140px;
         }
 
         .pa-select:focus {
-          border-color: #8b5cf6;
-          box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
 
         .pa-select:hover {
-          border-color: #94a3b8;
+          border-color: #013E37;
         }
 
         /* ============================================
@@ -623,7 +654,7 @@ const ProductivityAnalytics = () => {
           background: #ffffff;
           border-radius: 12px;
           padding: 20px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           transition: all 0.3s ease;
           animation: paSlideUp 0.5s ease both;
         }
@@ -633,14 +664,10 @@ const ProductivityAnalytics = () => {
         .pa-metric-card:nth-child(3) { animation-delay: 0.15s; }
         .pa-metric-card:nth-child(4) { animation-delay: 0.2s; }
 
-        @keyframes paSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
         .pa-metric-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+          transform: translateY(-4px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
+          border-color: #013E37;
         }
 
         .pa-metric-content {
@@ -656,14 +683,15 @@ const ProductivityAnalytics = () => {
         .pa-metric-title {
           font-size: 13px;
           font-weight: 500;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 0;
         }
 
         .pa-metric-value {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 6px 0 0 0;
           line-height: 1.2;
         }
@@ -671,20 +699,16 @@ const ProductivityAnalytics = () => {
         .pa-metric-skeleton {
           height: 32px;
           width: 80px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 6px;
           margin-top: 6px;
           animation: paPulse 1.5s ease-in-out infinite;
         }
 
-        @keyframes paPulse {
-          0%, 100% { opacity: 0.5; }
-          50% { opacity: 1; }
-        }
-
         .pa-metric-subtitle {
           font-size: 13px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
           margin: 2px 0 0 0;
         }
 
@@ -695,22 +719,17 @@ const ProductivityAnalytics = () => {
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          transition: all 0.3s ease;
         }
 
-        .pa-metric-icon-blue { background: #eff6ff; }
-        .pa-metric-icon-green { background: #ecfdf5; }
-        .pa-metric-icon-purple { background: #f5f3ff; }
-        .pa-metric-icon-orange { background: #fffbeb; }
+        .pa-metric-card:hover .pa-metric-icon-wrapper {
+          transform: scale(1.05);
+        }
 
         .pa-metric-icon {
           width: 20px;
           height: 20px;
         }
-
-        .pa-metric-icon-blue .pa-metric-icon { color: #3b82f6; }
-        .pa-metric-icon-green .pa-metric-icon { color: #10b981; }
-        .pa-metric-icon-purple .pa-metric-icon { color: #8b5cf6; }
-        .pa-metric-icon-orange .pa-metric-icon { color: #f59e0b; }
 
         /* ============================================
            CHARTS
@@ -718,14 +737,15 @@ const ProductivityAnalytics = () => {
         .pa-chart-card {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           overflow: hidden;
           margin-bottom: 24px;
           transition: all 0.3s ease;
         }
 
         .pa-chart-card:hover {
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
+          border-color: #013E37;
         }
 
         .pa-charts-grid {
@@ -740,21 +760,28 @@ const ProductivityAnalytics = () => {
           align-items: center;
           justify-content: space-between;
           padding: 16px 24px;
-          border-bottom: 1px solid #e2e8f0;
+          border-bottom: 1px solid #FFEFB3;
+          background: #F8FAFC;
         }
 
         .pa-chart-title {
           font-size: 16px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .pa-performers-title-icon {
+          width: 18px;
+          height: 18px;
         }
 
         .pa-chart-badge {
           font-size: 11px;
           font-weight: 600;
-          color: #8b5cf6;
-          background: #f5f3ff;
           padding: 4px 12px;
           border-radius: 20px;
           text-transform: uppercase;
@@ -773,13 +800,14 @@ const ProductivityAnalytics = () => {
         .pa-performers-card {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           overflow: hidden;
           transition: all 0.3s ease;
         }
 
         .pa-performers-card:hover {
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
+          border-color: #013E37;
         }
 
         .pa-performers-header {
@@ -787,13 +815,14 @@ const ProductivityAnalytics = () => {
           align-items: center;
           justify-content: space-between;
           padding: 16px 24px;
-          border-bottom: 1px solid #e2e8f0;
+          border-bottom: 1px solid #FFEFB3;
+          background: #F8FAFC;
         }
 
         .pa-performers-icon {
           width: 18px;
           height: 18px;
-          color: #94a3b8;
+          opacity: 0.5;
         }
 
         .pa-performers-body {
@@ -805,20 +834,35 @@ const ProductivityAnalytics = () => {
           overflow-y: auto;
         }
 
+        .pa-performers-body::-webkit-scrollbar {
+          width: 4px;
+        }
+
+        .pa-performers-body::-webkit-scrollbar-track {
+          background: #FFEFB3;
+          border-radius: 4px;
+        }
+
+        .pa-performers-body::-webkit-scrollbar-thumb {
+          background: #013E37;
+          border-radius: 4px;
+        }
+
         .pa-performer-item {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 12px 16px;
-          background: #f8fafc;
+          background: #F8FAFC;
           border-radius: 10px;
-          border: 1px solid #f1f5f9;
-          transition: all 0.2s ease;
+          border: 1px solid #FFEFB3;
+          transition: all 0.3s ease;
         }
 
         .pa-performer-item:hover {
-          background: #f1f5f9;
-          border-color: #e2e8f0;
+          background: #FFEFB3;
+          border-color: #013E37;
+          transform: translateX(4px);
         }
 
         .pa-performer-info {
@@ -839,17 +883,23 @@ const ProductivityAnalytics = () => {
           font-weight: 700;
           font-size: 14px;
           flex-shrink: 0;
+          transition: all 0.3s ease;
+        }
+
+        .pa-performer-item:hover .pa-performer-avatar {
+          transform: scale(1.05);
         }
 
         .pa-performer-name {
           font-size: 14px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
         }
 
         .pa-performer-department {
           font-size: 12px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
         }
 
         .pa-performer-stats {
@@ -865,7 +915,7 @@ const ProductivityAnalytics = () => {
         .pa-performer-score-value {
           font-size: 16px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
         }
 
         .pa-performer-trend {
@@ -873,8 +923,8 @@ const ProductivityAnalytics = () => {
           font-weight: 500;
         }
 
-        .pa-trend-up { color: #16a34a; }
-        .pa-trend-down { color: #dc2626; }
+        .pa-trend-up { color: #013E37; }
+        .pa-trend-down { color: #D32F2F; }
 
         .pa-performer-chart {
           width: 48px;
@@ -890,23 +940,33 @@ const ProductivityAnalytics = () => {
           width: 100%;
         }
 
+        .pa-empty-icon-wrapper {
+          width: 64px;
+          height: 64px;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 12px;
+          animation: paPulse 2s ease-in-out infinite;
+        }
+
         .pa-empty-icon {
           width: 32px;
           height: 32px;
-          color: #94a3b8;
-          margin: 0 auto 12px;
         }
 
         .pa-empty-text {
           font-size: 16px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .pa-empty-subtext {
           font-size: 14px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
           margin: 4px 0 0 0;
         }
 
@@ -1032,27 +1092,6 @@ const ProductivityAnalytics = () => {
           .pa-btn-icon {
             align-self: flex-end;
           }
-        }
-
-        /* ============================================
-           SCROLLBAR
-           ============================================ */
-        .pa-performers-body::-webkit-scrollbar {
-          width: 4px;
-        }
-
-        .pa-performers-body::-webkit-scrollbar-track {
-          background: #f1f5f9;
-          border-radius: 4px;
-        }
-
-        .pa-performers-body::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
-          border-radius: 4px;
-        }
-
-        .pa-performers-body::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
         }
       `}</style>
     </div>

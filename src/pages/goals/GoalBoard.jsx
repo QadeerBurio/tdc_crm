@@ -1,14 +1,28 @@
+// pages/goals/GoalBoard.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
-  Target, Plus, Search, Filter, RefreshCw,
-  TrendingUp, TrendingDown, Clock, Calendar,
-  Users, AlertCircle, CheckCircle, Activity,
-  ArrowRight, MoreVertical, Edit, Trash2, Eye,
-  BarChart3, Zap, Award, Star, X
+  Target, Plus, Search, RefreshCw,
+  TrendingUp, Clock, Calendar,
+  AlertCircle, CheckCircle, Activity,
+  Trash2, X, Award, Zap, BarChart3, Users,
+  Layers
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import toast from 'react-hot-toast';
+
+// Color Palette
+const PRIMARY_COLOR = '#013E37';
+const ACCENT_COLOR = '#FFEFB3';
+const WHITE = '#FFFFFF';
+const TEXT_DARK = '#013E37';
+const TEXT_LIGHT = '#5A7A7A';
+const SUCCESS_COLOR = '#2D6A5F';
+const WARNING_COLOR = '#FFD966';
+const DANGER_COLOR = '#C0392B';
+const BG_LIGHT = '#FFFDF5';
+const CARD_SHADOW = '0 4px 20px rgba(1, 62, 55, 0.08)';
+const CARD_SHADOW_HOVER = '0 8px 32px rgba(1, 62, 55, 0.15)';
 
 const GoalBoard = () => {
   const { token } = useAuth();
@@ -30,12 +44,12 @@ const GoalBoard = () => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [columns, setColumns] = useState({
-    'not_started': { id: 'not_started', title: 'Not Started', icon: '⏳', items: [] },
-    'in_progress': { id: 'in_progress', title: 'In Progress', icon: '🔄', items: [] },
-    'on_track': { id: 'on_track', title: 'On Track', icon: '📈', items: [] },
-    'at_risk': { id: 'at_risk', title: 'At Risk', icon: '⚠️', items: [] },
-    'behind': { id: 'behind', title: 'Behind', icon: '🔴', items: [] },
-    'completed': { id: 'completed', title: 'Completed', icon: '✅', items: [] }
+    'not_started': { id: 'not_started', title: 'Not Started', icon: '⏳', color: '#94A3B8', items: [] },
+    'in_progress': { id: 'in_progress', title: 'In Progress', icon: '🔄', color: PRIMARY_COLOR, items: [] },
+    'on_track': { id: 'on_track', title: 'On Track', icon: '📈', color: SUCCESS_COLOR, items: [] },
+    'at_risk': { id: 'at_risk', title: 'At Risk', icon: '⚠️', color: WARNING_COLOR, items: [] },
+    'behind': { id: 'behind', title: 'Behind', icon: '🔴', color: DANGER_COLOR, items: [] },
+    'completed': { id: 'completed', title: 'Completed', icon: '✅', color: SUCCESS_COLOR, items: [] }
   });
 
   const API_URL = 'https://crmserver-production-4a42.up.railway.app/api';
@@ -53,7 +67,6 @@ const GoalBoard = () => {
       if (search) params.append('search', search);
       if (filterLevel !== 'all') params.append('level', filterLevel);
       
-      // Try to fetch from API
       let fetchedGoals = [];
       try {
         const response = await fetch(`${API_URL}/goals/board?${params.toString()}`, {
@@ -63,17 +76,14 @@ const GoalBoard = () => {
           const data = await response.json();
           fetchedGoals = data.data || [];
         } else {
-          // If API fails, use mock data
           fetchedGoals = getMockGoals();
         }
       } catch (err) {
-        // Use mock data if API is not available
         fetchedGoals = getMockGoals();
       }
       
       setGoals(fetchedGoals);
       
-      // Group goals by status
       const newColumns = { ...columns };
       Object.keys(newColumns).forEach(key => {
         newColumns[key].items = fetchedGoals.filter(g => g.status === key);
@@ -102,10 +112,9 @@ const GoalBoard = () => {
   const handleDragEnd = async (result) => {
     if (!result.destination) return;
     
-    const { source, destination, draggableId } = result;
+    const { source, destination } = result;
     
     if (source.droppableId === destination.droppableId) {
-      // Same column - reorder
       const column = columns[source.droppableId];
       const newItems = Array.from(column.items);
       const [removed] = newItems.splice(source.index, 1);
@@ -116,7 +125,6 @@ const GoalBoard = () => {
         [source.droppableId]: { ...column, items: newItems }
       });
     } else {
-      // Different column - update status
       const sourceColumn = columns[source.droppableId];
       const destColumn = columns[destination.droppableId];
       const sourceItems = Array.from(sourceColumn.items);
@@ -132,7 +140,6 @@ const GoalBoard = () => {
         [destination.droppableId]: { ...destColumn, items: destItems }
       });
       
-      // Update on server
       try {
         await fetch(`${API_URL}/goals/${updatedGoal._id}/status`, {
           method: 'PATCH',
@@ -167,7 +174,6 @@ const GoalBoard = () => {
         ownerId: { firstName: 'You' }
       };
       
-      // Try to save to API
       try {
         const response = await fetch(`${API_URL}/goals`, {
           method: 'POST',
@@ -178,7 +184,6 @@ const GoalBoard = () => {
           body: JSON.stringify(formData)
         });
         if (response.ok) {
-          const data = await response.json();
           toast.success('Goal created successfully!');
           setShowCreateModal(false);
           setFormData({
@@ -195,11 +200,9 @@ const GoalBoard = () => {
           return;
         }
       } catch (err) {
-        // If API fails, add locally
         console.warn('API not available, adding goal locally');
       }
       
-      // Add locally
       const newGoalWithId = {
         ...newGoal,
         _id: `temp_${Date.now()}`,
@@ -245,26 +248,6 @@ const GoalBoard = () => {
     }
   };
 
-  const getStatusColor = (status) => {
-    const colors = {
-      'not_started': 'gb-not-started',
-      'in_progress': 'gb-in-progress',
-      'on_track': 'gb-on-track',
-      'at_risk': 'gb-at-risk',
-      'behind': 'gb-behind',
-      'completed': 'gb-completed'
-    };
-    return colors[status] || 'gb-default';
-  };
-
-  const getStatusIcon = (status) => {
-    if (status === 'completed') return <CheckCircle className="gb-status-icon gb-icon-green" />;
-    if (status === 'at_risk' || status === 'behind') return <AlertCircle className="gb-status-icon gb-icon-red" />;
-    if (status === 'on_track') return <TrendingUp className="gb-status-icon gb-icon-green" />;
-    if (status === 'in_progress') return <Activity className="gb-status-icon gb-icon-blue" />;
-    return <Clock className="gb-status-icon gb-icon-gray" />;
-  };
-
   const getStatusCount = (status) => {
     return columns[status]?.items.length || 0;
   };
@@ -299,6 +282,14 @@ const GoalBoard = () => {
   const totalGoals = goals.length;
   const completedGoals = goals.filter(g => g.status === 'completed').length;
   const progress = totalGoals > 0 ? Math.round((completedGoals / totalGoals) * 100) : 0;
+  const atRiskGoals = goals.filter(g => g.status === 'at_risk' || g.status === 'behind').length;
+
+  const stats = [
+    { label: 'Total Goals', value: totalGoals, icon: Target, color: PRIMARY_COLOR },
+    { label: 'Progress', value: `${progress}%`, icon: TrendingUp, color: SUCCESS_COLOR },
+    { label: 'Completed', value: completedGoals, icon: CheckCircle, color: SUCCESS_COLOR },
+    { label: 'At Risk', value: atRiskGoals, icon: AlertCircle, color: DANGER_COLOR },
+  ];
 
   if (loading) {
     return (
@@ -317,11 +308,11 @@ const GoalBoard = () => {
           <div className="gb-header-left">
             <div className="gb-title-wrapper">
               <div className="gb-title-icon">
-                <Target className="gb-title-svg" />
+                <Layers className="gb-title-svg" />
               </div>
               <div>
                 <h1 className="gb-title">Goal Board</h1>
-                <p className="gb-subtitle">Visualize and manage goals across statuses</p>
+                <p className="gb-subtitle">Track and manage your goals across teams</p>
               </div>
             </div>
           </div>
@@ -360,24 +351,25 @@ const GoalBoard = () => {
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Stats Cards */}
         <div className="gb-stats">
-          <div className="gb-stat-card gb-stat-total">
-            <div className="gb-stat-icon-wrapper"><Target className="gb-stat-icon" /></div>
-            <div><p className="gb-stat-number">{totalGoals}</p><p className="gb-stat-label">Total Goals</p></div>
-          </div>
-          <div className="gb-stat-card gb-stat-progress">
-            <div className="gb-stat-icon-wrapper"><TrendingUp className="gb-stat-icon" /></div>
-            <div><p className="gb-stat-number">{progress}%</p><p className="gb-stat-label">Progress</p></div>
-          </div>
-          <div className="gb-stat-card gb-stat-completed">
-            <div className="gb-stat-icon-wrapper"><CheckCircle className="gb-stat-icon" /></div>
-            <div><p className="gb-stat-number">{completedGoals}</p><p className="gb-stat-label">Completed</p></div>
-          </div>
-          <div className="gb-stat-card gb-stat-risk">
-            <div className="gb-stat-icon-wrapper"><AlertCircle className="gb-stat-icon" /></div>
-            <div><p className="gb-stat-number">{goals.filter(g => g.status === 'at_risk' || g.status === 'behind').length}</p><p className="gb-stat-label">At Risk</p></div>
-          </div>
+          {stats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <div key={index} className="gb-stat-card" style={{ borderLeftColor: stat.color }}>
+                <div className="gb-stat-icon-wrapper" style={{ background: `${stat.color}15` }}>
+                  <Icon className="gb-stat-icon" style={{ color: stat.color }} />
+                </div>
+                <div>
+                  <p className="gb-stat-number">{stat.value}</p>
+                  <p className="gb-stat-label">{stat.label}</p>
+                </div>
+                <div className="gb-stat-trend">
+                  <span className="gb-stat-trend-up">↑</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Board */}
@@ -387,10 +379,12 @@ const GoalBoard = () => {
               <div key={columnId} className="gb-column">
                 <div className="gb-column-header">
                   <div className="gb-column-header-left">
-                    <span className="gb-column-icon">{column.icon}</span>
+                    <span className="gb-column-icon" style={{ color: column.color }}>{column.icon}</span>
                     <h4 className="gb-column-title">{column.title}</h4>
                   </div>
-                  <span className="gb-column-count">{getStatusCount(columnId)}</span>
+                  <span className="gb-column-count" style={{ background: column.color, color: WHITE }}>
+                    {getStatusCount(columnId)}
+                  </span>
                 </div>
                 
                 <Droppable droppableId={columnId}>
@@ -411,7 +405,8 @@ const GoalBoard = () => {
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              className={`gb-card ${getStatusColor(goal.status)} ${snapshot.isDragging ? 'gb-card-dragging' : ''}`}
+                              className={`gb-card ${snapshot.isDragging ? 'gb-card-dragging' : ''}`}
+                              style={{ borderLeftColor: column.color }}
                             >
                               <div className="gb-card-header">
                                 <div className="gb-card-info">
@@ -419,17 +414,20 @@ const GoalBoard = () => {
                                   <div className="gb-card-meta">
                                     <span className="gb-card-level">{getLevelLabel(goal.level)}</span>
                                     <span className="gb-card-dot">•</span>
-                                    <span className="gb-card-owner">{goal.ownerId?.firstName || 'Unassigned'}</span>
+                                    <span className="gb-card-owner">
+                                      <Users size={12} className="gb-card-owner-icon" />
+                                      {goal.ownerId?.firstName || 'Unassigned'}
+                                    </span>
                                   </div>
                                 </div>
-                                <div className="gb-card-actions">
-                                  <button className="gb-card-action gb-card-action-delete" onClick={() => handleDeleteGoal(goal._id)}>
-                                    <Trash2 className="gb-card-action-icon" />
-                                  </button>
-                                </div>
+                                <button 
+                                  className="gb-card-delete" 
+                                  onClick={() => handleDeleteGoal(goal._id)}
+                                >
+                                  <Trash2 className="gb-card-delete-icon" />
+                                </button>
                               </div>
                               
-                              {/* Progress */}
                               <div className="gb-card-progress">
                                 <div className="gb-card-progress-header">
                                   <span className="gb-card-progress-label">Progress</span>
@@ -443,12 +441,11 @@ const GoalBoard = () => {
                                 </div>
                               </div>
 
-                              {/* Due Date */}
                               {goal.endDate && (
                                 <div className="gb-card-footer">
                                   <Calendar className="gb-card-footer-icon" />
                                   <span className="gb-card-footer-text">
-                                    Due: {new Date(goal.endDate).toLocaleDateString()}
+                                    Due: {new Date(goal.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                   </span>
                                 </div>
                               )}
@@ -461,8 +458,8 @@ const GoalBoard = () => {
                       {column.items.length === 0 && (
                         <div className="gb-empty">
                           <Target className="gb-empty-icon" />
-                          <p className="gb-empty-text">No goals</p>
-                          <p className="gb-empty-subtext">Drag goals here or create new</p>
+                          <p className="gb-empty-text">No goals yet</p>
+                          <p className="gb-empty-subtext">Drag a goal here or create one</p>
                         </div>
                       )}
                     </div>
@@ -480,7 +477,9 @@ const GoalBoard = () => {
           <div className="gb-modal" onClick={(e) => e.stopPropagation()}>
             <div className="gb-modal-header">
               <div className="gb-modal-title-wrapper">
-                <Target className="gb-modal-icon" />
+                <div className="gb-modal-icon-wrapper">
+                  <Target className="gb-modal-icon" />
+                </div>
                 <h2 className="gb-modal-title">Create New Goal</h2>
               </div>
               <button className="gb-modal-close" onClick={() => setShowCreateModal(false)}>
@@ -490,10 +489,11 @@ const GoalBoard = () => {
             
             <form onSubmit={handleCreateGoal} className="gb-modal-form">
               <div className="gb-form-group">
-                <label className="gb-form-label">Goal Name <span className="gb-form-required">*</span></label>
+                <label className="gb-form-label">
+                  Goal Name <span className="gb-form-required">*</span>
+                </label>
                 <input
                   type="text"
-                  name="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="gb-form-input"
@@ -505,7 +505,6 @@ const GoalBoard = () => {
               <div className="gb-form-group">
                 <label className="gb-form-label">Description</label>
                 <textarea
-                  name="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="gb-form-textarea"
@@ -518,7 +517,6 @@ const GoalBoard = () => {
                 <div className="gb-form-group">
                   <label className="gb-form-label">Level</label>
                   <select
-                    name="level"
                     value={formData.level}
                     onChange={(e) => setFormData({ ...formData, level: e.target.value })}
                     className="gb-form-select"
@@ -533,7 +531,6 @@ const GoalBoard = () => {
                 <div className="gb-form-group">
                   <label className="gb-form-label">Priority</label>
                   <select
-                    name="priority"
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                     className="gb-form-select"
@@ -551,7 +548,6 @@ const GoalBoard = () => {
                   <label className="gb-form-label">Start Date</label>
                   <input
                     type="date"
-                    name="startDate"
                     value={formData.startDate}
                     onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                     className="gb-form-input"
@@ -561,7 +557,6 @@ const GoalBoard = () => {
                   <label className="gb-form-label">End Date</label>
                   <input
                     type="date"
-                    name="endDate"
                     value={formData.endDate}
                     onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                     className="gb-form-input"
@@ -573,7 +568,6 @@ const GoalBoard = () => {
                 <label className="gb-form-label">Target Value</label>
                 <input
                   type="number"
-                  name="targetValue"
                   value={formData.targetValue}
                   onChange={(e) => setFormData({ ...formData, targetValue: e.target.value })}
                   className="gb-form-input"
@@ -604,18 +598,17 @@ const GoalBoard = () => {
         </div>
       )}
 
-      {/* Custom CSS */}
       <style>{`
         /* ============================================
            CONTAINER
            ============================================ */
         .gb-container {
-          padding: 24px 32px;
-          max-width: 1400px;
+          padding: 28px 32px;
+          max-width: 1440px;
           margin: 0 auto;
-          background: #f8fafc;
+          background: ${BG_LIGHT};
           min-height: 100vh;
-          animation: gbFadeIn 0.4s ease;
+          animation: gbFadeIn 0.5s ease;
         }
 
         @keyframes gbFadeIn {
@@ -632,21 +625,21 @@ const GoalBoard = () => {
           align-items: center;
           justify-content: center;
           min-height: 60vh;
-          gap: 16px;
+          gap: 20px;
         }
 
         .gb-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #3b82f6;
+          width: 48px;
+          height: 48px;
+          border: 4px solid ${ACCENT_COLOR};
+          border-top-color: ${PRIMARY_COLOR};
           border-radius: 50%;
-          animation: gbSpin 0.8s linear infinite;
+          animation: gbSpin 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
         }
 
         .gb-loading-text {
-          color: #64748b;
-          font-size: 14px;
+          color: ${TEXT_LIGHT};
+          font-size: 16px;
           font-weight: 500;
         }
 
@@ -661,7 +654,7 @@ const GoalBoard = () => {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 24px;
+          margin-bottom: 28px;
           flex-wrap: wrap;
           gap: 16px;
         }
@@ -674,141 +667,139 @@ const GoalBoard = () => {
         .gb-title-wrapper {
           display: flex;
           align-items: center;
-          gap: 14px;
+          gap: 16px;
         }
 
         .gb-title-icon {
-          width: 48px;
-          height: 48px;
-          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-          border-radius: 12px;
+          width: 52px;
+          height: 52px;
+          background: linear-gradient(135deg, ${PRIMARY_COLOR}, ${SUCCESS_COLOR});
+          border-radius: 16px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
-          animation: gbPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes gbPulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
         }
 
         .gb-title-svg {
-          width: 24px;
-          height: 24px;
-          color: #ffffff;
+          width: 26px;
+          height: 26px;
+          color: ${WHITE};
         }
 
         .gb-title {
-          font-size: 28px;
-          font-weight: 700;
-          color: #0f172a;
+          font-size: 30px;
+          font-weight: 800;
+          color: ${PRIMARY_COLOR};
           margin: 0;
           letter-spacing: -0.5px;
         }
 
         .gb-subtitle {
           font-size: 15px;
-          color: #64748b;
+          color: ${TEXT_LIGHT};
           margin: 2px 0 0 0;
         }
 
         .gb-header-right {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
           flex-wrap: wrap;
         }
 
         .gb-search-wrapper {
           position: relative;
-          min-width: 200px;
+          min-width: 220px;
         }
 
         .gb-search-icon {
           position: absolute;
-          left: 12px;
+          left: 14px;
           top: 50%;
           transform: translateY(-50%);
-          width: 16px;
-          height: 16px;
-          color: #94a3b8;
+          width: 18px;
+          height: 18px;
+          color: ${TEXT_LIGHT};
         }
 
         .gb-search-input {
           width: 100%;
-          padding: 8px 36px 8px 36px;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
+          padding: 10px 40px 10px 42px;
+          border: 2px solid ${ACCENT_COLOR};
+          border-radius: 12px;
           font-size: 14px;
           outline: none;
-          background: #ffffff;
-          color: #0f172a;
-          transition: all 0.2s ease;
+          background: ${WHITE};
+          color: ${TEXT_DARK};
+          transition: all 0.3s ease;
         }
 
         .gb-search-input:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: ${PRIMARY_COLOR};
+          box-shadow: 0 0 0 4px rgba(1, 62, 55, 0.08);
         }
 
         .gb-search-clear {
           position: absolute;
-          right: 8px;
+          right: 10px;
           top: 50%;
           transform: translateY(-50%);
           padding: 4px;
           background: none;
           border: none;
-          color: #94a3b8;
+          color: ${TEXT_LIGHT};
           cursor: pointer;
-          border-radius: 4px;
+          border-radius: 6px;
           display: flex;
           align-items: center;
-        }
-
-        .gb-search-clear:hover {
-          background: #f1f5f9;
-        }
-
-        .gb-search-clear-icon {
-          width: 14px;
-          height: 14px;
-        }
-
-        .gb-filter-select {
-          padding: 8px 12px;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          font-size: 14px;
-          background: #ffffff;
-          color: #0f172a;
-          outline: none;
-          cursor: pointer;
           transition: all 0.2s ease;
         }
 
+        .gb-search-clear:hover {
+          background: ${ACCENT_COLOR};
+        }
+
+        .gb-search-clear-icon {
+          width: 16px;
+          height: 16px;
+        }
+
+        .gb-filter-select {
+          padding: 10px 16px;
+          border: 2px solid ${ACCENT_COLOR};
+          border-radius: 12px;
+          font-size: 14px;
+          background: ${WHITE};
+          color: ${TEXT_DARK};
+          outline: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          font-weight: 500;
+        }
+
         .gb-filter-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: ${PRIMARY_COLOR};
+          box-shadow: 0 0 0 4px rgba(1, 62, 55, 0.08);
         }
 
         .gb-refresh-btn {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 8px 10px;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          background: #ffffff;
+          padding: 10px 12px;
+          border: 2px solid ${ACCENT_COLOR};
+          border-radius: 12px;
+          background: ${WHITE};
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s ease;
+          color: ${TEXT_LIGHT};
         }
 
         .gb-refresh-btn:hover:not(:disabled) {
-          background: #f1f5f9;
+          background: ${ACCENT_COLOR};
+          border-color: ${PRIMARY_COLOR};
+          transform: rotate(45deg);
         }
 
         .gb-refresh-btn:disabled {
@@ -817,8 +808,8 @@ const GoalBoard = () => {
         }
 
         .gb-refresh-icon {
-          width: 16px;
-          height: 16px;
+          width: 18px;
+          height: 18px;
         }
 
         .gb-spin {
@@ -829,26 +820,26 @@ const GoalBoard = () => {
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 8px 20px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          padding: 10px 24px;
+          background: linear-gradient(135deg, ${PRIMARY_COLOR}, ${SUCCESS_COLOR});
+          color: ${WHITE};
           border: none;
-          border-radius: 8px;
+          border-radius: 12px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
         }
 
         .gb-create-btn:hover {
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+          box-shadow: 0 6px 24px rgba(1, 62, 55, 0.4);
         }
 
         .gb-btn-icon {
-          width: 16px;
-          height: 16px;
+          width: 18px;
+          height: 18px;
         }
 
         /* ============================================
@@ -856,81 +847,92 @@ const GoalBoard = () => {
            ============================================ */
         .gb-stats {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
           gap: 16px;
-          margin-bottom: 24px;
+          margin-bottom: 28px;
         }
 
         .gb-stat-card {
           display: flex;
           align-items: center;
-          gap: 14px;
-          background: #ffffff;
-          border-radius: 12px;
-          padding: 16px 20px;
-          border: 1px solid #e2e8f0;
+          gap: 16px;
+          background: ${WHITE};
+          border-radius: 16px;
+          padding: 20px 24px;
+          border: 2px solid ${ACCENT_COLOR};
+          border-left-width: 6px;
           transition: all 0.3s ease;
           animation: gbSlideUp 0.5s ease both;
+          position: relative;
+          overflow: hidden;
         }
 
-        .gb-stat-card:nth-child(1) { animation-delay: 0.1s; }
-        .gb-stat-card:nth-child(2) { animation-delay: 0.2s; }
-        .gb-stat-card:nth-child(3) { animation-delay: 0.3s; }
-        .gb-stat-card:nth-child(4) { animation-delay: 0.4s; }
+        .gb-stat-card::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 100px;
+          height: 100px;
+          background: radial-gradient(circle, ${ACCENT_COLOR} 0%, transparent 70%);
+          opacity: 0.3;
+          border-radius: 50%;
+          transform: translate(30%, -30%);
+        }
+
+        .gb-stat-card:nth-child(1) { animation-delay: 0.05s; }
+        .gb-stat-card:nth-child(2) { animation-delay: 0.1s; }
+        .gb-stat-card:nth-child(3) { animation-delay: 0.15s; }
+        .gb-stat-card:nth-child(4) { animation-delay: 0.2s; }
 
         @keyframes gbSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
+          from { opacity: 0; transform: translateY(30px); }
           to { opacity: 1; transform: translateY(0); }
         }
 
         .gb-stat-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+          transform: translateY(-4px);
+          box-shadow: ${CARD_SHADOW_HOVER};
+          border-color: ${PRIMARY_COLOR};
         }
 
-        .gb-stat-total { border-left: 4px solid #3b82f6; }
-        .gb-stat-progress { border-left: 4px solid #8b5cf6; }
-        .gb-stat-completed { border-left: 4px solid #22c55e; }
-        .gb-stat-risk { border-left: 4px solid #ef4444; }
-
         .gb-stat-icon-wrapper {
-          width: 44px;
-          height: 44px;
-          border-radius: 10px;
+          width: 48px;
+          height: 48px;
+          border-radius: 14px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
         }
 
-        .gb-stat-total .gb-stat-icon-wrapper { background: #eff6ff; }
-        .gb-stat-progress .gb-stat-icon-wrapper { background: #f5f3ff; }
-        .gb-stat-completed .gb-stat-icon-wrapper { background: #ecfdf5; }
-        .gb-stat-risk .gb-stat-icon-wrapper { background: #fef2f2; }
-
         .gb-stat-icon {
-          width: 20px;
-          height: 20px;
+          width: 22px;
+          height: 22px;
         }
 
-        .gb-stat-total .gb-stat-icon { color: #3b82f6; }
-        .gb-stat-progress .gb-stat-icon { color: #8b5cf6; }
-        .gb-stat-completed .gb-stat-icon { color: #22c55e; }
-        .gb-stat-risk .gb-stat-icon { color: #ef4444; }
-
         .gb-stat-number {
-          font-size: 24px;
-          font-weight: 700;
-          color: #0f172a;
+          font-size: 26px;
+          font-weight: 800;
+          color: ${PRIMARY_COLOR};
           margin: 0;
           line-height: 1.2;
         }
 
         .gb-stat-label {
           font-size: 13px;
-          color: #64748b;
+          color: ${TEXT_LIGHT};
           margin: 0;
           font-weight: 500;
+        }
+
+        .gb-stat-trend {
+          margin-left: auto;
+        }
+
+        .gb-stat-trend-up {
+          font-size: 18px;
+          color: ${SUCCESS_COLOR};
         }
 
         /* ============================================
@@ -941,103 +943,101 @@ const GoalBoard = () => {
           grid-template-columns: repeat(6, 1fr);
           gap: 16px;
           overflow-x: auto;
-          padding-bottom: 16px;
+          padding-bottom: 8px;
         }
 
         .gb-column {
-          background: #ffffff;
-          border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          background: ${WHITE};
+          border-radius: 16px;
+          border: 2px solid ${ACCENT_COLOR};
           overflow: hidden;
-          min-width: 200px;
+          min-width: 220px;
           transition: all 0.3s ease;
         }
 
         .gb-column:hover {
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+          box-shadow: ${CARD_SHADOW};
+          border-color: ${PRIMARY_COLOR};
         }
 
         .gb-column-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 12px 16px;
-          background: #f8fafc;
-          border-bottom: 1px solid #e2e8f0;
+          padding: 14px 18px;
+          background: ${BG_LIGHT};
+          border-bottom: 2px solid ${ACCENT_COLOR};
         }
 
         .gb-column-header-left {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 10px;
         }
 
         .gb-column-icon {
-          font-size: 16px;
+          font-size: 18px;
         }
 
         .gb-column-title {
           font-size: 14px;
           font-weight: 600;
-          color: #0f172a;
+          color: ${PRIMARY_COLOR};
           margin: 0;
         }
 
         .gb-column-count {
           font-size: 12px;
-          font-weight: 600;
-          color: #64748b;
-          background: #f1f5f9;
-          padding: 2px 10px;
-          border-radius: 12px;
+          font-weight: 700;
+          padding: 2px 12px;
+          border-radius: 20px;
+          color: ${WHITE};
         }
 
         .gb-droppable {
           min-height: 200px;
-          padding: 8px;
-          transition: all 0.2s ease;
+          padding: 10px;
+          transition: all 0.3s ease;
         }
 
         .gb-droppable-drag {
-          background: #eff6ff;
+          background: ${ACCENT_COLOR};
+          border-radius: 12px;
         }
 
         /* ============================================
            CARD
            ============================================ */
         .gb-card {
-          background: #ffffff;
-          border-radius: 8px;
-          padding: 12px 14px;
-          margin-bottom: 8px;
-          border: 2px solid #e2e8f0;
-          transition: all 0.3s ease;
+          background: ${WHITE};
+          border-radius: 12px;
+          padding: 14px 16px;
+          margin-bottom: 10px;
+          border: 2px solid ${ACCENT_COLOR};
+          border-left-width: 6px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           cursor: grab;
+          position: relative;
         }
 
         .gb-card:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          transform: translateY(-3px);
+          box-shadow: ${CARD_SHADOW_HOVER};
+          border-color: ${PRIMARY_COLOR};
         }
 
         .gb-card-dragging {
-          transform: rotate(2deg) scale(1.02);
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-          border-color: #3b82f6;
+          transform: rotate(2deg) scale(1.04);
+          box-shadow: 0 16px 48px rgba(1, 62, 55, 0.2);
+          border-color: ${PRIMARY_COLOR};
+          opacity: 0.8;
         }
-
-        .gb-not-started { border-left: 4px solid #94a3b8; }
-        .gb-in-progress { border-left: 4px solid #3b82f6; }
-        .gb-on-track { border-left: 4px solid #22c55e; }
-        .gb-at-risk { border-left: 4px solid #f59e0b; }
-        .gb-behind { border-left: 4px solid #ef4444; }
-        .gb-completed { border-left: 4px solid #10b981; }
 
         .gb-card-header {
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
-          gap: 8px;
+          gap: 10px;
         }
 
         .gb-card-info {
@@ -1048,75 +1048,74 @@ const GoalBoard = () => {
         .gb-card-title {
           font-size: 14px;
           font-weight: 600;
-          color: #0f172a;
+          color: ${PRIMARY_COLOR};
           margin: 0;
-          line-height: 1.3;
+          line-height: 1.4;
         }
 
         .gb-card-meta {
           display: flex;
           align-items: center;
-          gap: 6px;
-          margin-top: 4px;
+          gap: 8px;
+          margin-top: 6px;
           font-size: 12px;
-          color: #64748b;
+          color: ${TEXT_LIGHT};
           flex-wrap: wrap;
         }
 
         .gb-card-level {
-          font-size: 11px;
+          font-size: 12px;
         }
 
         .gb-card-dot {
-          color: #94a3b8;
+          color: ${TEXT_LIGHT};
         }
 
         .gb-card-owner {
-          font-size: 11px;
-        }
-
-        .gb-card-actions {
           display: flex;
+          align-items: center;
           gap: 4px;
-          flex-shrink: 0;
+          font-size: 12px;
         }
 
-        .gb-card-action {
-          padding: 4px;
+        .gb-card-owner-icon {
+          width: 12px;
+          height: 12px;
+        }
+
+        .gb-card-delete {
+          padding: 6px;
           border: none;
           background: transparent;
-          border-radius: 4px;
+          border-radius: 8px;
           cursor: pointer;
-          color: #94a3b8;
+          color: ${TEXT_LIGHT};
           transition: all 0.2s ease;
           display: flex;
           align-items: center;
+          flex-shrink: 0;
         }
 
-        .gb-card-action:hover {
-          background: #f1f5f9;
-          color: #475569;
+        .gb-card-delete:hover {
+          background: #FEE2E2;
+          color: ${DANGER_COLOR};
+          transform: scale(1.1);
         }
 
-        .gb-card-action-delete:hover {
-          background: #fef2f2;
-          color: #ef4444;
-        }
-
-        .gb-card-action-icon {
+        .gb-card-delete-icon {
           width: 14px;
           height: 14px;
         }
 
         .gb-card-progress {
-          margin-top: 10px;
+          margin-top: 12px;
         }
 
         .gb-card-progress-header {
           display: flex;
           justify-content: space-between;
           font-size: 11px;
-          color: #64748b;
+          color: ${TEXT_LIGHT};
         }
 
         .gb-card-progress-label {
@@ -1124,47 +1123,49 @@ const GoalBoard = () => {
         }
 
         .gb-card-progress-value {
-          font-weight: 600;
+          font-weight: 700;
+          color: ${PRIMARY_COLOR};
         }
 
         .gb-card-progress-bar {
           width: 100%;
-          height: 4px;
-          background: #f1f5f9;
+          height: 5px;
+          background: ${ACCENT_COLOR};
           border-radius: 4px;
           overflow: hidden;
-          margin-top: 4px;
+          margin-top: 5px;
         }
 
         .gb-card-progress-fill {
           height: 100%;
           border-radius: 4px;
-          transition: width 0.6s ease;
+          transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .gb-progress-green { background: #22c55e; }
-        .gb-progress-blue { background: #3b82f6; }
-        .gb-progress-yellow { background: #f59e0b; }
-        .gb-progress-red { background: #ef4444; }
+        .gb-progress-green { background: ${SUCCESS_COLOR}; }
+        .gb-progress-blue { background: ${PRIMARY_COLOR}; }
+        .gb-progress-yellow { background: ${WARNING_COLOR}; }
+        .gb-progress-red { background: ${DANGER_COLOR}; }
 
         .gb-card-footer {
           display: flex;
           align-items: center;
-          gap: 6px;
-          margin-top: 8px;
-          padding-top: 8px;
-          border-top: 1px solid #f1f5f9;
-          font-size: 11px;
-          color: #94a3b8;
+          gap: 8px;
+          margin-top: 10px;
+          padding-top: 10px;
+          border-top: 2px solid ${ACCENT_COLOR};
         }
 
         .gb-card-footer-icon {
           width: 14px;
           height: 14px;
+          color: ${PRIMARY_COLOR};
         }
 
         .gb-card-footer-text {
-          font-size: 11px;
+          font-size: 12px;
+          color: ${TEXT_LIGHT};
+          font-weight: 500;
         }
 
         /* ============================================
@@ -1174,41 +1175,31 @@ const GoalBoard = () => {
           display: flex;
           flex-direction: column;
           align-items: center;
-          padding: 32px 16px;
-          color: #94a3b8;
+          padding: 40px 16px;
+          color: ${TEXT_LIGHT};
         }
 
         .gb-empty-icon {
-          width: 32px;
-          height: 32px;
-          opacity: 0.3;
-          margin-bottom: 8px;
+          width: 36px;
+          height: 36px;
+          opacity: 0.2;
+          margin-bottom: 10px;
+          color: ${PRIMARY_COLOR};
         }
 
         .gb-empty-text {
           font-size: 14px;
-          font-weight: 500;
+          font-weight: 600;
           margin: 0;
+          color: ${TEXT_LIGHT};
         }
 
         .gb-empty-subtext {
           font-size: 12px;
-          color: #cbd5e1;
-          margin: 2px 0 0 0;
+          color: ${TEXT_LIGHT};
+          margin: 4px 0 0 0;
+          opacity: 0.7;
         }
-
-        /* ============================================
-           STATUS ICONS
-           ============================================ */
-        .gb-status-icon {
-          width: 16px;
-          height: 16px;
-        }
-
-        .gb-icon-green { color: #22c55e; }
-        .gb-icon-red { color: #ef4444; }
-        .gb-icon-blue { color: #3b82f6; }
-        .gb-icon-gray { color: #94a3b8; }
 
         /* ============================================
            MODAL
@@ -1216,29 +1207,30 @@ const GoalBoard = () => {
         .gb-modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.5);
-          backdrop-filter: blur(8px);
+          background: rgba(1, 62, 55, 0.5);
+          backdrop-filter: blur(12px);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 9999;
-          padding: 16px;
+          padding: 20px;
           animation: gbFadeIn 0.3s ease;
         }
 
         .gb-modal {
-          background: #ffffff;
-          border-radius: 16px;
-          max-width: 540px;
+          background: ${WHITE};
+          border-radius: 20px;
+          max-width: 560px;
           width: 100%;
           max-height: 90vh;
           overflow-y: auto;
-          box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
-          animation: gbModalIn 0.3s ease;
+          box-shadow: 0 32px 80px rgba(1, 62, 55, 0.25);
+          animation: gbModalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+          border: 2px solid ${ACCENT_COLOR};
         }
 
         @keyframes gbModalIn {
-          from { opacity: 0; transform: scale(0.95) translateY(20px); }
+          from { opacity: 0; transform: scale(0.9) translateY(30px); }
           to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
@@ -1246,26 +1238,38 @@ const GoalBoard = () => {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 20px 24px;
-          border-bottom: 1px solid #f1f5f9;
+          padding: 24px 28px;
+          border-bottom: 2px solid ${ACCENT_COLOR};
+          background: ${BG_LIGHT};
+          border-radius: 20px 20px 0 0;
         }
 
         .gb-modal-title-wrapper {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 14px;
+        }
+
+        .gb-modal-icon-wrapper {
+          width: 40px;
+          height: 40px;
+          background: ${ACCENT_COLOR};
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .gb-modal-icon {
-          width: 28px;
-          height: 28px;
-          color: #3b82f6;
+          width: 22px;
+          height: 22px;
+          color: ${PRIMARY_COLOR};
         }
 
         .gb-modal-title {
-          font-size: 20px;
+          font-size: 22px;
           font-weight: 700;
-          color: #0f172a;
+          color: ${PRIMARY_COLOR};
           margin: 0;
         }
 
@@ -1273,30 +1277,31 @@ const GoalBoard = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 8px;
+          padding: 10px;
           border: none;
-          background: #f1f5f9;
-          border-radius: 8px;
-          color: #64748b;
+          background: ${ACCENT_COLOR};
+          border-radius: 10px;
+          color: ${TEXT_DARK};
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .gb-modal-close:hover {
-          background: #e2e8f0;
+          background: ${PRIMARY_COLOR};
+          color: ${WHITE};
           transform: rotate(90deg);
         }
 
         .gb-modal-close-icon {
-          width: 18px;
-          height: 18px;
+          width: 20px;
+          height: 20px;
         }
 
         .gb-modal-form {
-          padding: 24px;
+          padding: 28px;
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 18px;
         }
 
         /* ============================================
@@ -1305,44 +1310,44 @@ const GoalBoard = () => {
         .gb-form-group {
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 6px;
         }
 
         .gb-form-label {
           font-size: 14px;
-          font-weight: 500;
-          color: #0f172a;
+          font-weight: 600;
+          color: ${PRIMARY_COLOR};
         }
 
         .gb-form-required {
-          color: #ef4444;
+          color: ${DANGER_COLOR};
         }
 
         .gb-form-input,
         .gb-form-textarea,
         .gb-form-select {
-          padding: 10px 14px;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
+          padding: 12px 16px;
+          border: 2px solid ${ACCENT_COLOR};
+          border-radius: 12px;
           font-size: 14px;
           outline: none;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           width: 100%;
           font-family: inherit;
-          background: #ffffff;
-          color: #0f172a;
+          background: ${WHITE};
+          color: ${TEXT_DARK};
         }
 
         .gb-form-input:focus,
         .gb-form-textarea:focus,
         .gb-form-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: ${PRIMARY_COLOR};
+          box-shadow: 0 0 0 4px rgba(1, 62, 55, 0.08);
         }
 
         .gb-form-textarea {
           resize: vertical;
-          min-height: 60px;
+          min-height: 70px;
         }
 
         .gb-form-row {
@@ -1354,47 +1359,49 @@ const GoalBoard = () => {
         .gb-form-actions {
           display: flex;
           justify-content: flex-end;
-          gap: 12px;
-          padding-top: 16px;
-          border-top: 1px solid #f1f5f9;
+          gap: 14px;
+          padding-top: 18px;
+          border-top: 2px solid ${ACCENT_COLOR};
           margin-top: 4px;
         }
 
         .gb-form-cancel {
-          padding: 10px 24px;
-          background: #f1f5f9;
-          color: #475569;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
+          padding: 12px 28px;
+          background: ${ACCENT_COLOR};
+          color: ${PRIMARY_COLOR};
+          border: 2px solid ${ACCENT_COLOR};
+          border-radius: 12px;
           font-size: 14px;
-          font-weight: 500;
+          font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
-        .gb-form-cancel:hover:not(:disabled) {
-          background: #e2e8f0;
+        .gb-form-cancel:hover {
+          background: ${WHITE};
+          border-color: ${PRIMARY_COLOR};
+          transform: translateY(-2px);
         }
 
         .gb-form-submit {
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 10px 24px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          padding: 12px 28px;
+          background: linear-gradient(135deg, ${PRIMARY_COLOR}, ${SUCCESS_COLOR});
+          color: ${WHITE};
           border: none;
-          border-radius: 8px;
+          border-radius: 12px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.25);
         }
 
         .gb-form-submit:hover:not(:disabled) {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 24px rgba(1, 62, 55, 0.35);
         }
 
         .gb-form-submit:disabled {
@@ -1404,10 +1411,10 @@ const GoalBoard = () => {
         }
 
         .gb-form-spinner {
-          width: 18px;
-          height: 18px;
+          width: 20px;
+          height: 20px;
           border: 2px solid rgba(255, 255, 255, 0.3);
-          border-top-color: #ffffff;
+          border-top-color: ${WHITE};
           border-radius: 50%;
           animation: gbSpin 0.8s linear infinite;
         }
@@ -1444,7 +1451,7 @@ const GoalBoard = () => {
 
           .gb-search-wrapper {
             flex: 1;
-            min-width: 150px;
+            min-width: 160px;
           }
 
           .gb-create-btn {
@@ -1474,20 +1481,20 @@ const GoalBoard = () => {
           }
 
           .gb-title {
-            font-size: 22px;
+            font-size: 24px;
           }
 
           .gb-title-icon {
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
           }
 
           .gb-stat-card {
-            padding: 14px 16px;
+            padding: 16px 18px;
           }
 
           .gb-stat-number {
-            font-size: 20px;
+            font-size: 22px;
           }
         }
 
@@ -1512,12 +1519,16 @@ const GoalBoard = () => {
             width: 100%;
           }
 
+          .gb-refresh-btn {
+            width: 100%;
+          }
+
           .gb-create-btn {
             width: 100%;
           }
 
           .gb-title-wrapper {
-            gap: 10px;
+            gap: 12px;
           }
 
           .gb-title {
@@ -1533,11 +1544,11 @@ const GoalBoard = () => {
           }
 
           .gb-modal-header {
-            padding: 16px 18px;
+            padding: 18px 20px;
           }
 
           .gb-modal-form {
-            padding: 18px;
+            padding: 20px;
           }
 
           .gb-form-actions {
@@ -1557,17 +1568,17 @@ const GoalBoard = () => {
         }
 
         .gb-modal::-webkit-scrollbar-track {
-          background: #f1f5f9;
+          background: ${ACCENT_COLOR};
           border-radius: 8px;
         }
 
         .gb-modal::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
+          background: ${PRIMARY_COLOR};
           border-radius: 8px;
         }
 
         .gb-modal::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
+          background: ${TEXT_LIGHT};
         }
 
         .gb-board::-webkit-scrollbar {
@@ -1575,13 +1586,17 @@ const GoalBoard = () => {
         }
 
         .gb-board::-webkit-scrollbar-track {
-          background: #f1f5f9;
+          background: ${ACCENT_COLOR};
           border-radius: 8px;
         }
 
         .gb-board::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
+          background: ${PRIMARY_COLOR};
           border-radius: 8px;
+        }
+
+        .gb-board::-webkit-scrollbar-thumb:hover {
+          background: ${TEXT_LIGHT};
         }
       `}</style>
     </>

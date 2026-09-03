@@ -1,3 +1,4 @@
+// components/goals/GoalHierarchy.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -30,7 +31,6 @@ const GoalHierarchy = () => {
     else setLoading(true);
 
     try {
-      // Try to fetch from API
       let hierarchyData = null;
       try {
         const response = await fetch(`${API_URL}/goals/hierarchy`, {
@@ -52,7 +52,6 @@ const GoalHierarchy = () => {
     } catch (error) {
       console.error('Error fetching hierarchy:', error);
       toast.error('Failed to load goal hierarchy');
-      // Set mock data on error
       setHierarchy(getMockHierarchy());
     } finally {
       setLoading(false);
@@ -223,7 +222,7 @@ const GoalHierarchy = () => {
     const statusClass = getStatusColor(node.status);
 
     return (
-      <div key={node._id} className={`gh-node gh-level-${level}`}>
+      <div key={node._id} className={`gh-node gh-level-${level}`} style={{ animationDelay: `${level * 0.05}s` }}>
         <div 
           className={`gh-node-content ${isSelected ? 'gh-node-selected' : ''} ${statusClass}`}
           onClick={() => {
@@ -335,100 +334,101 @@ const GoalHierarchy = () => {
   if (loading) {
     return (
       <div className="gh-loading">
-        <div className="gh-spinner"></div>
+        <div className="gh-loading-spinner"></div>
         <p className="gh-loading-text">Loading goal hierarchy...</p>
       </div>
     );
   }
 
   return (
-    <div className="gh-container">
-      {/* Header */}
-      <div className="gh-header">
-        <div className="gh-header-left">
-          <div className="gh-title-wrapper">
-            <div className="gh-title-icon">
-              <Layers className="gh-title-svg" />
+    <>
+      <div className="gh-container">
+        {/* Header */}
+        <div className="gh-header">
+          <div className="gh-header-left">
+            <div className="gh-title-wrapper">
+              <div className="gh-title-icon">
+                <Layers className="gh-title-svg" />
+              </div>
+              <div>
+                <h2 className="gh-title">Goal Hierarchy</h2>
+                <p className="gh-subtitle">Visual representation of goal structure</p>
+              </div>
             </div>
-            <div>
-              <h2 className="gh-title">Goal Hierarchy</h2>
-              <p className="gh-subtitle">Visual representation of goal structure</p>
+          </div>
+          <div className="gh-header-right">
+            <div className="gh-stats">
+              <span className="gh-stat">
+                <Target className="gh-stat-icon" />
+                {totalGoals} Goals
+              </span>
+              <span className="gh-stat">
+                <CheckCircle className="gh-stat-icon gh-icon-green" />
+                {completedGoals} Completed
+              </span>
             </div>
+            <button className="gh-refresh-btn" onClick={handleRefresh} disabled={refreshing}>
+              <RefreshCw className={`gh-refresh-icon ${refreshing ? 'gh-spin' : ''}`} />
+            </button>
+            <button className="gh-create-btn">
+              <Plus className="gh-btn-icon" />
+              New Goal
+            </button>
           </div>
         </div>
-        <div className="gh-header-right">
-          <div className="gh-stats">
-            <span className="gh-stat">
-              <Target className="gh-stat-icon" />
-              {totalGoals} Goals
-            </span>
-            <span className="gh-stat">
-              <CheckCircle className="gh-stat-icon gh-icon-green" />
-              {completedGoals} Completed
-            </span>
+
+        {/* Filters */}
+        <div className="gh-filters">
+          <div className="gh-search-wrapper">
+            <Search className="gh-search-icon" />
+            <input
+              type="text"
+              placeholder="Search goals..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="gh-search-input"
+            />
           </div>
-          <button className="gh-refresh-btn" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw className={`gh-refresh-icon ${refreshing ? 'gh-spin' : ''}`} />
-          </button>
-          <button className="gh-create-btn">
-            <Plus className="gh-btn-icon" />
-            New Goal
-          </button>
+          <select
+            value={filterLevel}
+            onChange={(e) => setFilterLevel(e.target.value)}
+            className="gh-filter-select"
+          >
+            <option value="all">All Levels</option>
+            <option value="company">Company</option>
+            <option value="segment">Segment</option>
+            <option value="department">Department</option>
+            <option value="team">Team</option>
+            <option value="individual">Individual</option>
+          </select>
+        </div>
+
+        {/* Hierarchy */}
+        <div className="gh-tree">
+          {filteredHierarchy ? (
+            renderNode(filteredHierarchy)
+          ) : (
+            <div className="gh-empty">
+              <div className="gh-empty-icon-wrapper">
+                <Target className="gh-empty-icon" />
+              </div>
+              <h3 className="gh-empty-title">No Goals Found</h3>
+              <p className="gh-empty-subtitle">
+                {searchTerm || filterLevel !== 'all' 
+                  ? 'Try adjusting your filters' 
+                  : 'Create your first goal to get started'}
+              </p>
+              {!searchTerm && filterLevel === 'all' && (
+                <button className="gh-empty-btn">
+                  <Plus className="gh-btn-icon" />
+                  Create Goal
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="gh-filters">
-        <div className="gh-search-wrapper">
-          <Search className="gh-search-icon" />
-          <input
-            type="text"
-            placeholder="Search goals..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="gh-search-input"
-          />
-        </div>
-        <select
-          value={filterLevel}
-          onChange={(e) => setFilterLevel(e.target.value)}
-          className="gh-filter-select"
-        >
-          <option value="all">All Levels</option>
-          <option value="company">Company</option>
-          <option value="segment">Segment</option>
-          <option value="department">Department</option>
-          <option value="team">Team</option>
-          <option value="individual">Individual</option>
-        </select>
-      </div>
-
-      {/* Hierarchy */}
-      <div className="gh-tree">
-        {filteredHierarchy ? (
-          renderNode(filteredHierarchy)
-        ) : (
-          <div className="gh-empty">
-            <div className="gh-empty-icon-wrapper">
-              <Target className="gh-empty-icon" />
-            </div>
-            <h3 className="gh-empty-title">No Goals Found</h3>
-            <p className="gh-empty-subtitle">
-              {searchTerm || filterLevel !== 'all' 
-                ? 'Try adjusting your filters' 
-                : 'Create your first goal to get started'}
-            </p>
-            {!searchTerm && filterLevel === 'all' && (
-              <button className="gh-empty-btn">
-                <Plus className="gh-btn-icon" />
-                Create Goal
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Custom CSS */}
       <style>{`
         /* ============================================
            CONTAINER
@@ -436,10 +436,16 @@ const GoalHierarchy = () => {
         .gh-container {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           padding: 24px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
           animation: ghFadeIn 0.4s ease;
+          transition: all 0.3s ease;
+        }
+
+        .gh-container:hover {
+          border-color: #013E37;
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
         }
 
         @keyframes ghFadeIn {
@@ -459,17 +465,18 @@ const GoalHierarchy = () => {
           gap: 16px;
         }
 
-        .gh-spinner {
+        .gh-loading-spinner {
           width: 40px;
           height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #3b82f6;
+          border: 3px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
           animation: ghSpin 0.8s linear infinite;
         }
 
         .gh-loading-text {
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           font-size: 14px;
           font-weight: 500;
         }
@@ -508,31 +515,32 @@ const GoalHierarchy = () => {
         .gh-title-icon {
           width: 44px;
           height: 44px;
-          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+          background: #013E37;
           border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.2);
         }
 
         .gh-title-svg {
           width: 22px;
           height: 22px;
-          color: #ffffff;
+          color: #FFEFB3;
         }
 
         .gh-title {
           font-size: 20px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
           letter-spacing: -0.3px;
         }
 
         .gh-subtitle {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
 
@@ -547,7 +555,7 @@ const GoalHierarchy = () => {
           display: flex;
           gap: 16px;
           padding: 6px 14px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 8px;
         }
 
@@ -557,35 +565,37 @@ const GoalHierarchy = () => {
           gap: 4px;
           font-size: 13px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
         }
 
         .gh-stat-icon {
           width: 16px;
           height: 16px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
         }
 
-        .gh-icon-green { color: #22c55e; }
-        .gh-icon-red { color: #ef4444; }
-        .gh-icon-blue { color: #3b82f6; }
-        .gh-icon-gray { color: #94a3b8; }
+        .gh-icon-green { color: #0A5C54; }
+        .gh-icon-red { color: #EF4444; }
+        .gh-icon-blue { color: #013E37; }
+        .gh-icon-gray { color: #013E37; opacity: 0.3; }
 
         .gh-refresh-btn {
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 8px 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s ease;
+          color: #013E37;
         }
 
         .gh-refresh-btn:hover:not(:disabled) {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .gh-refresh-btn:disabled {
@@ -596,6 +606,7 @@ const GoalHierarchy = () => {
         .gh-refresh-icon {
           width: 16px;
           height: 16px;
+          transition: transform 0.3s ease;
         }
 
         .gh-create-btn {
@@ -603,20 +614,21 @@ const GoalHierarchy = () => {
           align-items: center;
           gap: 6px;
           padding: 8px 20px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
 
         .gh-create-btn:hover {
+          background: #0A5C54;
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
 
         .gh-btn-icon {
@@ -648,42 +660,52 @@ const GoalHierarchy = () => {
           transform: translateY(-50%);
           width: 16px;
           height: 16px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .gh-search-input {
           width: 100%;
           padding: 8px 12px 8px 36px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           outline: none;
           background: #ffffff;
-          color: #0f172a;
-          transition: all 0.2s ease;
+          color: #013E37;
+          transition: all 0.3s ease;
         }
 
         .gh-search-input:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+
+        .gh-search-input::placeholder {
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .gh-filter-select {
           padding: 8px 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           background: #ffffff;
-          color: #0f172a;
+          color: #013E37;
           outline: none;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           min-width: 140px;
         }
 
         .gh-filter-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+
+        .gh-filter-select:hover {
+          border-color: #013E37;
         }
 
         /* ============================================
@@ -696,6 +718,18 @@ const GoalHierarchy = () => {
         .gh-node {
           position: relative;
           margin-bottom: 8px;
+          animation: ghSlideUp 0.3s ease both;
+          opacity: 0;
+        }
+
+        .gh-node:nth-child(1) { animation-delay: 0.05s; }
+        .gh-node:nth-child(2) { animation-delay: 0.1s; }
+        .gh-node:nth-child(3) { animation-delay: 0.15s; }
+        .gh-node:nth-child(4) { animation-delay: 0.2s; }
+
+        @keyframes ghSlideUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .gh-node:last-child {
@@ -713,7 +747,7 @@ const GoalHierarchy = () => {
           justify-content: space-between;
           padding: 12px 16px;
           border-radius: 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           background: #ffffff;
           cursor: pointer;
           transition: all 0.3s ease;
@@ -722,15 +756,15 @@ const GoalHierarchy = () => {
         }
 
         .gh-node-content:hover {
-          border-color: #cbd5e1;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+          border-color: #013E37;
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.08);
           transform: translateX(2px);
         }
 
         .gh-node-selected {
-          background: #eff6ff;
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+          background: #FFF9E6;
+          border-color: #013E37;
+          box-shadow: 0 0 0 2px rgba(1, 62, 55, 0.1);
         }
 
         .gh-node-left {
@@ -749,18 +783,20 @@ const GoalHierarchy = () => {
           border: none;
           background: transparent;
           cursor: pointer;
-          color: #94a3b8;
-          transition: all 0.2s ease;
+          color: #013E37;
+          opacity: 0.4;
+          transition: all 0.3s ease;
           flex-shrink: 0;
         }
 
         .gh-node-toggle:hover {
-          color: #475569;
+          opacity: 1;
         }
 
         .gh-toggle-icon {
           width: 16px;
           height: 16px;
+          transition: transform 0.3s ease;
         }
 
         .gh-node-icon-wrapper {
@@ -790,7 +826,7 @@ const GoalHierarchy = () => {
         .gh-node-name {
           font-size: 14px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
         }
 
         .gh-node-status {
@@ -798,20 +834,25 @@ const GoalHierarchy = () => {
           font-weight: 500;
           padding: 2px 10px;
           border-radius: 12px;
+          transition: all 0.3s ease;
         }
 
-        .gh-status-not-started { background: #f1f5f9; color: #64748b; }
-        .gh-status-in-progress { background: #dbeafe; color: #3b82f6; }
-        .gh-status-on-track { background: #d1fae5; color: #22c55e; }
-        .gh-status-at-risk { background: #fef3c7; color: #f59e0b; }
-        .gh-status-behind { background: #fee2e2; color: #ef4444; }
-        .gh-status-completed { background: #d1fae5; color: #10b981; }
+        .gh-node-status:hover {
+          transform: scale(1.05);
+        }
+
+        .gh-status-not-started { background: #FFEFB3; color: #013E37; }
+        .gh-status-in-progress { background: #013E37; color: #FFEFB3; }
+        .gh-status-on-track { background: #0A5C54; color: #FFEFB3; }
+        .gh-status-at-risk { background: #FFEFB3; color: #013E37; }
+        .gh-status-behind { background: #FEE2E2; color: #991B1B; }
+        .gh-status-completed { background: #013E37; color: #FFEFB3; }
 
         .gh-node-level {
           font-size: 11px;
           font-weight: 500;
-          color: #64748b;
-          background: #f1f5f9;
+          color: #013E37;
+          background: #FFEFB3;
           padding: 2px 8px;
           border-radius: 12px;
         }
@@ -822,7 +863,8 @@ const GoalHierarchy = () => {
           gap: 12px;
           margin-top: 4px;
           font-size: 12px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           flex-wrap: wrap;
         }
 
@@ -839,14 +881,15 @@ const GoalHierarchy = () => {
         }
 
         .gh-node-desc {
-          color: #94a3b8;
+          opacity: 0.5;
           font-style: italic;
         }
 
         .gh-meta-icon {
           width: 14px;
           height: 14px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .gh-node-right {
@@ -866,7 +909,7 @@ const GoalHierarchy = () => {
         .gh-progress-bar {
           flex: 1;
           height: 4px;
-          background: #e2e8f0;
+          background: #FFEFB3;
           border-radius: 4px;
           overflow: hidden;
           min-width: 60px;
@@ -878,15 +921,15 @@ const GoalHierarchy = () => {
           transition: width 0.6s ease;
         }
 
-        .gh-progress-green { background: #22c55e; }
-        .gh-progress-blue { background: #3b82f6; }
-        .gh-progress-yellow { background: #f59e0b; }
-        .gh-progress-red { background: #ef4444; }
+        .gh-progress-green { background: #013E37; }
+        .gh-progress-blue { background: #0A5C54; }
+        .gh-progress-yellow { background: #FFEFB3; }
+        .gh-progress-red { background: #EF4444; }
 
         .gh-progress-text {
           font-size: 12px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           min-width: 36px;
         }
 
@@ -904,18 +947,20 @@ const GoalHierarchy = () => {
           background: transparent;
           border-radius: 6px;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #94a3b8;
+          transition: all 0.3s ease;
+          color: #013E37;
+          opacity: 0.3;
         }
 
         .gh-action-btn:hover {
-          background: #f1f5f9;
-          color: #475569;
+          background: #FFEFB3;
+          opacity: 1;
+          transform: scale(1.1);
         }
 
-        .gh-action-view:hover { background: #eff6ff; color: #3b82f6; }
-        .gh-action-edit:hover { background: #ecfdf5; color: #22c55e; }
-        .gh-action-delete:hover { background: #fef2f2; color: #ef4444; }
+        .gh-action-view:hover { background: #FFEFB3; color: #013E37; }
+        .gh-action-edit:hover { background: #FFEFB3; color: #013E37; }
+        .gh-action-delete:hover { background: #FEE2E2; color: #EF4444; }
 
         .gh-action-icon {
           width: 14px;
@@ -926,7 +971,7 @@ const GoalHierarchy = () => {
         .gh-children {
           margin-top: 8px;
           padding-left: 24px;
-          border-left: 2px solid #e2e8f0;
+          border-left: 2px solid #FFEFB3;
           animation: ghSlideDown 0.3s ease;
         }
 
@@ -955,7 +1000,7 @@ const GoalHierarchy = () => {
         .gh-empty-icon-wrapper {
           width: 80px;
           height: 80px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -966,19 +1011,21 @@ const GoalHierarchy = () => {
         .gh-empty-icon {
           width: 36px;
           height: 36px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
         }
 
         .gh-empty-title {
           font-size: 18px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .gh-empty-subtitle {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 4px 0 16px 0;
         }
 
@@ -987,20 +1034,21 @@ const GoalHierarchy = () => {
           align-items: center;
           gap: 8px;
           padding: 8px 24px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
 
         .gh-empty-btn:hover {
+          background: #0A5C54;
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
 
         /* ============================================
@@ -1170,7 +1218,7 @@ const GoalHierarchy = () => {
           }
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

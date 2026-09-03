@@ -1,3 +1,4 @@
+// pages/risk/RiskDetails.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -7,7 +8,8 @@ import {
   Calendar, Users, Clock, Activity, RefreshCw,
   Link2, Copy, MessageSquare, FileText,
   TrendingUp, TrendingDown, ArrowRight,
-  MapPin, Target, Zap, Layers
+  MapPin, Target, Zap, Layers, Sparkles,
+  Shield, Lock, Eye, EyeOff, Star, Crown
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -36,7 +38,6 @@ const RiskDetails = () => {
     else setLoading(true);
 
     try {
-      // Only fetch risk data (activities endpoint may not exist)
       const riskRes = await fetch(`${API_URL}/risks/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -56,7 +57,6 @@ const RiskDetails = () => {
         throw new Error('Failed to fetch risk');
       }
 
-      // Try to fetch activities, but don't fail if endpoint doesn't exist
       try {
         const activitiesRes = await fetch(`${API_URL}/activities/risk/${id}`, {
           headers: {
@@ -72,7 +72,6 @@ const RiskDetails = () => {
           }
         }
       } catch (activitiesError) {
-        // Activities endpoint might not exist - use mock data or empty array
         console.warn('Activities endpoint not available, using fallback data');
         setRelatedActivities(getMockActivities());
       }
@@ -80,7 +79,6 @@ const RiskDetails = () => {
     } catch (error) {
       console.error('Error fetching risk details:', error);
       toast.error(error.message || 'Failed to load risk details');
-      // Set mock data for demo
       setRisk(getMockRisk());
       setFormData(getMockRisk());
       setRelatedActivities(getMockActivities());
@@ -334,8 +332,8 @@ const RiskDetails = () => {
 
   if (loading) {
     return (
-      <div className="rd-details-loading">
-        <div className="rd-spinner"></div>
+      <div className="rd-loading">
+        <div className="rd-loading-spinner"></div>
         <p className="rd-loading-text">Loading risk details...</p>
       </div>
     );
@@ -343,11 +341,13 @@ const RiskDetails = () => {
 
   if (!risk) {
     return (
-      <div className="rd-not-found">
-        <AlertCircle className="rd-not-found-icon" />
-        <h2 className="rd-not-found-title">Risk Not Found</h2>
-        <p className="rd-not-found-text">The risk you're looking for doesn't exist</p>
-        <button onClick={() => navigate('/risks')} className="rd-not-found-btn">
+      <div className="rd-notfound">
+        <div className="rd-notfound-icon-wrapper">
+          <AlertCircle className="rd-notfound-icon" />
+        </div>
+        <h2 className="rd-notfound-title">Risk Not Found</h2>
+        <p className="rd-notfound-text">The risk you're looking for doesn't exist</p>
+        <button onClick={() => navigate('/risks')} className="rd-notfound-btn">
           Back to Risks
         </button>
       </div>
@@ -355,330 +355,360 @@ const RiskDetails = () => {
   }
 
   return (
-    <div className="rd-details-container">
-      {/* Header */}
-      <div className="rd-details-header">
-        <div className="rd-details-header-left">
-          <button onClick={() => navigate('/risks')} className="rd-back-btn">
-            <ArrowLeft className="rd-back-icon" />
-          </button>
-          <div className="rd-details-title-wrapper">
-            <div className={`rd-details-severity ${getSeverityColor(risk.severity)}`}>
-              {getSeverityIcon(risk.severity)}
-            </div>
-            <div>
-              <div className="rd-details-title-row">
-                <h1 className="rd-details-title">
-                  {editing ? (
-                    <input
-                      type="text"
-                      value={formData.name || ''}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      className="rd-edit-input rd-edit-title"
-                      placeholder="Enter risk name"
-                    />
-                  ) : (
-                    risk.name
-                  )}
-                </h1>
-                <span className={`rd-details-status ${getStatusColor(risk.status)}`}>
-                  {getStatusLabel(risk.status)}
-                </span>
-                <span className={`rd-details-severity-badge ${getSeverityColor(risk.severity)}`}>
-                  {risk.severity}
-                </span>
-                <span className="rd-details-score">Score: {risk.riskScore}</span>
+    <>
+      <div className="rd-container">
+        {/* Header */}
+        <div className="rd-header">
+          <div className="rd-header-left">
+            <button onClick={() => navigate('/risks')} className="rd-back-btn">
+              <ArrowLeft className="rd-back-icon" />
+            </button>
+            <div className="rd-title-wrapper">
+              <div className={`rd-severity-badge ${getSeverityColor(risk.severity)}`}>
+                {getSeverityIcon(risk.severity)}
+                <div className="rd-severity-glow"></div>
               </div>
-              <p className="rd-details-meta">
-                <span className={`rd-details-type ${getTypeBadge(risk.type)}`}>{risk.type}</span>
-                <span className="rd-details-meta-separator">•</span>
-                <span className="rd-details-meta-item">
-                  <Calendar className="rd-details-meta-icon" />
-                  Detected: {new Date(risk.detectedAt).toLocaleDateString()}
-                </span>
-                {risk.assignedTo && (
-                  <>
-                    <span className="rd-details-meta-separator">•</span>
-                    <span className="rd-details-meta-item">
-                      <Users className="rd-details-meta-icon" />
-                      Assigned to: {risk.assignedTo.firstName} {risk.assignedTo.lastName}
-                    </span>
-                  </>
-                )}
-              </p>
+              <div>
+                <div className="rd-title-row">
+                  <h1 className="rd-title">
+                    {editing ? (
+                      <input
+                        type="text"
+                        value={formData.name || ''}
+                        onChange={(e) => handleInputChange('name', e.target.value)}
+                        className="rd-edit-input rd-edit-title"
+                        placeholder="Enter risk name"
+                        autoFocus
+                      />
+                    ) : (
+                      risk.name
+                    )}
+                  </h1>
+                  <span className={`rd-status-badge ${getStatusColor(risk.status)}`}>
+                    <span className="rd-status-dot"></span>
+                    {getStatusLabel(risk.status)}
+                  </span>
+                  <span className={`rd-severity-tag ${getSeverityColor(risk.severity)}`}>
+                    {risk.severity}
+                  </span>
+                  <span className="rd-score-badge">
+                    <Target className="rd-score-icon" />
+                    Score: {risk.riskScore}
+                  </span>
+                </div>
+                <p className="rd-meta">
+                  <span className={`rd-type-badge ${getTypeBadge(risk.type)}`}>
+                    <Shield className="rd-type-icon" />
+                    {risk.type}
+                  </span>
+                  <span className="rd-meta-separator">•</span>
+                  <span className="rd-meta-item">
+                    <Calendar className="rd-meta-icon" />
+                    Detected: {new Date(risk.detectedAt).toLocaleDateString()}
+                  </span>
+                  {risk.assignedTo && (
+                    <>
+                      <span className="rd-meta-separator">•</span>
+                      <span className="rd-meta-item">
+                        <Users className="rd-meta-icon" />
+                        Assigned to: {risk.assignedTo.firstName} {risk.assignedTo.lastName}
+                      </span>
+                    </>
+                  )}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="rd-details-header-right">
-          <button onClick={handleRefresh} disabled={refreshing} className="rd-icon-btn">
-            <RefreshCw className={`rd-refresh-icon ${refreshing ? 'rd-spin' : ''}`} />
-          </button>
-          <button onClick={() => setEditing(!editing)} className="rd-btn-edit">
-            {editing ? <X className="rd-btn-icon" /> : <Edit className="rd-btn-icon" />}
-            {editing ? 'Cancel' : 'Edit'}
-          </button>
-          {risk.status !== 'resolved' && (
-            <button onClick={handleResolve} className="rd-btn-resolve">
-              Resolve Risk
+          <div className="rd-header-right">
+            <button onClick={handleRefresh} disabled={refreshing} className="rd-icon-btn" title="Refresh">
+              <RefreshCw className={`rd-refresh-icon ${refreshing ? 'rd-spin' : ''}`} />
             </button>
-          )}
-          <button onClick={handleDelete} className="rd-btn-delete">
-            <Trash2 className="rd-btn-icon" />
-            Delete
-          </button>
-        </div>
-      </div>
-
-      {/* Save Button */}
-      {editing && (
-        <div className="rd-save-bar">
-          <button
-            onClick={handleUpdate}
-            disabled={submitting}
-            className="rd-btn-save"
-          >
-            {submitting ? (
-              <>
-                <div className="rd-save-spinner"></div>
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="rd-btn-icon" />
-                Save Changes
-              </>
+            <button onClick={() => setEditing(!editing)} className="rd-btn-edit">
+              {editing ? <X className="rd-btn-icon" /> : <Edit className="rd-btn-icon" />}
+              {editing ? 'Cancel' : 'Edit'}
+            </button>
+            {risk.status !== 'resolved' && (
+              <button onClick={handleResolve} className="rd-btn-resolve">
+                <CheckCircle className="rd-btn-icon" />
+                Resolve Risk
+              </button>
             )}
-          </button>
+            <button onClick={handleDelete} className="rd-btn-delete">
+              <Trash2 className="rd-btn-icon" />
+              Delete
+            </button>
+          </div>
         </div>
-      )}
 
-      {/* Tabs */}
-      <div className="rd-tabs">
-        {['overview', 'activities', 'comments'].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`rd-tab ${activeTab === tab ? 'rd-tab-active' : ''}`}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab Content */}
-      <div className="rd-tab-content">
-        {activeTab === 'overview' && (
-          <div className="rd-overview">
-            {/* Description */}
-            <div className="rd-section">
-              <h3 className="rd-section-label">Description</h3>
-              {editing ? (
-                <textarea
-                  value={formData.description || ''}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  className="rd-edit-textarea"
-                  rows="3"
-                  placeholder="Enter risk description"
-                />
+        {/* Save Button */}
+        {editing && (
+          <div className="rd-save-bar">
+            <button
+              onClick={handleUpdate}
+              disabled={submitting}
+              className="rd-btn-save"
+            >
+              {submitting ? (
+                <>
+                  <div className="rd-save-spinner"></div>
+                  Saving...
+                </>
               ) : (
-                <p className="rd-section-text">{risk.description}</p>
+                <>
+                  <Save className="rd-btn-icon" />
+                  Save Changes
+                </>
               )}
-            </div>
-
-            {/* Details Grid */}
-            <div className="rd-details-grid">
-              <div className="rd-detail-item">
-                <p className="rd-detail-label">Type</p>
-                <p className={`rd-detail-value rd-type-badge ${getTypeBadge(risk.type)}`}>
-                  {risk.type}
-                </p>
-              </div>
-              <div className="rd-detail-item">
-                <p className="rd-detail-label">Severity</p>
-                <span className={`rd-detail-badge ${getSeverityColor(risk.severity)}`}>
-                  {risk.severity}
-                </span>
-              </div>
-              <div className="rd-detail-item">
-                <p className="rd-detail-label">Impact</p>
-                <span className={`rd-detail-badge ${getImpactBadge(risk.impact)}`}>
-                  {risk.impact}
-                </span>
-              </div>
-              <div className="rd-detail-item">
-                <p className="rd-detail-label">Likelihood</p>
-                <p className="rd-detail-value">{getLikelihoodLabel(risk.likelihood)}</p>
-              </div>
-            </div>
-
-            {/* Mitigation Plan */}
-            <div className="rd-section">
-              <h3 className="rd-section-label">Mitigation Plan</h3>
-              {editing ? (
-                <textarea
-                  value={formData.mitigationPlan || ''}
-                  onChange={(e) => handleInputChange('mitigationPlan', e.target.value)}
-                  className="rd-edit-textarea"
-                  rows="3"
-                  placeholder="Describe the mitigation plan"
-                />
-              ) : (
-                <p className="rd-section-text">
-                  {risk.mitigationPlan || 'No mitigation plan defined'}
-                </p>
-              )}
-            </div>
-
-            {/* Metadata */}
-            <div className="rd-metadata">
-              <div className="rd-metadata-item">
-                <span className="rd-metadata-label">Created</span>
-                <span className="rd-metadata-value">
-                  {new Date(risk.createdAt).toLocaleString()}
-                </span>
-              </div>
-              <div className="rd-metadata-item">
-                <span className="rd-metadata-label">Updated</span>
-                <span className="rd-metadata-value">
-                  {new Date(risk.updatedAt).toLocaleString()}
-                </span>
-              </div>
-              <div className="rd-metadata-item">
-                <span className="rd-metadata-label">Created By</span>
-                <span className="rd-metadata-value">
-                  {risk.createdBy?.firstName} {risk.createdBy?.lastName}
-                </span>
-              </div>
-            </div>
+            </button>
           </div>
         )}
 
-        {activeTab === 'activities' && (
-          <div className="rd-activities">
-            <h3 className="rd-section-label">Related Activities</h3>
-            {relatedActivities.length === 0 ? (
-              <div className="rd-empty-state">
-                <Activity className="rd-empty-icon" />
-                <p>No related activities</p>
+        {/* Tabs */}
+        <div className="rd-tabs">
+          {['overview', 'activities', 'comments'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`rd-tab ${activeTab === tab ? 'rd-tab-active' : ''}`}
+            >
+              {tab === 'overview' && <Layers className="rd-tab-icon" />}
+              {tab === 'activities' && <Activity className="rd-tab-icon" />}
+              {tab === 'comments' && <MessageSquare className="rd-tab-icon" />}
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
+        <div className="rd-tab-content">
+          {activeTab === 'overview' && (
+            <div className="rd-overview">
+              <div className="rd-section">
+                <h3 className="rd-section-label">Description</h3>
+                {editing ? (
+                  <textarea
+                    value={formData.description || ''}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    className="rd-edit-textarea"
+                    rows="3"
+                    placeholder="Enter risk description"
+                  />
+                ) : (
+                  <p className="rd-section-text">{risk.description}</p>
+                )}
               </div>
-            ) : (
-              <div className="rd-activity-timeline">
-                {relatedActivities.map((activity) => (
-                  <div key={activity._id} className="rd-activity-item">
-                    <div className="rd-activity-icon-wrapper">
-                      <Activity className="rd-activity-icon" />
-                    </div>
-                    <div className="rd-activity-content">
-                      <p className="rd-activity-text">{activity.description}</p>
-                      <div className="rd-activity-meta">
-                        <span className="rd-activity-user">
-                          {activity.userId?.firstName} {activity.userId?.lastName}
-                        </span>
-                        <span className="rd-activity-separator">•</span>
-                        <span className="rd-activity-time">{getTimeAgo(activity.createdAt)}</span>
+
+              <div className="rd-details-grid">
+                <div className="rd-detail-item rd-detail-item-glow">
+                  <p className="rd-detail-label">Type</p>
+                  <p className={`rd-detail-value rd-type-badge ${getTypeBadge(risk.type)}`}>
+                    <Shield className="rd-detail-icon" />
+                    {risk.type}
+                  </p>
+                </div>
+                <div className="rd-detail-item rd-detail-item-glow">
+                  <p className="rd-detail-label">Severity</p>
+                  <span className={`rd-detail-badge ${getSeverityColor(risk.severity)}`}>
+                    {risk.severity}
+                  </span>
+                </div>
+                <div className="rd-detail-item rd-detail-item-glow">
+                  <p className="rd-detail-label">Impact</p>
+                  <span className={`rd-detail-badge ${getImpactBadge(risk.impact)}`}>
+                    {risk.impact}
+                  </span>
+                </div>
+                <div className="rd-detail-item rd-detail-item-glow">
+                  <p className="rd-detail-label">Likelihood</p>
+                  <p className="rd-detail-value">{getLikelihoodLabel(risk.likelihood)}</p>
+                </div>
+              </div>
+
+              <div className="rd-section rd-section-mitigation">
+                <h3 className="rd-section-label">Mitigation Plan</h3>
+                {editing ? (
+                  <textarea
+                    value={formData.mitigationPlan || ''}
+                    onChange={(e) => handleInputChange('mitigationPlan', e.target.value)}
+                    className="rd-edit-textarea"
+                    rows="3"
+                    placeholder="Describe the mitigation plan"
+                  />
+                ) : (
+                  <p className="rd-section-text">
+                    {risk.mitigationPlan || 'No mitigation plan defined'}
+                  </p>
+                )}
+              </div>
+
+              <div className="rd-metadata">
+                <div className="rd-metadata-item">
+                  <span className="rd-metadata-label">Created</span>
+                  <span className="rd-metadata-value">
+                    <Calendar className="rd-metadata-icon-small" />
+                    {new Date(risk.createdAt).toLocaleString()}
+                  </span>
+                </div>
+                <div className="rd-metadata-item">
+                  <span className="rd-metadata-label">Updated</span>
+                  <span className="rd-metadata-value">
+                    <Clock className="rd-metadata-icon-small" />
+                    {new Date(risk.updatedAt).toLocaleString()}
+                  </span>
+                </div>
+                <div className="rd-metadata-item">
+                  <span className="rd-metadata-label">Created By</span>
+                  <span className="rd-metadata-value">
+                    <Users className="rd-metadata-icon-small" />
+                    {risk.createdBy?.firstName} {risk.createdBy?.lastName}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'activities' && (
+            <div className="rd-activities">
+              <h3 className="rd-section-label">Related Activities</h3>
+              {relatedActivities.length === 0 ? (
+                <div className="rd-empty-state">
+                  <div className="rd-empty-icon-wrapper">
+                    <Activity className="rd-empty-icon" />
+                  </div>
+                  <p>No related activities</p>
+                </div>
+              ) : (
+                <div className="rd-activity-timeline">
+                  {relatedActivities.map((activity) => (
+                    <div key={activity._id} className="rd-activity-item">
+                      <div className="rd-activity-icon-wrapper">
+                        <div className="rd-activity-icon-pulse"></div>
+                        <Activity className="rd-activity-icon" />
+                      </div>
+                      <div className="rd-activity-content">
+                        <p className="rd-activity-text">{activity.description}</p>
+                        <div className="rd-activity-meta">
+                          <span className="rd-activity-user">
+                            <Users className="rd-meta-icon" />
+                            {activity.userId?.firstName} {activity.userId?.lastName}
+                          </span>
+                          <span className="rd-activity-separator">•</span>
+                          <span className="rd-activity-time">
+                            <Clock className="rd-meta-icon" />
+                            {getTimeAgo(activity.createdAt)}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'comments' && (
+            <div className="rd-comments">
+              <div className="rd-comments-header">
+                <h3 className="rd-section-label">Comments</h3>
+                <span className="rd-comments-count">{risk.comments?.length || 0}</span>
               </div>
-            )}
-          </div>
-        )}
 
-        {activeTab === 'comments' && (
-          <div className="rd-comments">
-            <div className="rd-comments-header">
-              <h3 className="rd-section-label">Comments</h3>
-            </div>
+              <div className="rd-comment-input-wrapper">
+                <div className="rd-comment-input-container">
+                  <MessageSquare className="rd-comment-input-icon" />
+                  <textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    className="rd-comment-input"
+                    placeholder="Add a comment..."
+                    rows="2"
+                  />
+                </div>
+                <button onClick={handleAddComment} className="rd-comment-submit">
+                  <MessageSquare className="rd-btn-icon" />
+                  Add Comment
+                </button>
+              </div>
 
-            {/* Comment Input */}
-            <div className="rd-comment-input-wrapper">
-              <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="rd-comment-input"
-                placeholder="Add a comment..."
-                rows="2"
-              />
-              <button onClick={handleAddComment} className="rd-comment-submit">
-                <MessageSquare className="rd-btn-icon" />
-                Add Comment
-              </button>
-            </div>
-
-            {/* Comments List */}
-            {risk.comments && risk.comments.length > 0 ? (
-              <div className="rd-comments-list">
-                {risk.comments.map((comment, idx) => (
-                  <div key={idx} className="rd-comment-item">
-                    <div className="rd-comment-header">
-                      <span className="rd-comment-user">
-                        {comment.userId?.firstName} {comment.userId?.lastName}
-                      </span>
-                      <span className="rd-comment-time">{getTimeAgo(comment.createdAt)}</span>
+              {risk.comments && risk.comments.length > 0 ? (
+                <div className="rd-comments-list">
+                  {risk.comments.map((comment, idx) => (
+                    <div key={idx} className="rd-comment-item">
+                      <div className="rd-comment-avatar">
+                        {comment.userId?.firstName?.[0] || 'U'}
+                      </div>
+                      <div className="rd-comment-body">
+                        <div className="rd-comment-header">
+                          <span className="rd-comment-user">
+                            {comment.userId?.firstName} {comment.userId?.lastName}
+                          </span>
+                          <span className="rd-comment-time">{getTimeAgo(comment.createdAt)}</span>
+                        </div>
+                        <p className="rd-comment-text">{comment.text}</p>
+                      </div>
                     </div>
-                    <p className="rd-comment-text">{comment.text}</p>
+                  ))}
+                </div>
+              ) : (
+                <div className="rd-empty-state">
+                  <div className="rd-empty-icon-wrapper">
+                    <MessageSquare className="rd-empty-icon" />
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rd-empty-state">
-                <MessageSquare className="rd-empty-icon" />
-                <p>No comments yet</p>
-              </div>
-            )}
-          </div>
-        )}
+                  <p>No comments yet</p>
+                  <span className="rd-empty-sub">Be the first to comment</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Custom CSS */}
       <style>{`
         /* ============================================
            CONTAINER
            ============================================ */
-        .rd-details-container {
-          padding: 24px 32px;
-          max-width: 1200px;
-          margin: 0 auto;
-          background: #f8fafc;
-          min-height: 100vh;
-          animation: rdFadeIn 0.4s ease;
-        }
-
-        @keyframes rdFadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+        .rd-container {
+          padding: 0 0 24px 0;
+          max-width: 100%;
         }
 
         /* ============================================
            LOADING
            ============================================ */
-        .rd-details-loading {
+        .rd-loading {
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          min-height: 60vh;
-          gap: 16px;
+          min-height: 400px;
+          gap: 20px;
         }
 
-        .rd-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #ef4444;
+        .rd-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid rgba(1, 62, 55, 0.06);
+          border-top-color: #013E37;
           border-radius: 50%;
-          animation: rdSpin 0.8s linear infinite;
+          animation: rdSpin 0.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+        }
+
+        .rd-loading-text {
+          color: #013E37;
+          opacity: 0.4;
+          font-size: 14px;
+          font-weight: 500;
+          letter-spacing: 0.3px;
+          animation: pulseText 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseText {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 0.8; }
         }
 
         @keyframes rdSpin {
           to { transform: rotate(360deg); }
-        }
-
-        .rd-loading-text {
-          color: #64748b;
-          font-size: 14px;
-          font-weight: 500;
         }
 
         .rd-spin {
@@ -688,57 +718,85 @@ const RiskDetails = () => {
         /* ============================================
            NOT FOUND
            ============================================ */
-        .rd-not-found {
+        .rd-notfound {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 400px;
+          gap: 16px;
           text-align: center;
-          padding: 60px 20px;
+          padding: 40px 20px;
         }
 
-        .rd-not-found-icon {
-          width: 64px;
-          height: 64px;
-          color: #d1d5db;
-          margin: 0 auto 16px;
+        .rd-notfound-icon-wrapper {
+          width: 80px;
+          height: 80px;
+          background: linear-gradient(135deg, #FFEFB3 0%, #FFF9E6 100%);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 8px;
+          box-shadow: 0 8px 32px rgba(255, 239, 179, 0.25);
+          animation: float 3s ease-in-out infinite;
         }
 
-        .rd-not-found-title {
+        .rd-notfound-icon {
+          width: 36px;
+          height: 36px;
+          color: #013E37;
+          opacity: 0.5;
+        }
+
+        .rd-notfound-title {
           font-size: 24px;
-          font-weight: 600;
-          color: #4b5563;
+          font-weight: 700;
+          color: #013E37;
           margin: 0;
         }
 
-        .rd-not-found-text {
-          color: #9ca3af;
-          margin: 4px 0 16px 0;
+        .rd-notfound-text {
+          color: #013E37;
+          opacity: 0.5;
+          margin: 0;
+          font-size: 15px;
         }
 
-        .rd-not-found-btn {
-          padding: 8px 20px;
-          background: #3b82f6;
-          color: #ffffff;
+        .rd-notfound-btn {
+          padding: 10px 28px;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
-          border-radius: 8px;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: 600;
           cursor: pointer;
-          transition: background 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.25);
+          margin-top: 8px;
         }
 
-        .rd-not-found-btn:hover {
-          background: #2563eb;
+        .rd-notfound-btn:hover {
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(1, 62, 55, 0.35);
         }
 
         /* ============================================
            HEADER
            ============================================ */
-        .rd-details-header {
+        .rd-header {
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
-          margin-bottom: 16px;
+          margin-bottom: 20px;
           flex-wrap: wrap;
           gap: 16px;
+          animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .rd-details-header-left {
+        .rd-header-left {
           display: flex;
           align-items: flex-start;
           gap: 12px;
@@ -746,140 +804,226 @@ const RiskDetails = () => {
         }
 
         .rd-back-btn {
-          padding: 8px;
-          border: none;
-          background: transparent;
+          padding: 10px;
+          border: 1px solid rgba(1, 62, 55, 0.06);
+          background: #FFFFFF;
           cursor: pointer;
-          border-radius: 8px;
-          transition: background 0.2s ease;
+          border-radius: 12px;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           margin-top: 4px;
+          box-shadow: 0 2px 8px rgba(1, 62, 55, 0.04);
         }
 
         .rd-back-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
+          transform: translateX(-2px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
         }
 
         .rd-back-icon {
           width: 20px;
           height: 20px;
-          color: #64748b;
+          color: #013E37;
         }
 
-        .rd-details-title-wrapper {
+        .rd-title-wrapper {
           display: flex;
           align-items: flex-start;
-          gap: 14px;
+          gap: 16px;
           flex: 1;
         }
 
-        .rd-details-severity {
-          padding: 10px;
-          border-radius: 10px;
+        .rd-severity-badge {
+          padding: 14px;
+          border-radius: 14px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          position: relative;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         }
 
-        .rd-severity-critical { background: #ef4444; color: #ffffff; }
-        .rd-severity-high { background: #f97316; color: #ffffff; }
-        .rd-severity-medium { background: #eab308; color: #ffffff; }
-        .rd-severity-low { background: #22c55e; color: #ffffff; }
-        .rd-severity-default { background: #94a3b8; color: #ffffff; }
+        .rd-severity-badge:hover {
+          transform: scale(1.05);
+        }
+
+        .rd-severity-glow {
+          position: absolute;
+          inset: -2px;
+          border-radius: 16px;
+          opacity: 0.3;
+          filter: blur(8px);
+          animation: glowPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(1.05); }
+        }
+
+        .rd-severity-critical { background: linear-gradient(135deg, #EF4444, #DC2626); color: #FFFFFF; }
+        .rd-severity-critical .rd-severity-glow { background: #EF4444; }
+        .rd-severity-high { background: linear-gradient(135deg, #F97316, #EA580C); color: #FFFFFF; }
+        .rd-severity-high .rd-severity-glow { background: #F97316; }
+        .rd-severity-medium { background: linear-gradient(135deg, #FFEFB3, #FFD580); color: #013E37; }
+        .rd-severity-medium .rd-severity-glow { background: #FFEFB3; }
+        .rd-severity-low { background: linear-gradient(135deg, #013E37, #0A5C54); color: #FFEFB3; }
+        .rd-severity-low .rd-severity-glow { background: #013E37; }
+        .rd-severity-default { background: linear-gradient(135deg, #FFEFB3, #E8D4A0); color: #013E37; }
+        .rd-severity-default .rd-severity-glow { background: #FFEFB3; }
 
         .rd-icon-lg {
-          width: 24px;
-          height: 24px;
+          width: 28px;
+          height: 28px;
         }
 
-        .rd-details-title-row {
+        .rd-title-row {
           display: flex;
           flex-wrap: wrap;
           align-items: center;
           gap: 10px;
         }
 
-        .rd-details-title {
-          font-size: 24px;
+        .rd-title {
+          font-size: 26px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
+          letter-spacing: -0.3px;
         }
 
         .rd-edit-title {
-          font-size: 24px;
+          font-size: 26px;
           font-weight: 700;
-          padding: 4px 8px;
-        }
-
-        .rd-details-status {
           padding: 4px 12px;
-          font-size: 12px;
-          font-weight: 500;
-          border-radius: 9999px;
+          border-radius: 10px;
         }
 
-        .rd-status-detected { background: #fef3c7; color: #92400e; }
-        .rd-status-progress { background: #dbeafe; color: #1d4ed8; }
-        .rd-status-mitigated { background: #f3e8ff; color: #6d28d9; }
-        .rd-status-resolved { background: #d1fae5; color: #065f46; }
-        .rd-status-ignored { background: #f1f5f9; color: #475569; }
-        .rd-status-default { background: #f1f5f9; color: #475569; }
-
-        .rd-details-severity-badge {
-          padding: 4px 12px;
+        .rd-status-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 4px 14px;
           font-size: 12px;
-          font-weight: 500;
-          border-radius: 9999px;
+          font-weight: 600;
+          border-radius: 20px;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          letter-spacing: 0.2px;
+          text-transform: uppercase;
         }
 
-        .rd-details-score {
+        .rd-status-badge:hover {
+          transform: scale(1.05);
+        }
+
+        .rd-status-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: currentColor;
+          opacity: 0.6;
+          animation: pulse 2s ease-in-out infinite;
+        }
+
+        .rd-status-detected { background: #FFEFB3; color: #013E37; }
+        .rd-status-progress { background: #013E37; color: #FFEFB3; }
+        .rd-status-mitigated { background: #0A5C54; color: #FFEFB3; }
+        .rd-status-resolved { background: #013E37; color: #FFEFB3; }
+        .rd-status-ignored { background: #FFEFB3; color: #013E37; }
+        .rd-status-default { background: #FFEFB3; color: #013E37; }
+
+        .rd-severity-tag {
+          padding: 4px 14px;
+          font-size: 12px;
+          font-weight: 600;
+          border-radius: 20px;
+          text-transform: uppercase;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .rd-severity-tag:hover {
+          transform: scale(1.05);
+        }
+
+        .rd-score-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
           font-size: 13px;
-          font-weight: 500;
-          color: #64748b;
+          font-weight: 600;
+          color: #013E37;
+          padding: 4px 12px;
+          background: rgba(1, 62, 55, 0.04);
+          border-radius: 20px;
         }
 
-        .rd-details-meta {
+        .rd-score-icon {
+          width: 14px;
+          height: 14px;
+          color: #013E37;
+          opacity: 0.6;
+        }
+
+        .rd-meta {
           display: flex;
           flex-wrap: wrap;
           align-items: center;
           gap: 4px;
           font-size: 13px;
-          color: #64748b;
-          margin-top: 4px;
+          color: #013E37;
+          opacity: 0.6;
+          margin-top: 6px;
         }
 
-        .rd-details-type {
-          padding: 2px 10px;
-          font-size: 11px;
-          font-weight: 500;
-          border-radius: 9999px;
+        .rd-type-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 3px 12px;
+          font-size: 12px;
+          font-weight: 600;
+          border-radius: 20px;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .rd-type-security { background: #fee2e2; color: #991b1b; }
-        .rd-type-operational { background: #dbeafe; color: #1d4ed8; }
-        .rd-type-compliance { background: #f3e8ff; color: #6d28d9; }
-        .rd-type-financial { background: #d1fae5; color: #065f46; }
-        .rd-type-strategic { background: #fef3c7; color: #92400e; }
-        .rd-type-default { background: #f1f5f9; color: #475569; }
-
-        .rd-details-meta-separator {
-          color: #d1d5db;
+        .rd-type-badge:hover {
+          transform: scale(1.05);
         }
 
-        .rd-details-meta-item {
+        .rd-type-icon {
+          width: 12px;
+          height: 12px;
+        }
+
+        .rd-type-security { background: #013E37; color: #FFEFB3; }
+        .rd-type-operational { background: #0A5C54; color: #FFEFB3; }
+        .rd-type-compliance { background: #1A7A6E; color: #FFEFB3; }
+        .rd-type-financial { background: #013E37; color: #FFEFB3; }
+        .rd-type-strategic { background: #FFEFB3; color: #013E37; }
+        .rd-type-default { background: #FFEFB3; color: #013E37; }
+
+        .rd-meta-separator {
+          color: #013E37;
+          opacity: 0.15;
+        }
+
+        .rd-meta-item {
           display: flex;
           align-items: center;
           gap: 4px;
         }
 
-        .rd-details-meta-icon {
+        .rd-meta-icon {
           width: 14px;
           height: 14px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
 
-        .rd-details-header-right {
+        .rd-header-right {
           display: flex;
           align-items: center;
           gap: 8px;
@@ -890,17 +1034,21 @@ const RiskDetails = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 8px 10px;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          background: #ffffff;
+          padding: 10px 12px;
+          border: 1px solid rgba(1, 62, 55, 0.06);
+          border-radius: 12px;
+          background: #FFFFFF;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          color: #013E37;
+          box-shadow: 0 2px 8px rgba(1, 62, 55, 0.04);
         }
 
         .rd-icon-btn:hover:not(:disabled) {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
         }
 
         .rd-icon-btn:disabled {
@@ -909,67 +1057,80 @@ const RiskDetails = () => {
         }
 
         .rd-refresh-icon {
-          width: 16px;
-          height: 16px;
+          width: 18px;
+          height: 18px;
+          transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .rd-btn-edit {
           display: flex;
           align-items: center;
           gap: 6px;
-          padding: 8px 16px;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          background: #ffffff;
+          padding: 10px 20px;
+          border: 1px solid rgba(1, 62, 55, 0.06);
+          border-radius: 12px;
+          background: #FFFFFF;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           font-size: 14px;
-          font-weight: 500;
-          color: #475569;
+          font-weight: 600;
+          color: #013E37;
+          box-shadow: 0 2px 8px rgba(1, 62, 55, 0.04);
         }
 
         .rd-btn-edit:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
         }
 
         .rd-btn-resolve {
-          padding: 8px 20px;
-          background: #22c55e;
-          color: #ffffff;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 10px 24px;
+          background: linear-gradient(135deg, #013E37, #0A5C54);
+          color: #FFEFB3;
           border: none;
-          border-radius: 8px;
+          border-radius: 12px;
           font-size: 14px;
-          font-weight: 500;
+          font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.25);
         }
 
         .rd-btn-resolve:hover {
-          background: #16a34a;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(1, 62, 55, 0.35);
         }
 
         .rd-btn-delete {
           display: flex;
           align-items: center;
           gap: 6px;
-          padding: 8px 16px;
-          border: 1px solid #fecaca;
-          border-radius: 8px;
-          background: #ffffff;
+          padding: 10px 20px;
+          border: 1px solid rgba(239, 68, 68, 0.15);
+          border-radius: 12px;
+          background: #FFFFFF;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           font-size: 14px;
-          font-weight: 500;
-          color: #ef4444;
+          font-weight: 600;
+          color: #EF4444;
         }
 
         .rd-btn-delete:hover {
-          background: #fef2f2;
+          background: #FEF2F2;
+          border-color: #EF4444;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(239, 68, 68, 0.08);
         }
 
         .rd-btn-icon {
-          width: 16px;
-          height: 16px;
+          width: 18px;
+          height: 18px;
         }
 
         /* ============================================
@@ -978,28 +1139,31 @@ const RiskDetails = () => {
         .rd-save-bar {
           display: flex;
           justify-content: flex-end;
-          padding: 12px 0;
+          padding: 14px 0;
           margin-bottom: 8px;
-          border-top: 1px solid #f1f5f9;
+          border-top: 1px solid rgba(1, 62, 55, 0.04);
+          animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .rd-btn-save {
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 8px 24px;
-          background: #3b82f6;
-          color: #ffffff;
+          padding: 10px 28px;
+          background: linear-gradient(135deg, #013E37, #0A5C54);
+          color: #FFEFB3;
           border: none;
-          border-radius: 8px;
+          border-radius: 12px;
           font-size: 14px;
-          font-weight: 500;
+          font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.25);
         }
 
         .rd-btn-save:hover:not(:disabled) {
-          background: #2563eb;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(1, 62, 55, 0.35);
         }
 
         .rd-btn-save:disabled {
@@ -1008,10 +1172,10 @@ const RiskDetails = () => {
         }
 
         .rd-save-spinner {
-          width: 16px;
-          height: 16px;
-          border: 2px solid rgba(255,255,255,0.3);
-          border-top-color: #ffffff;
+          width: 18px;
+          height: 18px;
+          border: 2px solid rgba(255, 239, 179, 0.3);
+          border-top-color: #FFEFB3;
           border-radius: 50%;
           animation: rdSpin 0.8s linear infinite;
         }
@@ -1021,41 +1185,77 @@ const RiskDetails = () => {
            ============================================ */
         .rd-tabs {
           display: flex;
-          gap: 8px;
-          border-bottom: 2px solid #e2e8f0;
+          gap: 4px;
+          border-bottom: 2px solid rgba(1, 62, 55, 0.04);
           margin-bottom: 24px;
+          animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          opacity: 0;
+          animation-delay: 0.1s;
         }
 
         .rd-tab {
-          padding: 10px 16px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 20px;
           border: none;
           background: transparent;
           cursor: pointer;
           font-size: 14px;
-          font-weight: 500;
-          color: #64748b;
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.4;
           border-bottom: 2px solid transparent;
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           margin-bottom: -2px;
+          position: relative;
+        }
+
+        .rd-tab::after {
+          content: '';
+          position: absolute;
+          bottom: -2px;
+          left: 50%;
+          width: 0;
+          height: 2px;
+          background: #013E37;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          transform: translateX(-50%);
         }
 
         .rd-tab:hover {
-          color: #0f172a;
+          opacity: 0.7;
         }
 
         .rd-tab-active {
-          color: #ef4444;
-          border-bottom-color: #ef4444;
+          opacity: 1;
+        }
+
+        .rd-tab-active::after {
+          width: 100%;
+        }
+
+        .rd-tab-icon {
+          width: 16px;
+          height: 16px;
         }
 
         /* ============================================
            TAB CONTENT
            ============================================ */
         .rd-tab-content {
-          background: #ffffff;
-          border-radius: 12px;
-          border: 1px solid #e2e8f0;
-          padding: 24px;
+          background: #FFFFFF;
+          border-radius: 16px;
+          border: 1px solid rgba(1, 62, 55, 0.04);
+          padding: 28px;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 2px 12px rgba(1, 62, 55, 0.04);
+        }
+
+        .rd-tab-content:hover {
+          border-color: rgba(1, 62, 55, 0.08);
+          box-shadow: 0 4px 24px rgba(1, 62, 55, 0.06);
         }
 
         /* ============================================
@@ -1064,67 +1264,83 @@ const RiskDetails = () => {
         .rd-overview {
           display: flex;
           flex-direction: column;
-          gap: 20px;
+          gap: 24px;
         }
 
         .rd-section {
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 8px;
+          animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          opacity: 0;
+        }
+
+        .rd-section:nth-child(1) { animation-delay: 0.05s; }
+        .rd-section:nth-child(2) { animation-delay: 0.1s; }
+        .rd-section:nth-child(3) { animation-delay: 0.15s; }
+        .rd-section:nth-child(4) { animation-delay: 0.2s; }
+
+        .rd-section-mitigation {
+          background: rgba(1, 62, 55, 0.02);
+          padding: 16px 20px;
+          border-radius: 12px;
+          border: 1px solid rgba(1, 62, 55, 0.04);
         }
 
         .rd-section-label {
-          font-size: 13px;
-          font-weight: 500;
-          color: #64748b;
+          font-size: 12px;
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.4;
           text-transform: uppercase;
-          letter-spacing: 0.3px;
+          letter-spacing: 0.5px;
           margin: 0;
         }
 
         .rd-section-text {
           font-size: 15px;
-          color: #0f172a;
+          color: #013E37;
+          opacity: 0.8;
           margin: 0;
-          line-height: 1.6;
+          line-height: 1.7;
         }
 
         .rd-edit-input {
-          padding: 6px 12px;
-          border: 1.5px solid #e2e8f0;
-          border-radius: 8px;
+          padding: 8px 14px;
+          border: 1.5px solid rgba(1, 62, 55, 0.08);
+          border-radius: 10px;
           font-size: 14px;
           outline: none;
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           width: 100%;
           font-family: inherit;
-          background: #ffffff;
-          color: #0f172a;
+          background: #FFFFFF;
+          color: #013E37;
         }
 
         .rd-edit-input:focus {
-          border-color: #ef4444;
-          box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 4px rgba(1, 62, 55, 0.04);
         }
 
         .rd-edit-textarea {
-          padding: 10px 14px;
-          border: 1.5px solid #e2e8f0;
-          border-radius: 8px;
+          padding: 12px 16px;
+          border: 1.5px solid rgba(1, 62, 55, 0.08);
+          border-radius: 10px;
           font-size: 14px;
           outline: none;
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           width: 100%;
           font-family: inherit;
-          background: #ffffff;
-          color: #0f172a;
+          background: #FFFFFF;
+          color: #013E37;
           resize: vertical;
           min-height: 60px;
         }
 
         .rd-edit-textarea:focus {
-          border-color: #ef4444;
-          box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 4px rgba(1, 62, 55, 0.04);
         }
 
         .rd-details-grid {
@@ -1136,51 +1352,90 @@ const RiskDetails = () => {
         .rd-detail-item {
           display: flex;
           flex-direction: column;
-          gap: 2px;
+          gap: 4px;
+          padding: 12px 16px;
+          background: rgba(1, 62, 55, 0.02);
+          border-radius: 10px;
+          border: 1px solid rgba(1, 62, 55, 0.04);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .rd-detail-item:hover {
+          border-color: rgba(1, 62, 55, 0.08);
+          transform: translateY(-2px);
+        }
+
+        .rd-detail-item-glow {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .rd-detail-item-glow::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 200%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(1, 62, 55, 0.02), transparent);
+          transform: skewX(-20deg);
+          animation: shimmerGlow 3s infinite;
+        }
+
+        @keyframes shimmerGlow {
+          0% { transform: translateX(-100%) skewX(-20deg); }
+          100% { transform: translateX(100%) skewX(-20deg); }
         }
 
         .rd-detail-label {
-          font-size: 12px;
-          color: #94a3b8;
+          font-size: 11px;
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.4;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
           margin: 0;
         }
 
         .rd-detail-value {
           font-size: 15px;
-          font-weight: 500;
-          color: #0f172a;
+          font-weight: 600;
+          color: #013E37;
           margin: 0;
         }
 
+        .rd-detail-icon {
+          width: 14px;
+          height: 14px;
+          margin-right: 4px;
+        }
+
         .rd-detail-badge {
-          padding: 2px 12px;
+          padding: 3px 14px;
           font-size: 13px;
-          font-weight: 500;
-          border-radius: 9999px;
+          font-weight: 600;
+          border-radius: 20px;
           display: inline-block;
           width: fit-content;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .rd-type-badge {
-          padding: 2px 12px;
-          border-radius: 9999px;
-          display: inline-block;
-          font-size: 13px;
-          font-weight: 500;
+        .rd-detail-badge:hover {
+          transform: scale(1.05);
         }
 
-        .rd-impact-minimal { background: #d1fae5; color: #065f46; }
-        .rd-impact-moderate { background: #fef3c7; color: #92400e; }
-        .rd-impact-significant { background: #ffedd5; color: #9a3412; }
-        .rd-impact-critical { background: #fee2e2; color: #991b1b; }
-        .rd-impact-default { background: #f1f5f9; color: #475569; }
+        .rd-impact-minimal { background: #013E37; color: #FFEFB3; }
+        .rd-impact-moderate { background: #FFEFB3; color: #013E37; }
+        .rd-impact-significant { background: #FFEFB3; color: #013E37; }
+        .rd-impact-critical { background: #EF4444; color: #FFFFFF; }
+        .rd-impact-default { background: #FFEFB3; color: #013E37; }
 
         .rd-metadata {
           display: flex;
           flex-wrap: wrap;
           gap: 24px;
           padding-top: 16px;
-          border-top: 1px solid #f1f5f9;
+          border-top: 1px solid rgba(1, 62, 55, 0.04);
         }
 
         .rd-metadata-item {
@@ -1191,14 +1446,27 @@ const RiskDetails = () => {
 
         .rd-metadata-label {
           font-size: 11px;
-          color: #94a3b8;
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.3;
           text-transform: uppercase;
           letter-spacing: 0.3px;
         }
 
         .rd-metadata-value {
+          display: flex;
+          align-items: center;
+          gap: 4px;
           font-size: 14px;
-          color: #0f172a;
+          color: #013E37;
+          font-weight: 500;
+        }
+
+        .rd-metadata-icon-small {
+          width: 14px;
+          height: 14px;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         /* ============================================
@@ -1219,32 +1487,55 @@ const RiskDetails = () => {
         .rd-activity-item {
           display: flex;
           align-items: flex-start;
-          gap: 12px;
-          padding: 12px 16px;
-          background: #f8fafc;
-          border-radius: 8px;
-          transition: background 0.2s ease;
+          gap: 14px;
+          padding: 14px 18px;
+          background: rgba(1, 62, 55, 0.02);
+          border-radius: 12px;
+          border: 1px solid rgba(1, 62, 55, 0.04);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          opacity: 0;
         }
 
+        .rd-activity-item:nth-child(1) { animation-delay: 0.05s; }
+        .rd-activity-item:nth-child(2) { animation-delay: 0.1s; }
+        .rd-activity-item:nth-child(3) { animation-delay: 0.15s; }
+
         .rd-activity-item:hover {
-          background: #f1f5f9;
+          background: #FFF9E6;
+          border-color: #FFEFB3;
+          transform: translateX(4px);
         }
 
         .rd-activity-icon-wrapper {
-          width: 32px;
-          height: 32px;
-          background: #e2e8f0;
+          width: 36px;
+          height: 36px;
+          background: #FFEFB3;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          position: relative;
+        }
+
+        .rd-activity-icon-pulse {
+          position: absolute;
+          inset: -4px;
+          border-radius: 50%;
+          border: 2px solid #FFEFB3;
+          animation: ripplePulse 2s ease-out infinite;
+        }
+
+        @keyframes ripplePulse {
+          0% { transform: scale(0.8); opacity: 0.8; }
+          100% { transform: scale(1.3); opacity: 0; }
         }
 
         .rd-activity-icon {
-          width: 14px;
-          height: 14px;
-          color: #64748b;
+          width: 16px;
+          height: 16px;
+          color: #013E37;
         }
 
         .rd-activity-content {
@@ -1253,30 +1544,41 @@ const RiskDetails = () => {
 
         .rd-activity-text {
           font-size: 14px;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
+          font-weight: 500;
         }
 
         .rd-activity-meta {
           display: flex;
           align-items: center;
-          gap: 4px;
+          gap: 8px;
           font-size: 12px;
-          color: #94a3b8;
-          margin-top: 2px;
+          color: #013E37;
+          opacity: 0.5;
+          margin-top: 4px;
         }
 
         .rd-activity-user {
+          display: flex;
+          align-items: center;
+          gap: 4px;
           font-weight: 500;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.7;
         }
 
         .rd-activity-separator {
-          color: #d1d5db;
+          color: #013E37;
+          opacity: 0.15;
         }
 
         .rd-activity-time {
-          color: #94a3b8;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          color: #013E37;
+          opacity: 0.5;
         }
 
         /* ============================================
@@ -1294,50 +1596,81 @@ const RiskDetails = () => {
           justify-content: space-between;
         }
 
+        .rd-comments-count {
+          font-size: 12px;
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.4;
+          padding: 2px 12px;
+          background: rgba(1, 62, 55, 0.04);
+          border-radius: 12px;
+        }
+
         .rd-comment-input-wrapper {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 10px;
+        }
+
+        .rd-comment-input-container {
+          position: relative;
+        }
+
+        .rd-comment-input-icon {
+          position: absolute;
+          left: 14px;
+          top: 16px;
+          width: 18px;
+          height: 18px;
+          color: #013E37;
+          opacity: 0.2;
         }
 
         .rd-comment-input {
-          padding: 10px 14px;
-          border: 1.5px solid #e2e8f0;
-          border-radius: 8px;
+          padding: 14px 16px 14px 42px;
+          border: 1.5px solid rgba(1, 62, 55, 0.06);
+          border-radius: 12px;
           font-size: 14px;
           outline: none;
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           width: 100%;
           font-family: inherit;
-          background: #ffffff;
-          color: #0f172a;
+          background: #FFFFFF;
+          color: #013E37;
           resize: vertical;
           min-height: 60px;
         }
 
         .rd-comment-input:focus {
-          border-color: #ef4444;
-          box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 4px rgba(1, 62, 55, 0.04);
+        }
+
+        .rd-comment-input::placeholder {
+          color: #013E37;
+          opacity: 0.3;
         }
 
         .rd-comment-submit {
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 8px 20px;
-          background: #ef4444;
-          color: #ffffff;
+          padding: 10px 24px;
+          background: linear-gradient(135deg, #013E37, #0A5C54);
+          color: #FFEFB3;
           border: none;
-          border-radius: 8px;
+          border-radius: 12px;
           font-size: 14px;
-          font-weight: 500;
+          font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           align-self: flex-end;
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.2);
         }
 
         .rd-comment-submit:hover {
-          background: #dc2626;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(1, 62, 55, 0.3);
         }
 
         .rd-comments-list {
@@ -1347,33 +1680,68 @@ const RiskDetails = () => {
         }
 
         .rd-comment-item {
-          padding: 12px 16px;
-          background: #f8fafc;
-          border-radius: 8px;
-          border: 1px solid #f1f5f9;
+          display: flex;
+          gap: 14px;
+          padding: 14px 18px;
+          background: rgba(1, 62, 55, 0.02);
+          border-radius: 12px;
+          border: 1px solid rgba(1, 62, 55, 0.04);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          opacity: 0;
+        }
+
+        .rd-comment-item:nth-child(1) { animation-delay: 0.05s; }
+        .rd-comment-item:nth-child(2) { animation-delay: 0.1s; }
+
+        .rd-comment-item:hover {
+          background: #FFF9E6;
+          border-color: #FFEFB3;
+        }
+
+        .rd-comment-avatar {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #013E37, #0A5C54);
+          color: #FFEFB3;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          font-weight: 700;
+          flex-shrink: 0;
+        }
+
+        .rd-comment-body {
+          flex: 1;
         }
 
         .rd-comment-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          gap: 12px;
         }
 
         .rd-comment-user {
           font-size: 14px;
-          font-weight: 500;
-          color: #0f172a;
+          font-weight: 600;
+          color: #013E37;
         }
 
         .rd-comment-time {
           font-size: 12px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .rd-comment-text {
           font-size: 14px;
-          color: #475569;
+          color: #013E37;
+          opacity: 0.7;
           margin: 4px 0 0 0;
+          line-height: 1.6;
         }
 
         /* ============================================
@@ -1381,45 +1749,147 @@ const RiskDetails = () => {
            ============================================ */
         .rd-empty-state {
           text-align: center;
-          padding: 40px 20px;
-          color: #64748b;
+          padding: 48px 20px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .rd-empty-icon-wrapper {
+          width: 64px;
+          height: 64px;
+          background: rgba(1, 62, 55, 0.04);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 8px;
         }
 
         .rd-empty-icon {
-          width: 40px;
-          height: 40px;
-          color: #d1d5db;
-          margin: 0 auto 8px;
+          width: 28px;
+          height: 28px;
+          color: #013E37;
+          opacity: 0.2;
+        }
+
+        .rd-empty-state p {
+          font-size: 14px;
+          color: #013E37;
+          opacity: 0.6;
+          margin: 0;
+          font-weight: 500;
+        }
+
+        .rd-empty-sub {
+          font-size: 13px;
+          color: #013E37;
+          opacity: 0.3;
+        }
+
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(-12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-12px); }
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
         }
 
         /* ============================================
            RESPONSIVE
            ============================================ */
-        @media (max-width: 768px) {
-          .rd-details-container {
-            padding: 16px;
+        @media (max-width: 1024px) {
+          .rd-details-grid {
+            grid-template-columns: repeat(2, 1fr);
           }
+        }
 
-          .rd-details-header {
+        @media (max-width: 768px) {
+          .rd-header {
             flex-direction: column;
           }
 
-          .rd-details-header-right {
+          .rd-header-right {
             width: 100%;
             justify-content: flex-end;
           }
 
-          .rd-details-title-wrapper {
+          .rd-title-wrapper {
             flex-direction: column;
             align-items: flex-start;
           }
 
-          .rd-details-title-row {
+          .rd-title-row {
             flex-wrap: wrap;
           }
 
-          .rd-details-title {
-            font-size: 20px;
+          .rd-title {
+            font-size: 22px;
+          }
+
+          .rd-edit-title {
+            font-size: 22px;
           }
 
           .rd-details-grid {
@@ -1427,21 +1897,61 @@ const RiskDetails = () => {
           }
 
           .rd-tab-content {
-            padding: 16px;
+            padding: 20px;
           }
 
           .rd-metadata {
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
+          }
+
+          .rd-severity-badge {
+            padding: 10px;
+          }
+
+          .rd-icon-lg {
+            width: 22px;
+            height: 22px;
+          }
+
+          .rd-btn-edit,
+          .rd-btn-resolve,
+          .rd-btn-delete {
+            flex: 1;
+            justify-content: center;
+          }
+
+          .rd-header-right {
+            flex-wrap: wrap;
+          }
+
+          .rd-comment-item {
+            flex-direction: column;
+            align-items: flex-start;
           }
         }
 
         @media (max-width: 480px) {
-          .rd-details-container {
-            padding: 12px;
+          .rd-details-grid {
+            grid-template-columns: 1fr;
           }
 
-          .rd-details-header-right {
+          .rd-tabs {
+            overflow-x: auto;
+            flex-wrap: nowrap;
+          }
+
+          .rd-tab {
+            white-space: nowrap;
+            padding: 10px 16px;
+            font-size: 13px;
+          }
+
+          .rd-tab-icon {
+            display: none;
+          }
+
+          .rd-header-right {
             flex-direction: column;
             align-items: stretch;
           }
@@ -1449,23 +1959,37 @@ const RiskDetails = () => {
           .rd-btn-edit,
           .rd-btn-resolve,
           .rd-btn-delete {
+            width: 100%;
+          }
+
+          .rd-tab-content {
+            padding: 16px;
+          }
+
+          .rd-section-mitigation {
+            padding: 12px 16px;
+          }
+
+          .rd-comment-input {
+            padding: 12px 14px 12px 38px;
+          }
+
+          .rd-comment-input-icon {
+            left: 12px;
+            top: 14px;
+          }
+
+          .rd-comment-submit {
+            width: 100%;
             justify-content: center;
           }
 
-          .rd-details-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .rd-tabs {
-            overflow-x: auto;
-          }
-
-          .rd-tab {
-            white-space: nowrap;
+          .rd-score-badge {
+            font-size: 12px;
           }
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

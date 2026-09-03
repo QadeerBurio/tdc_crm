@@ -1,11 +1,10 @@
-// pages/employees/Standups.jsx - COMPLETE FIXED VERSION
-
+// pages/employees/Standups.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
   MessageSquare, Send, Clock, CheckCircle, AlertCircle, Plus,
   Calendar, User, Filter, RefreshCw, X, ChevronDown,
-  Eye, Edit, Trash2, Search
+  Eye, Edit, Trash2, Search, Layers
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -33,7 +32,7 @@ const Standups = () => {
     additionalNotes: '',
   });
 
-  const API_URL =  'https://crmserver-production-4a42.up.railway.app/api';
+  const API_URL = 'https://crmserver-production-4a42.up.railway.app/api';
 
   useEffect(() => {
     fetchStandups();
@@ -231,20 +230,20 @@ const Standups = () => {
   const getStatusStyle = (status) => {
     const statusStyles = {
       'submitted': {
-        backgroundColor: '#D1FAE5',
-        color: '#065F46',
+        backgroundColor: '#013E37',
+        color: '#FFEFB3',
         icon: CheckCircle,
         label: 'Submitted'
       },
       'acknowledged': {
-        backgroundColor: '#DBEAFE',
-        color: '#1E40AF',
+        backgroundColor: '#0A5C54',
+        color: '#FFEFB3',
         icon: CheckCircle,
         label: 'Acknowledged'
       },
       'draft': {
-        backgroundColor: '#FEF3C7',
-        color: '#92400E',
+        backgroundColor: '#FFEFB3',
+        color: '#013E37',
         icon: Clock,
         label: 'Draft'
       },
@@ -259,9 +258,9 @@ const Standups = () => {
 
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.spinner} />
-        <p style={styles.loadingText}>Loading standups...</p>
+      <div className="standup-loading">
+        <div className="standup-loading-spinner"></div>
+        <p className="standup-loading-text">Loading standups...</p>
       </div>
     );
   }
@@ -270,316 +269,308 @@ const Standups = () => {
   const submittedCount = standups.filter(s => s.status === 'submitted' || s.status === 'acknowledged').length;
   const pendingCount = standups.filter(s => s.status === 'draft').length;
 
-  const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
-
   return (
-    <div style={styles.container}>
-      {/* Header Section */}
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.title}>Daily Standups</h1>
-          <p style={styles.subtitle}>
-            {isAdmin ? 'View all team standups' : 'Share what you\'re working on and any blockers'}
-          </p>
-        </div>
-        <div style={styles.headerActions}>
-          <button style={styles.refreshButton} onClick={() => fetchStandups(true)} disabled={refreshing}>
-            <RefreshCw size={18} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
-          </button>
-          <button style={styles.filterButton} onClick={() => setShowFilters(!showFilters)}>
-            <Filter size={16} />
-            Filters
-            <ChevronDown size={14} style={{
-              transform: showFilters ? 'rotate(180deg)' : 'none',
-              transition: 'transform 0.2s ease'
-            }} />
-          </button>
-          <button style={styles.createButton} onClick={() => setShowCreateModal(true)}>
-            <Plus size={18} />
-            New Standup
-          </button>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
-          <div style={styles.statContent}>
-            <div>
-              <p style={styles.statLabel}>Total Standups</p>
-              <p style={styles.statValue}>{totalStandups}</p>
-            </div>
-            <MessageSquare size={32} style={{...styles.statIcon, color: '#3B82F6'}} />
+    <>
+      <div className="standup-container">
+        {/* Header Section */}
+        <div className="standup-header">
+          <div className="standup-header-left">
+            <h1 className="standup-title">
+              <Layers className="standup-title-icon" />
+              Daily Standups
+            </h1>
+            <p className="standup-subtitle">
+              {isAdmin ? 'View all team standups' : 'Share what you\'re working on and any blockers'}
+            </p>
           </div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statContent}>
-            <div>
-              <p style={styles.statLabel}>Submitted</p>
-              <p style={{...styles.statValue, color: '#16A34A'}}>{submittedCount}</p>
-            </div>
-            <CheckCircle size={32} style={{...styles.statIcon, color: '#22C55E'}} />
-          </div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statContent}>
-            <div>
-              <p style={styles.statLabel}>Pending</p>
-              <p style={{...styles.statValue, color: '#D97706'}}>{pendingCount}</p>
-            </div>
-            <Clock size={32} style={{...styles.statIcon, color: '#F59E0B'}} />
-          </div>
-        </div>
-      </div>
-
-      {/* Filters Panel */}
-      {showFilters && (
-        <div style={styles.filterPanel}>
-          <div style={styles.filterRow}>
-            <div style={styles.filterGroup}>
-              <label style={styles.filterLabel}>Date</label>
-              <input
-                type="date"
-                value={filterDate}
-                onChange={(e) => setFilterDate(e.target.value)}
-                style={styles.filterInput}
-              />
-            </div>
-            {isAdmin && departments.length > 0 && (
-              <div style={styles.filterGroup}>
-                <label style={styles.filterLabel}>Department</label>
-                <select
-                  value={filterDepartment}
-                  onChange={(e) => setFilterDepartment(e.target.value)}
-                  style={styles.filterSelect}
-                >
-                  <option value="">All Departments</option>
-                  {departments.map((dept) => (
-                    <option key={dept} value={dept}>{dept}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-            <div style={styles.filterGroup}>
-              <label style={styles.filterLabel}>Search</label>
-              <div style={styles.searchBar}>
-                <Search size={16} style={styles.searchIcon} />
-                <input
-                  type="text"
-                  placeholder="Search standups..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={styles.searchInput}
-                />
-                {searchTerm && (
-                  <button style={styles.clearSearch} onClick={() => setSearchTerm('')}>
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
-            </div>
-            <button style={styles.clearFiltersButton} onClick={() => {
-              setFilterDate('');
-              setFilterDepartment('');
-              setSearchTerm('');
-              setShowFilters(false);
-            }}>
-              Clear All
+          <div className="standup-header-right">
+            <button className="standup-refresh-btn" onClick={() => fetchStandups(true)} disabled={refreshing}>
+              <RefreshCw className={`standup-refresh-icon ${refreshing ? 'standup-spinning' : ''}`} />
+            </button>
+            <button className="standup-filter-btn" onClick={() => setShowFilters(!showFilters)}>
+              <Filter className="standup-filter-icon" />
+              Filters
+              <ChevronDown className={`standup-chevron ${showFilters ? 'standup-chevron-open' : ''}`} />
+            </button>
+            <button className="standup-create-btn" onClick={() => setShowCreateModal(true)}>
+              <Plus className="standup-create-icon" />
+              New Standup
             </button>
           </div>
         </div>
-      )}
 
-      {/* Standups Grid */}
-      {standups.length === 0 ? (
-        <div style={styles.emptyState}>
-          <div style={styles.emptyContent}>
-            <MessageSquare size={64} style={styles.emptyIcon} />
-            <h3 style={styles.emptyTitle}>No standups found</h3>
-            <p style={styles.emptySubtext}>
-              {isAdmin ? 'No standups have been submitted yet.' : 'Create your first standup to get started.'}
-            </p>
-            {!isAdmin && (
-              <button style={styles.emptyButton} onClick={() => setShowCreateModal(true)}>
-                <Plus size={16} />
-                Create Standup
-              </button>
-            )}
+        {/* Stats Cards */}
+        <div className="standup-stats">
+          <div className="standup-stat-card">
+            <div className="standup-stat-content">
+              <div>
+                <p className="standup-stat-label">Total Standups</p>
+                <p className="standup-stat-value">{totalStandups}</p>
+              </div>
+              <MessageSquare className="standup-stat-icon" style={{ color: '#013E37' }} />
+            </div>
+          </div>
+          <div className="standup-stat-card">
+            <div className="standup-stat-content">
+              <div>
+                <p className="standup-stat-label">Submitted</p>
+                <p className="standup-stat-value" style={{ color: '#013E37' }}>{submittedCount}</p>
+              </div>
+              <CheckCircle className="standup-stat-icon" style={{ color: '#013E37' }} />
+            </div>
+          </div>
+          <div className="standup-stat-card">
+            <div className="standup-stat-content">
+              <div>
+                <p className="standup-stat-label">Pending</p>
+                <p className="standup-stat-value" style={{ color: '#013E37' }}>{pendingCount}</p>
+              </div>
+              <Clock className="standup-stat-icon" style={{ color: '#013E37' }} />
+            </div>
           </div>
         </div>
-      ) : (
-        <div style={styles.grid}>
-          {standups.map((standup) => {
-            const statusStyle = getStatusStyle(standup.status);
-            const StatusIcon = statusStyle.icon;
-            
-            return (
-              <div key={standup._id} style={styles.standupCard}>
-                <div style={styles.standupHeader}>
-                  <div style={styles.standupUser}>
-                    <div style={styles.standupAvatar}>
-                      {standup.employeeId?.firstName?.[0] || '?'}
-                    </div>
-                    <div>
-                      <div style={styles.standupName}>
-                        {standup.employeeId?.firstName} {standup.employeeId?.lastName}
-                      </div>
-                      <div style={styles.standupMeta}>
-                        <Calendar size={12} />
-                        {formatDate(standup.date || standup.createdAt)}
-                        <span style={styles.standupDot}>•</span>
-                        <Clock size={12} />
-                        {formatTime(standup.createdAt)}
-                      </div>
-                    </div>
-                  </div>
-                  <span style={{
-                    ...styles.statusBadge,
-                    backgroundColor: statusStyle.backgroundColor,
-                    color: statusStyle.color,
-                  }}>
-                    <StatusIcon size={10} />
-                    {statusStyle.label}
-                  </span>
-                </div>
 
-                <div style={styles.standupBody}>
-                  <div style={styles.standupSection}>
-                    <span style={styles.standupLabel}>Today</span>
-                    <p style={styles.standupText}>{standup.today || 'Not specified'}</p>
-                  </div>
-                  {standup.yesterday && (
-                    <div style={styles.standupSection}>
-                      <span style={styles.standupLabel}>Yesterday</span>
-                      <p style={styles.standupText}>{standup.yesterday}</p>
-                    </div>
-                  )}
-                  {standup.blockers && (
-                    <div style={{...styles.standupSection, ...styles.blockerSection}}>
-                      <span style={{...styles.standupLabel, color: '#EF4444'}}>🚧 Blockers</span>
-                      <p style={styles.standupText}>{standup.blockers}</p>
-                    </div>
-                  )}
-                  {standup.tomorrow && (
-                    <div style={styles.standupSection}>
-                      <span style={styles.standupLabel}>Tomorrow</span>
-                      <p style={styles.standupText}>{standup.tomorrow}</p>
-                    </div>
-                  )}
-                </div>
-
-                <div style={styles.standupFooter}>
-                  <button
-                    style={styles.viewButton}
-                    onClick={() => {
-                      setSelectedStandup(standup);
-                      setShowDetailModal(true);
-                    }}
+        {/* Filters Panel */}
+        {showFilters && (
+          <div className="standup-filter-panel">
+            <div className="standup-filter-row">
+              <div className="standup-filter-group">
+                <label className="standup-filter-label">Date</label>
+                <input
+                  type="date"
+                  value={filterDate}
+                  onChange={(e) => setFilterDate(e.target.value)}
+                  className="standup-filter-input"
+                />
+              </div>
+              {isAdmin && departments.length > 0 && (
+                <div className="standup-filter-group">
+                  <label className="standup-filter-label">Department</label>
+                  <select
+                    value={filterDepartment}
+                    onChange={(e) => setFilterDepartment(e.target.value)}
+                    className="standup-filter-select"
                   >
-                    <Eye size={14} />
-                    View Details
-                  </button>
-                  {canEdit(standup) && (
-                    <button
-                      style={styles.submitButton}
-                      onClick={() => handleSubmitStandup(standup._id)}
-                      disabled={submitting}
-                    >
-                      <Send size={14} />
-                      Submit
+                    <option value="">All Departments</option>
+                    {departments.map((dept) => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div className="standup-filter-group">
+                <label className="standup-filter-label">Search</label>
+                <div className="standup-search-bar">
+                  <Search className="standup-search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Search standups..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="standup-search-input"
+                  />
+                  {searchTerm && (
+                    <button className="standup-search-clear" onClick={() => setSearchTerm('')}>
+                      <X className="standup-search-clear-icon" />
                     </button>
                   )}
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+              <button className="standup-clear-filters" onClick={() => {
+                setFilterDate('');
+                setFilterDepartment('');
+                setSearchTerm('');
+                setShowFilters(false);
+              }}>
+                Clear All
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Standups Grid */}
+        {standups.length === 0 ? (
+          <div className="standup-empty">
+            <div className="standup-empty-content">
+              <MessageSquare className="standup-empty-icon" size={64} />
+              <h3 className="standup-empty-title">No standups found</h3>
+              <p className="standup-empty-subtext">
+                {isAdmin ? 'No standups have been submitted yet.' : 'Create your first standup to get started.'}
+              </p>
+              {!isAdmin && (
+                <button className="standup-empty-btn" onClick={() => setShowCreateModal(true)}>
+                  <Plus className="standup-empty-btn-icon" />
+                  Create Standup
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="standup-grid">
+            {standups.map((standup, index) => {
+              const statusStyle = getStatusStyle(standup.status);
+              const StatusIcon = statusStyle.icon;
+              
+              return (
+                <div key={standup._id} className="standup-card" style={{ animationDelay: `${index * 0.05}s` }}>
+                  <div className="standup-card-header">
+                    <div className="standup-card-user">
+                      <div className="standup-card-avatar" style={{ backgroundColor: '#013E37' }}>
+                        {standup.employeeId?.firstName?.[0] || '?'}
+                      </div>
+                      <div>
+                        <div className="standup-card-name">
+                          {standup.employeeId?.firstName} {standup.employeeId?.lastName}
+                        </div>
+                        <div className="standup-card-meta">
+                          <Calendar className="standup-card-meta-icon" />
+                          {formatDate(standup.date || standup.createdAt)}
+                          <span className="standup-card-dot">•</span>
+                          <Clock className="standup-card-meta-icon" />
+                          {formatTime(standup.createdAt)}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="standup-status-badge" style={{
+                      backgroundColor: statusStyle.backgroundColor,
+                      color: statusStyle.color,
+                    }}>
+                      <StatusIcon className="standup-status-icon" />
+                      {statusStyle.label}
+                    </span>
+                  </div>
+
+                  <div className="standup-card-body">
+                    <div className="standup-card-section">
+                      <span className="standup-card-label">Today</span>
+                      <p className="standup-card-text">{standup.today || 'Not specified'}</p>
+                    </div>
+                    {standup.yesterday && (
+                      <div className="standup-card-section">
+                        <span className="standup-card-label">Yesterday</span>
+                        <p className="standup-card-text">{standup.yesterday}</p>
+                      </div>
+                    )}
+                    {standup.blockers && (
+                      <div className="standup-card-section standup-blocker-section">
+                        <span className="standup-card-label standup-blocker-label">🚧 Blockers</span>
+                        <p className="standup-card-text">{standup.blockers}</p>
+                      </div>
+                    )}
+                    {standup.tomorrow && (
+                      <div className="standup-card-section">
+                        <span className="standup-card-label">Tomorrow</span>
+                        <p className="standup-card-text">{standup.tomorrow}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="standup-card-footer">
+                    <button
+                      className="standup-view-btn"
+                      onClick={() => {
+                        setSelectedStandup(standup);
+                        setShowDetailModal(true);
+                      }}
+                    >
+                      <Eye className="standup-view-icon" />
+                      View Details
+                    </button>
+                    {canEdit(standup) && (
+                      <button
+                        className="standup-submit-btn"
+                        onClick={() => handleSubmitStandup(standup._id)}
+                        disabled={submitting}
+                      >
+                        <Send className="standup-submit-icon" />
+                        Submit
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Create Standup Modal */}
       {showCreateModal && (
-        <div style={styles.modalOverlay} onClick={() => setShowCreateModal(false)}>
-          <div style={styles.modalContainer} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalHeader}>
+        <div className="standup-modal-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="standup-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="standup-modal-header">
               <div>
-                <h2 style={styles.modalTitle}>Create Daily Standup</h2>
-                <p style={styles.modalSubtitle}>Share your daily progress and blockers</p>
+                <h2 className="standup-modal-title">Create Daily Standup</h2>
+                <p className="standup-modal-subtitle">Share your daily progress and blockers</p>
               </div>
-              <button style={styles.modalClose} onClick={() => setShowCreateModal(false)}>
-                <X size={20} />
+              <button className="standup-modal-close" onClick={() => setShowCreateModal(false)}>
+                <X className="standup-modal-close-icon" />
               </button>
             </div>
-            <form onSubmit={handleSubmit} style={styles.modalForm}>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>
-                  What did you do yesterday?
-                </label>
+            <form onSubmit={handleSubmit} className="standup-modal-form">
+              <div className="standup-form-group">
+                <label className="standup-form-label">What did you do yesterday?</label>
                 <textarea
                   value={formData.yesterday}
                   onChange={(e) => setFormData({ ...formData, yesterday: e.target.value })}
                   rows={2}
-                  style={styles.textarea}
+                  className="standup-form-textarea"
                   placeholder="What did you accomplish yesterday?"
                   disabled={submitting}
                 />
               </div>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>
+              <div className="standup-form-group">
+                <label className="standup-form-label">
                   What will you do today?
-                  <span style={styles.requiredStar}>*</span>
+                  <span className="standup-form-required">*</span>
                 </label>
                 <textarea
                   value={formData.today}
                   onChange={(e) => setFormData({ ...formData, today: e.target.value })}
                   rows={2}
                   required
-                  style={styles.textarea}
+                  className="standup-form-textarea"
                   placeholder="What are your plans for today?"
                   disabled={submitting}
                 />
               </div>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>
-                  Any blockers?
-                </label>
+              <div className="standup-form-group">
+                <label className="standup-form-label">Any blockers?</label>
                 <textarea
                   value={formData.blockers}
                   onChange={(e) => setFormData({ ...formData, blockers: e.target.value })}
                   rows={2}
-                  style={styles.textarea}
+                  className="standup-form-textarea"
                   placeholder="Any blockers or challenges?"
                   disabled={submitting}
                 />
               </div>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>
-                  Plan for tomorrow
-                </label>
+              <div className="standup-form-group">
+                <label className="standup-form-label">Plan for tomorrow</label>
                 <textarea
                   value={formData.tomorrow}
                   onChange={(e) => setFormData({ ...formData, tomorrow: e.target.value })}
                   rows={2}
-                  style={styles.textarea}
+                  className="standup-form-textarea"
                   placeholder="What do you plan to do tomorrow?"
                   disabled={submitting}
                 />
               </div>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Additional Notes</label>
+              <div className="standup-form-group">
+                <label className="standup-form-label">Additional Notes</label>
                 <textarea
                   value={formData.additionalNotes}
                   onChange={(e) => setFormData({ ...formData, additionalNotes: e.target.value })}
                   rows={2}
-                  style={styles.textarea}
+                  className="standup-form-textarea"
                   placeholder="Any additional notes?"
                   disabled={submitting}
                 />
               </div>
-              <div style={styles.modalActions}>
+              <div className="standup-modal-actions">
                 <button
                   type="button"
-                  style={styles.modalCancelButton}
+                  className="standup-modal-cancel"
                   onClick={() => {
                     setShowCreateModal(false);
                     setFormData({ today: '', yesterday: '', blockers: '', tomorrow: '', additionalNotes: '' });
@@ -590,7 +581,7 @@ const Standups = () => {
                 </button>
                 <button
                   type="submit"
-                  style={styles.modalSubmitButton}
+                  className="standup-modal-submit"
                   disabled={submitting}
                 >
                   {submitting ? 'Creating...' : 'Create Standup'}
@@ -603,70 +594,69 @@ const Standups = () => {
 
       {/* Standup Detail Modal */}
       {showDetailModal && selectedStandup && (
-        <div style={styles.modalOverlay} onClick={() => setShowDetailModal(false)}>
-          <div style={styles.detailContainer} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalHeader}>
+        <div className="standup-modal-overlay" onClick={() => setShowDetailModal(false)}>
+          <div className="standup-modal standup-detail-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="standup-modal-header standup-detail-header">
               <div>
-                <h2 style={styles.modalTitle}>Standup Details</h2>
-                <p style={styles.modalSubtitle}>
+                <h2 className="standup-modal-title">Standup Details</h2>
+                <p className="standup-modal-subtitle">
                   {selectedStandup.employeeId?.firstName} {selectedStandup.employeeId?.lastName} • {formatDate(selectedStandup.date || selectedStandup.createdAt)}
                 </p>
               </div>
-              <button style={styles.modalClose} onClick={() => setShowDetailModal(false)}>
-                <X size={20} />
+              <button className="standup-modal-close" onClick={() => setShowDetailModal(false)}>
+                <X className="standup-modal-close-icon" />
               </button>
             </div>
-            <div style={styles.detailBody}>
-              <div style={styles.detailSection}>
-                <span style={styles.detailLabel}>📅 Date</span>
-                <span style={styles.detailValue}>{formatDate(selectedStandup.date || selectedStandup.createdAt)}</span>
+            <div className="standup-detail-body">
+              <div className="standup-detail-section">
+                <span className="standup-detail-label">📅 Date</span>
+                <span className="standup-detail-value">{formatDate(selectedStandup.date || selectedStandup.createdAt)}</span>
               </div>
-              <div style={styles.detailSection}>
-                <span style={styles.detailLabel}>👤 Employee</span>
-                <span style={styles.detailValue}>
+              <div className="standup-detail-section">
+                <span className="standup-detail-label">👤 Employee</span>
+                <span className="standup-detail-value">
                   {selectedStandup.employeeId?.firstName} {selectedStandup.employeeId?.lastName}
                 </span>
               </div>
-              <div style={styles.detailSection}>
-                <span style={styles.detailLabel}>📋 Status</span>
-                <span style={{
-                  ...styles.statusBadge,
+              <div className="standup-detail-section">
+                <span className="standup-detail-label">📋 Status</span>
+                <span className="standup-status-badge" style={{
                   ...getStatusStyle(selectedStandup.status)
                 }}>
                   {selectedStandup.status || 'Draft'}
                 </span>
               </div>
-              <div style={styles.detailSection}>
-                <span style={styles.detailLabel}>📝 Today</span>
-                <span style={styles.detailValue}>{selectedStandup.today || 'Not specified'}</span>
+              <div className="standup-detail-section">
+                <span className="standup-detail-label">📝 Today</span>
+                <span className="standup-detail-value">{selectedStandup.today || 'Not specified'}</span>
               </div>
               {selectedStandup.yesterday && (
-                <div style={styles.detailSection}>
-                  <span style={styles.detailLabel}>📝 Yesterday</span>
-                  <span style={styles.detailValue}>{selectedStandup.yesterday}</span>
+                <div className="standup-detail-section">
+                  <span className="standup-detail-label">📝 Yesterday</span>
+                  <span className="standup-detail-value">{selectedStandup.yesterday}</span>
                 </div>
               )}
               {selectedStandup.blockers && (
-                <div style={{...styles.detailSection, ...styles.detailBlocker}}>
-                  <span style={{...styles.detailLabel, color: '#EF4444'}}>🚧 Blockers</span>
-                  <span style={{...styles.detailValue, color: '#EF4444'}}>{selectedStandup.blockers}</span>
+                <div className="standup-detail-section standup-detail-blocker">
+                  <span className="standup-detail-label standup-blocker-label">🚧 Blockers</span>
+                  <span className="standup-detail-value standup-blocker-value">{selectedStandup.blockers}</span>
                 </div>
               )}
               {selectedStandup.tomorrow && (
-                <div style={styles.detailSection}>
-                  <span style={styles.detailLabel}>📝 Tomorrow</span>
-                  <span style={styles.detailValue}>{selectedStandup.tomorrow}</span>
+                <div className="standup-detail-section">
+                  <span className="standup-detail-label">📝 Tomorrow</span>
+                  <span className="standup-detail-value">{selectedStandup.tomorrow}</span>
                 </div>
               )}
               {selectedStandup.additionalNotes && (
-                <div style={styles.detailSection}>
-                  <span style={styles.detailLabel}>📝 Additional Notes</span>
-                  <span style={styles.detailValue}>{selectedStandup.additionalNotes}</span>
+                <div className="standup-detail-section">
+                  <span className="standup-detail-label">📝 Additional Notes</span>
+                  <span className="standup-detail-value">{selectedStandup.additionalNotes}</span>
                 </div>
               )}
-              <div style={styles.detailSection}>
-                <span style={styles.detailLabel}>⏰ Submitted</span>
-                <span style={styles.detailValue}>
+              <div className="standup-detail-section">
+                <span className="standup-detail-label">⏰ Submitted</span>
+                <span className="standup-detail-value">
                   {selectedStandup.submittedAt 
                     ? `${formatTime(selectedStandup.submittedAt)} (${formatTimeAgo(selectedStandup.submittedAt)})`
                     : 'Not submitted yet'
@@ -674,36 +664,36 @@ const Standups = () => {
                 </span>
               </div>
               {selectedStandup.acknowledgedAt && (
-                <div style={styles.detailSection}>
-                  <span style={styles.detailLabel}>✅ Acknowledged</span>
-                  <span style={styles.detailValue}>
+                <div className="standup-detail-section">
+                  <span className="standup-detail-label">✅ Acknowledged</span>
+                  <span className="standup-detail-value">
                     {formatTime(selectedStandup.acknowledgedAt)} ({formatTimeAgo(selectedStandup.acknowledgedAt)})
                   </span>
                 </div>
               )}
               {selectedStandup.managerFeedback && (
-                <div style={styles.detailSection}>
-                  <span style={styles.detailLabel}>💬 Manager Feedback</span>
-                  <span style={styles.detailValue}>{selectedStandup.managerFeedback}</span>
+                <div className="standup-detail-section">
+                  <span className="standup-detail-label">💬 Manager Feedback</span>
+                  <span className="standup-detail-value">{selectedStandup.managerFeedback}</span>
                 </div>
               )}
-              <div style={styles.detailActions}>
+              <div className="standup-detail-actions">
                 <button
-                  style={styles.detailCloseButton}
+                  className="standup-detail-close"
                   onClick={() => setShowDetailModal(false)}
                 >
                   Close
                 </button>
                 {canEdit(selectedStandup) && (
                   <button
-                    style={styles.detailSubmitButton}
+                    className="standup-detail-submit"
                     onClick={() => {
                       handleSubmitStandup(selectedStandup._id);
                       setShowDetailModal(false);
                     }}
                     disabled={submitting}
                   >
-                    <Send size={14} />
+                    <Send className="standup-detail-submit-icon" />
                     Submit Standup
                   </button>
                 )}
@@ -712,840 +702,1038 @@ const Standups = () => {
           </div>
         </div>
       )}
-    </div>
+
+      <style>{`
+        /* ============================================
+           CONTAINER
+           ============================================ */
+        .standup-container {
+          padding: 0 0 24px 0;
+          max-width: 100%;
+        }
+
+        /* ============================================
+           LOADING
+           ============================================ */
+        .standup-loading {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 400px;
+        }
+        .standup-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+        .standup-loading-text {
+          margin-top: 16px;
+          color: #013E37;
+          opacity: 0.6;
+          font-size: 14px;
+        }
+
+        /* ============================================
+           HEADER
+           ============================================ */
+        .standup-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 24px;
+          flex-wrap: wrap;
+          gap: 12px;
+          animation: fadeInDown 0.6s ease;
+        }
+        .standup-header-left {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .standup-title {
+          font-size: 28px;
+          font-weight: 700;
+          color: #013E37;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin: 0;
+          letter-spacing: -0.5px;
+        }
+        .standup-title-icon {
+          width: 28px;
+          height: 28px;
+          color: #013E37;
+          animation: pulse 2s ease-in-out infinite;
+        }
+        .standup-subtitle {
+          color: #013E37;
+          opacity: 0.6;
+          font-size: 15px;
+          margin: 0;
+        }
+        .standup-header-right {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          align-items: center;
+        }
+        .standup-refresh-btn {
+          padding: 8px 10px;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          background: #ffffff;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .standup-refresh-btn:hover {
+          background: #FFEFB3;
+          border-color: #013E37;
+        }
+        .standup-refresh-icon {
+          width: 16px;
+          height: 16px;
+          color: #013E37;
+          transition: transform 0.3s ease;
+        }
+        .standup-spinning {
+          animation: spin 1s linear infinite;
+        }
+        .standup-filter-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 16px;
+          background: #ffffff;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          color: #013E37;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          white-space: nowrap;
+        }
+        .standup-filter-btn:hover {
+          background: #FFEFB3;
+          border-color: #013E37;
+        }
+        .standup-filter-icon {
+          width: 16px;
+          height: 16px;
+        }
+        .standup-chevron {
+          width: 14px;
+          height: 14px;
+          transition: transform 0.3s ease;
+        }
+        .standup-chevron-open {
+          transform: rotate(180deg);
+        }
+        .standup-create-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 24px;
+          background: #013E37;
+          color: #FFEFB3;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 14px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(1, 62, 55, 0.25);
+        }
+        .standup-create-btn:hover {
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
+        }
+        .standup-create-icon {
+          width: 16px;
+          height: 16px;
+          transition: transform 0.3s ease;
+        }
+        .standup-create-btn:hover .standup-create-icon {
+          transform: rotate(90deg);
+        }
+
+        /* ============================================
+           STATS
+           ============================================ */
+        .standup-stats {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+        .standup-stat-card {
+          background: #ffffff;
+          border: 1px solid #FFEFB3;
+          border-radius: 12px;
+          padding: 16px 20px;
+          transition: all 0.3s ease;
+          animation: fadeInUp 0.5s ease forwards;
+        }
+        .standup-stat-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
+          border-color: #013E37;
+        }
+        .standup-stat-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .standup-stat-label {
+          font-size: 13px;
+          color: #013E37;
+          opacity: 0.6;
+          margin: 0;
+          font-weight: 500;
+        }
+        .standup-stat-value {
+          font-size: 22px;
+          font-weight: 700;
+          color: #013E37;
+          margin: 0;
+          line-height: 1.2;
+        }
+        .standup-stat-icon {
+          width: 32px;
+          height: 32px;
+          opacity: 0.8;
+        }
+
+        /* ============================================
+           FILTERS
+           ============================================ */
+        .standup-filter-panel {
+          background: #ffffff;
+          border: 1px solid #FFEFB3;
+          border-radius: 10px;
+          padding: 16px 20px;
+          margin-bottom: 16px;
+          animation: fadeIn 0.3s ease;
+        }
+        .standup-filter-row {
+          display: flex;
+          align-items: flex-end;
+          gap: 16px;
+          flex-wrap: wrap;
+        }
+        .standup-filter-group {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          flex: 1;
+          min-width: 150px;
+        }
+        .standup-filter-label {
+          font-size: 12px;
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.6;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .standup-filter-input,
+        .standup-filter-select {
+          padding: 8px 12px;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          font-size: 14px;
+          background: #ffffff;
+          color: #013E37;
+          outline: none;
+          transition: all 0.3s ease;
+          width: 100%;
+        }
+        .standup-filter-input:focus,
+        .standup-filter-select:focus {
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+        .standup-search-bar {
+          display: flex;
+          align-items: center;
+          background: #ffffff;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          padding: 0 12px;
+          transition: all 0.3s ease;
+          width: 100%;
+        }
+        .standup-search-bar:focus-within {
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+        .standup-search-icon {
+          width: 16px;
+          height: 16px;
+          color: #013E37;
+          opacity: 0.4;
+          flex-shrink: 0;
+        }
+        .standup-search-input {
+          flex: 1;
+          padding: 8px 10px;
+          border: none;
+          outline: none;
+          font-size: 14px;
+          background: transparent;
+          color: #013E37;
+        }
+        .standup-search-input::placeholder {
+          color: #013E37;
+          opacity: 0.4;
+        }
+        .standup-search-clear {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 4px;
+          background: none;
+          border: none;
+          color: #013E37;
+          opacity: 0.4;
+          cursor: pointer;
+          border-radius: 4px;
+          transition: all 0.3s ease;
+        }
+        .standup-search-clear:hover {
+          background: #FFEFB3;
+          opacity: 1;
+        }
+        .standup-search-clear-icon {
+          width: 14px;
+          height: 14px;
+        }
+        .standup-clear-filters {
+          padding: 8px 16px;
+          background: #FFEFB3;
+          border: none;
+          border-radius: 8px;
+          font-size: 13px;
+          font-weight: 500;
+          color: #013E37;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          white-space: nowrap;
+          align-self: center;
+        }
+        .standup-clear-filters:hover {
+          background: #013E37;
+          color: #FFEFB3;
+        }
+
+        /* ============================================
+           GRID
+           ============================================ */
+        .standup-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+          gap: 20px;
+        }
+        .standup-card {
+          background: #ffffff;
+          border: 1px solid #FFEFB3;
+          border-radius: 12px;
+          overflow: hidden;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          display: flex;
+          flex-direction: column;
+          animation: fadeInUp 0.5s ease forwards;
+          opacity: 0;
+          position: relative;
+        }
+        .standup-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, #013E37, #0A5C54, #013E37);
+          transform: scaleX(0);
+          transition: transform 0.4s ease;
+          transform-origin: left;
+        }
+        .standup-card:hover::before {
+          transform: scaleX(1);
+        }
+        .standup-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 30px rgba(1, 62, 55, 0.12);
+          border-color: #013E37;
+        }
+        .standup-card:nth-child(1) { animation-delay: 0.05s; }
+        .standup-card:nth-child(2) { animation-delay: 0.1s; }
+        .standup-card:nth-child(3) { animation-delay: 0.15s; }
+        .standup-card:nth-child(4) { animation-delay: 0.2s; }
+        .standup-card:nth-child(5) { animation-delay: 0.25s; }
+
+        .standup-card-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 14px 16px;
+          border-bottom: 1px solid #FFEFB3;
+          background: #FFF9E6;
+        }
+        .standup-card-user {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .standup-card-avatar {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          color: #FFEFB3;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          font-weight: 600;
+          flex-shrink: 0;
+          transition: all 0.3s ease;
+        }
+        .standup-card:hover .standup-card-avatar {
+          transform: scale(1.05);
+        }
+        .standup-card-name {
+          font-size: 14px;
+          font-weight: 600;
+          color: #013E37;
+        }
+        .standup-card-meta {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 12px;
+          color: #013E37;
+          opacity: 0.5;
+        }
+        .standup-card-meta-icon {
+          width: 12px;
+          height: 12px;
+        }
+        .standup-card-dot {
+          margin: 0 4px;
+        }
+        .standup-status-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 3px 10px;
+          border-radius: 6px;
+          font-size: 11px;
+          font-weight: 600;
+          transition: all 0.3s ease;
+        }
+        .standup-status-badge:hover {
+          transform: scale(1.05);
+        }
+        .standup-status-icon {
+          width: 10px;
+          height: 10px;
+        }
+
+        .standup-card-body {
+          padding: 14px 16px;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .standup-card-section {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .standup-blocker-section {
+          background: #FFEFB3;
+          padding: 8px 10px;
+          border-radius: 6px;
+          border: 1px solid #013E37;
+        }
+        .standup-card-label {
+          font-size: 11px;
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.5;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+        }
+        .standup-blocker-label {
+          opacity: 1;
+          color: #013E37;
+        }
+        .standup-card-text {
+          font-size: 14px;
+          color: #013E37;
+          margin: 0;
+          line-height: 1.5;
+          word-break: break-word;
+        }
+
+        .standup-card-footer {
+          display: flex;
+          gap: 8px;
+          padding: 12px 16px;
+          border-top: 1px solid #FFEFB3;
+          background: #FFF9E6;
+        }
+        .standup-view-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 14px;
+          background: #FFEFB3;
+          color: #013E37;
+          border: 1px solid #013E37;
+          border-radius: 6px;
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          flex: 1;
+          justify-content: center;
+        }
+        .standup-view-btn:hover {
+          background: #013E37;
+          color: #FFEFB3;
+        }
+        .standup-view-icon {
+          width: 14px;
+          height: 14px;
+        }
+        .standup-submit-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 14px;
+          background: #013E37;
+          color: #FFEFB3;
+          border: none;
+          border-radius: 6px;
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          flex: 1;
+          justify-content: center;
+        }
+        .standup-submit-btn:hover:not(:disabled) {
+          background: #0A5C54;
+          transform: scale(1.02);
+        }
+        .standup-submit-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        .standup-submit-icon {
+          width: 14px;
+          height: 14px;
+        }
+
+        /* ============================================
+           EMPTY STATE
+           ============================================ */
+        .standup-empty {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 400px;
+          background: #ffffff;
+          border: 2px dashed #FFEFB3;
+          border-radius: 12px;
+        }
+        .standup-empty-content {
+          text-align: center;
+          padding: 48px;
+        }
+        .standup-empty-icon {
+          color: #FFEFB3;
+          margin-bottom: 16px;
+        }
+        .standup-empty-title {
+          font-size: 20px;
+          font-weight: 600;
+          color: #013E37;
+          margin: 0 0 8px 0;
+        }
+        .standup-empty-subtext {
+          font-size: 14px;
+          color: #013E37;
+          opacity: 0.6;
+          margin: 0 0 20px 0;
+        }
+        .standup-empty-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 24px;
+          background: #013E37;
+          color: #FFEFB3;
+          border: none;
+          border-radius: 10px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .standup-empty-btn:hover {
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
+        }
+        .standup-empty-btn-icon {
+          width: 16px;
+          height: 16px;
+        }
+
+        /* ============================================
+           MODAL
+           ============================================ */
+        .standup-modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(1, 62, 55, 0.5);
+          backdrop-filter: blur(4px);
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          animation: fadeIn 0.3s ease;
+        }
+        .standup-modal {
+          background: #ffffff;
+          border: 1px solid #FFEFB3;
+          border-radius: 16px;
+          width: 100%;
+          max-width: 600px;
+          max-height: 90vh;
+          display: flex;
+          flex-direction: column;
+          box-shadow: 0 25px 50px -12px rgba(1, 62, 55, 0.25);
+          overflow: hidden;
+          animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes modalIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        .standup-detail-modal {
+          max-width: 700px;
+        }
+        .standup-modal-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 20px 24px;
+          border-bottom: 1px solid #FFEFB3;
+          background: #FFEFB3;
+          flex-shrink: 0;
+        }
+        .standup-detail-header {
+          background: #013E37;
+          border-bottom: 1px solid #0A5C54;
+        }
+        .standup-detail-header .standup-modal-title {
+          color: #FFEFB3;
+        }
+        .standup-detail-header .standup-modal-subtitle {
+          color: #FFEFB3;
+          opacity: 0.7;
+        }
+        .standup-detail-header .standup-modal-close {
+          color: #FFEFB3;
+        }
+        .standup-detail-header .standup-modal-close:hover {
+          background: rgba(255, 239, 179, 0.2);
+        }
+        .standup-modal-title {
+          font-size: 20px;
+          font-weight: 700;
+          color: #013E37;
+          margin: 0;
+        }
+        .standup-modal-subtitle {
+          font-size: 14px;
+          color: #013E37;
+          opacity: 0.6;
+          margin-top: 2px;
+          margin: 2px 0 0 0;
+        }
+        .standup-modal-close {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 8px;
+          border-radius: 10px;
+          border: none;
+          background: transparent;
+          color: #013E37;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .standup-modal-close:hover {
+          background: rgba(1, 62, 55, 0.1);
+        }
+        .standup-modal-close-icon {
+          width: 20px;
+          height: 20px;
+        }
+        .standup-modal-form {
+          padding: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          overflow-y: auto;
+        }
+        .standup-form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          animation: fadeInUp 0.4s ease forwards;
+          opacity: 0;
+        }
+        .standup-form-group:nth-child(1) { animation-delay: 0.05s; }
+        .standup-form-group:nth-child(2) { animation-delay: 0.1s; }
+        .standup-form-group:nth-child(3) { animation-delay: 0.15s; }
+        .standup-form-group:nth-child(4) { animation-delay: 0.2s; }
+        .standup-form-group:nth-child(5) { animation-delay: 0.25s; }
+        .standup-form-label {
+          font-size: 14px;
+          font-weight: 500;
+          color: #013E37;
+        }
+        .standup-form-required {
+          color: #EF4444;
+          margin-left: 4px;
+        }
+        .standup-form-textarea {
+          padding: 10px 12px;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          font-size: 14px;
+          font-family: inherit;
+          resize: vertical;
+          outline: none;
+          transition: all 0.3s ease;
+          background: #ffffff;
+          color: #013E37;
+          min-height: 60px;
+        }
+        .standup-form-textarea:focus {
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+        .standup-form-textarea::placeholder {
+          color: #013E37;
+          opacity: 0.4;
+        }
+        .standup-modal-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+          padding-top: 16px;
+          border-top: 1px solid #FFEFB3;
+        }
+        .standup-modal-cancel {
+          padding: 10px 20px;
+          background: transparent;
+          color: #013E37;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .standup-modal-cancel:hover:not(:disabled) {
+          background: #FFEFB3;
+          border-color: #013E37;
+        }
+        .standup-modal-cancel:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        .standup-modal-submit {
+          padding: 10px 20px;
+          background: #013E37;
+          color: #FFEFB3;
+          border: none;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .standup-modal-submit:hover:not(:disabled) {
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
+        }
+        .standup-modal-submit:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        /* ============================================
+           DETAIL MODAL
+           ============================================ */
+        .standup-detail-body {
+          padding: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          overflow-y: auto;
+        }
+        .standup-detail-section {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid #FFEFB3;
+        }
+        .standup-detail-blocker {
+          background: #FFEFB3;
+          padding: 12px;
+          border-radius: 8px;
+          border: 1px solid #013E37;
+        }
+        .standup-detail-label {
+          font-size: 12px;
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.5;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+        }
+        .standup-blocker-label {
+          opacity: 1;
+          color: #013E37;
+        }
+        .standup-detail-value {
+          font-size: 15px;
+          color: #013E37;
+          font-weight: 500;
+          word-break: break-word;
+        }
+        .standup-blocker-value {
+          color: #013E37;
+        }
+        .standup-detail-actions {
+          display: flex;
+          gap: 10px;
+          padding-top: 16px;
+          border-top: 1px solid #FFEFB3;
+          margin-top: 4px;
+        }
+        .standup-detail-close {
+          padding: 10px 20px;
+          background: #FFEFB3;
+          color: #013E37;
+          border: 1px solid #013E37;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          flex: 1;
+        }
+        .standup-detail-close:hover {
+          background: #013E37;
+          color: #FFEFB3;
+        }
+        .standup-detail-submit {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 10px 20px;
+          background: #013E37;
+          color: #FFEFB3;
+          border: none;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          flex: 1;
+        }
+        .standup-detail-submit:hover:not(:disabled) {
+          background: #0A5C54;
+        }
+        .standup-detail-submit:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        .standup-detail-submit-icon {
+          width: 14px;
+          height: 14px;
+        }
+
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.5;
+            transform: scale(0.95);
+          }
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 1024px) {
+          .standup-stats {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (max-width: 768px) {
+          .standup-header {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .standup-header-right {
+            width: 100%;
+            flex-wrap: wrap;
+          }
+          .standup-create-btn {
+            flex: 1;
+            justify-content: center;
+          }
+          .standup-filter-btn {
+            flex: 1;
+            justify-content: center;
+          }
+          .standup-stats {
+            grid-template-columns: 1fr 1fr;
+          }
+          .standup-filter-row {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .standup-filter-group {
+            min-width: unset;
+          }
+          .standup-clear-filters {
+            align-self: stretch;
+          }
+          .standup-grid {
+            grid-template-columns: 1fr;
+          }
+          .standup-modal,
+          .standup-detail-modal {
+            max-width: 100%;
+            border-radius: 12px;
+            max-height: 95vh;
+          }
+          .standup-modal-actions {
+            flex-direction: column;
+          }
+          .standup-modal-cancel,
+          .standup-modal-submit {
+            width: 100%;
+            justify-content: center;
+          }
+          .standup-detail-actions {
+            flex-direction: column;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .standup-stats {
+            grid-template-columns: 1fr;
+          }
+          .standup-stat-card {
+            padding: 12px 16px;
+          }
+          .standup-stat-value {
+            font-size: 18px;
+          }
+          .standup-title {
+            font-size: 24px;
+          }
+          .standup-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+          }
+          .standup-card-footer {
+            flex-direction: column;
+          }
+          .standup-view-btn,
+          .standup-submit-btn {
+            width: 100%;
+          }
+          .standup-modal-header {
+            padding: 16px;
+            flex-wrap: wrap;
+          }
+          .standup-modal-title {
+            font-size: 18px;
+          }
+          .standup-modal-form,
+          .standup-detail-body {
+            padding: 16px;
+          }
+        }
+      `}</style>
+    </>
   );
 };
-
-const styles = {
-  container: {
-    padding: '24px 32px',
-    maxWidth: '1400px',
-    margin: '0 auto',
-    width: '100%',
-    backgroundColor: '#F8FAFC',
-    minHeight: '100vh',
-  },
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '64vh',
-    gap: '16px',
-  },
-  loadingText: {
-    color: '#64748B',
-    fontSize: '14px',
-    fontWeight: '500',
-  },
-  spinner: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    border: '3px solid #E5E7EB',
-    borderTopColor: '#3B82F6',
-    animation: 'spin 0.8s linear infinite',
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '24px',
-    flexWrap: 'wrap',
-    gap: '16px',
-  },
-  title: {
-    fontSize: '28px',
-    fontWeight: '700',
-    color: '#0F172A',
-    margin: 0,
-    letterSpacing: '-0.5px',
-  },
-  subtitle: {
-    fontSize: '15px',
-    color: '#64748B',
-    marginTop: '4px',
-    margin: '4px 0 0 0',
-  },
-  headerActions: {
-    display: 'flex',
-    gap: '10px',
-    flexWrap: 'wrap',
-  },
-  refreshButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '10px',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderRadius: '10px',
-    color: '#64748B',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  filterButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '10px 16px',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderRadius: '10px',
-    fontSize: '14px',
-    fontWeight: '500',
-    color: '#475569',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    whiteSpace: 'nowrap',
-  },
-  createButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 24px',
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: '10px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)',
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-    gap: '16px',
-    marginBottom: '24px',
-  },
-  statCard: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '14px',
-    backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    padding: '16px 20px',
-    border: '1px solid #E2E8F0',
-    transition: 'all 0.2s ease',
-  },
-  statContent: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flex: 1,
-  },
-  statLabel: {
-    fontSize: '13px',
-    color: '#64748B',
-    margin: 0,
-    fontWeight: '500',
-  },
-  statValue: {
-    fontSize: '22px',
-    fontWeight: '700',
-    color: '#0F172A',
-    margin: 0,
-    lineHeight: 1.2,
-  },
-  statIcon: {
-    opacity: 0.8,
-  },
-  filterPanel: {
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderRadius: '10px',
-    padding: '16px 20px',
-    marginBottom: '16px',
-  },
-  filterRow: {
-    display: 'flex',
-    alignItems: 'flex-end',
-    gap: '16px',
-    flexWrap: 'wrap',
-  },
-  filterGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-    flex: 1,
-    minWidth: '150px',
-  },
-  filterLabel: {
-    fontSize: '12px',
-    fontWeight: '600',
-    color: '#64748B',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  filterInput: {
-    padding: '8px 12px',
-    border: '1px solid #E2E8F0',
-    borderRadius: '8px',
-    fontSize: '14px',
-    backgroundColor: '#FFFFFF',
-    color: '#0F172A',
-    outline: 'none',
-    transition: 'all 0.2s ease',
-    width: '100%',
-  },
-  filterSelect: {
-    padding: '8px 12px',
-    border: '1px solid #E2E8F0',
-    borderRadius: '8px',
-    fontSize: '14px',
-    backgroundColor: '#FFFFFF',
-    color: '#0F172A',
-    outline: 'none',
-    transition: 'all 0.2s ease',
-    cursor: 'pointer',
-    width: '100%',
-  },
-  searchBar: {
-    display: 'flex',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderRadius: '8px',
-    padding: '0 12px',
-    transition: 'all 0.2s ease',
-    width: '100%',
-  },
-  searchIcon: {
-    color: '#94A3B8',
-    flexShrink: 0,
-  },
-  searchInput: {
-    flex: 1,
-    padding: '8px 10px',
-    border: 'none',
-    outline: 'none',
-    fontSize: '14px',
-    backgroundColor: 'transparent',
-    color: '#0F172A',
-  },
-  clearSearch: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '4px',
-    background: 'none',
-    border: 'none',
-    color: '#94A3B8',
-    cursor: 'pointer',
-    borderRadius: '4px',
-    transition: 'all 0.2s ease',
-  },
-  clearFiltersButton: {
-    padding: '8px 16px',
-    backgroundColor: '#F1F5F9',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '13px',
-    fontWeight: '500',
-    color: '#475569',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    whiteSpace: 'nowrap',
-    alignSelf: 'center',
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
-    gap: '20px',
-  },
-  standupCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    border: '1px solid #E2E8F0',
-    overflow: 'hidden',
-    transition: 'all 0.2s ease',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  standupHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '14px 16px',
-    borderBottom: '1px solid #F1F5F9',
-    backgroundColor: '#F8FAFC',
-  },
-  standupUser: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-  },
-  standupAvatar: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '50%',
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '14px',
-    fontWeight: '600',
-    flexShrink: 0,
-  },
-  standupName: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#0F172A',
-  },
-  standupMeta: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    fontSize: '12px',
-    color: '#94A3B8',
-  },
-  standupDot: {
-    margin: '0 4px',
-  },
-  statusBadge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '4px',
-    padding: '3px 10px',
-    borderRadius: '6px',
-    fontSize: '11px',
-    fontWeight: '600',
-  },
-  standupBody: {
-    padding: '14px 16px',
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-  standupSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-  },
-  blockerSection: {
-    backgroundColor: '#FEF2F2',
-    padding: '8px 10px',
-    borderRadius: '6px',
-    border: '1px solid #FEE2E2',
-  },
-  standupLabel: {
-    fontSize: '11px',
-    fontWeight: '600',
-    color: '#94A3B8',
-    textTransform: 'uppercase',
-    letterSpacing: '0.3px',
-  },
-  standupText: {
-    fontSize: '14px',
-    color: '#0F172A',
-    margin: 0,
-    lineHeight: 1.5,
-    wordBreak: 'break-word',
-  },
-  standupFooter: {
-    display: 'flex',
-    gap: '8px',
-    padding: '12px 16px',
-    borderTop: '1px solid #F1F5F9',
-    backgroundColor: '#F8FAFC',
-  },
-  viewButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '6px 14px',
-    backgroundColor: '#EFF6FF',
-    color: '#3B82F6',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '13px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    flex: 1,
-    justifyContent: 'center',
-  },
-  submitButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '6px 14px',
-    backgroundColor: '#22C55E',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '13px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    flex: 1,
-    justifyContent: 'center',
-  },
-  emptyState: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '400px',
-    backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    border: '1px solid #E2E8F0',
-  },
-  emptyContent: {
-    textAlign: 'center',
-    padding: '48px',
-  },
-  emptyIcon: {
-    color: '#94A3B8',
-    marginBottom: '16px',
-  },
-  emptyTitle: {
-    fontSize: '20px',
-    fontWeight: '600',
-    color: '#0F172A',
-    margin: '0 0 8px 0',
-  },
-  emptySubtext: {
-    fontSize: '14px',
-    color: '#64748B',
-    margin: '0 0 20px 0',
-  },
-  emptyButton: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 24px',
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: '10px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    backdropFilter: 'blur(4px)',
-    zIndex: 9999,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '20px',
-  },
-  modalContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '16px',
-    width: '100%',
-    maxWidth: '600px',
-    maxHeight: '90vh',
-    display: 'flex',
-    flexDirection: 'column',
-    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-    overflow: 'hidden',
-  },
-  detailContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '16px',
-    width: '100%',
-    maxWidth: '700px',
-    maxHeight: '90vh',
-    display: 'flex',
-    flexDirection: 'column',
-    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-    overflow: 'hidden',
-  },
-  modalHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '20px 24px',
-    borderBottom: '1px solid #E2E8F0',
-    backgroundColor: '#F8FAFC',
-    flexShrink: 0,
-  },
-  modalTitle: {
-    fontSize: '20px',
-    fontWeight: '700',
-    color: '#0F172A',
-    margin: 0,
-  },
-  modalSubtitle: {
-    fontSize: '14px',
-    color: '#64748B',
-    marginTop: '2px',
-    margin: '2px 0 0 0',
-  },
-  modalClose: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '8px',
-    borderRadius: '10px',
-    border: 'none',
-    backgroundColor: 'transparent',
-    color: '#64748B',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  modalForm: {
-    padding: '24px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-    overflowY: 'auto',
-  },
-  formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  },
-  formLabel: {
-    fontSize: '14px',
-    fontWeight: '500',
-    color: '#0F172A',
-  },
-  requiredStar: {
-    color: '#EF4444',
-    marginLeft: '4px',
-  },
-  textarea: {
-    padding: '10px 12px',
-    border: '1px solid #E2E8F0',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontFamily: 'inherit',
-    resize: 'vertical',
-    outline: 'none',
-    transition: 'all 0.2s ease',
-    backgroundColor: '#FFFFFF',
-    color: '#0F172A',
-    minHeight: '60px',
-  },
-  modalActions: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '10px',
-    paddingTop: '16px',
-    borderTop: '1px solid #E2E8F0',
-  },
-  modalCancelButton: {
-    padding: '10px 20px',
-    backgroundColor: 'transparent',
-    color: '#475569',
-    border: '1px solid #E2E8F0',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  modalSubmitButton: {
-    padding: '10px 20px',
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  detailBody: {
-    padding: '24px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-    overflowY: 'auto',
-  },
-  detailSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-    paddingBottom: '12px',
-    borderBottom: '1px solid #F1F5F9',
-  },
-  detailBlocker: {
-    backgroundColor: '#FEF2F2',
-    padding: '12px',
-    borderRadius: '8px',
-    border: '1px solid #FEE2E2',
-  },
-  detailLabel: {
-    fontSize: '12px',
-    fontWeight: '600',
-    color: '#94A3B8',
-    textTransform: 'uppercase',
-    letterSpacing: '0.3px',
-  },
-  detailValue: {
-    fontSize: '15px',
-    color: '#0F172A',
-    fontWeight: '500',
-    wordBreak: 'break-word',
-  },
-  detailActions: {
-    display: 'flex',
-    gap: '10px',
-    paddingTop: '16px',
-    borderTop: '1px solid #E2E8F0',
-    marginTop: '4px',
-  },
-  detailCloseButton: {
-    padding: '10px 20px',
-    backgroundColor: '#F1F5F9',
-    color: '#475569',
-    border: '1px solid #E2E8F0',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    flex: 1,
-  },
-  detailSubmitButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    padding: '10px 20px',
-    backgroundColor: '#22C55E',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    flex: 1,
-  },
-};
-
-// Add keyframe animations and hover styles
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  .create-button:hover:not(:disabled) {
-    background-color: #2563EB !important;
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.35) !important;
-    transform: translateY(-1px);
-  }
-
-  .refresh-button:hover:not(:disabled) {
-    background-color: #F1F5F9 !important;
-  }
-
-  .filter-button:hover:not(:disabled) {
-    background-color: #F1F5F9 !important;
-  }
-
-  .clear-filters-button:hover:not(:disabled) {
-    background-color: #E2E8F0 !important;
-  }
-
-  .search-bar:focus-within {
-    border-color: #3B82F6 !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-  }
-
-  .filter-input:focus,
-  .filter-select:focus {
-    border-color: #3B82F6 !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-  }
-
-  .clear-search:hover {
-    background-color: #F1F5F9 !important;
-  }
-
-  .standup-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08) !important;
-  }
-
-  .view-button:hover:not(:disabled) {
-    background-color: #DBEAFE !important;
-  }
-
-  .submit-button:hover:not(:disabled) {
-    background-color: #16A34A !important;
-  }
-
-  .empty-button:hover {
-    background-color: #2563EB !important;
-  }
-
-  .modal-close:hover:not(:disabled) {
-    background-color: #F1F5F9 !important;
-  }
-
-  .modal-cancel-button:hover:not(:disabled) {
-    background-color: #F1F5F9 !important;
-  }
-
-  .modal-submit-button:hover:not(:disabled) {
-    background-color: #2563EB !important;
-  }
-
-  .detail-close-button:hover:not(:disabled) {
-    background-color: #E2E8F0 !important;
-  }
-
-  .detail-submit-button:hover:not(:disabled) {
-    background-color: #16A34A !important;
-  }
-
-  .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
-  }
-
-  .textarea:focus {
-    border-color: #3B82F6 !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-  }
-
-  @media (max-width: 1024px) {
-    .stats-grid {
-      grid-template-columns: repeat(2, 1fr) !important;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .container {
-      padding: 16px !important;
-    }
-
-    .header {
-      flex-direction: column !important;
-      align-items: stretch !important;
-    }
-
-    .header-actions {
-      width: 100% !important;
-      justify-content: flex-start !important;
-    }
-
-    .create-button {
-      flex: 1 !important;
-      justify-content: center !important;
-    }
-
-    .filter-button {
-      flex: 1 !important;
-      justify-content: center !important;
-    }
-
-    .stats-grid {
-      grid-template-columns: 1fr 1fr !important;
-    }
-
-    .filter-row {
-      flex-direction: column !important;
-      align-items: stretch !important;
-    }
-
-    .filter-group {
-      min-width: unset !important;
-    }
-
-    .clear-filters-button {
-      align-self: stretch !important;
-    }
-
-    .grid {
-      grid-template-columns: 1fr !important;
-    }
-
-    .modal-container,
-    .detail-container {
-      max-width: 100% !important;
-      border-radius: 12px !important;
-      max-height: 95vh !important;
-    }
-
-    .modal-actions {
-      flex-direction: column !important;
-    }
-
-    .modal-cancel-button,
-    .modal-submit-button {
-      width: 100% !important;
-      justify-content: center !important;
-    }
-
-    .detail-actions {
-      flex-direction: column !important;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .container {
-      padding: 12px !important;
-    }
-
-    .stats-grid {
-      grid-template-columns: 1fr !important;
-    }
-
-    .stat-card {
-      padding: 12px 16px !important;
-    }
-
-    .stat-value {
-      font-size: 18px !important;
-    }
-
-    .title {
-      font-size: 22px !important;
-    }
-
-    .standup-card {
-      border-radius: 8px !important;
-    }
-
-    .standup-header {
-      flex-direction: column !important;
-      align-items: flex-start !important;
-      gap: 8px !important;
-    }
-
-    .standup-footer {
-      flex-direction: column !important;
-    }
-
-    .view-button,
-    .submit-button {
-      width: 100% !important;
-    }
-
-    .modal-header {
-      padding: 16px !important;
-      flex-wrap: wrap !important;
-    }
-
-    .modal-title {
-      font-size: 18px !important;
-    }
-
-    .modal-form,
-    .detail-body {
-      padding: 16px !important;
-    }
-  }
-`;
-document.head.appendChild(styleSheet);
 
 export default Standups;

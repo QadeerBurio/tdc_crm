@@ -19,8 +19,27 @@ import {
 import { Loader } from '../../components/common/Loader';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { 
+  TrendingUp, 
+  Users, 
+  Briefcase, 
+  Target,
+  DollarSign,
+  Award,
+  Calendar,
+  Activity
+} from 'lucide-react';
 
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+// Updated color palette
+const COLORS = ['#013E37', '#FFEFB3', '#2D6A5F', '#FFD966', '#4A8C7A'];
+const PRIMARY_COLOR = '#013E37';
+const ACCENT_COLOR = '#FFEFB3';
+const WHITE = '#FFFFFF';
+const TEXT_DARK = '#013E37';
+const TEXT_LIGHT = '#4A6A6A';
+const SUCCESS_COLOR = '#2D6A5F';
+const CHART_GRADIENT_START = '#013E37';
+const CHART_GRADIENT_END = '#4A8C7A';
 
 const ExecutiveDashboard = () => {
   const { token } = useAuth();
@@ -122,11 +141,58 @@ const ExecutiveDashboard = () => {
     }).format(value);
   };
 
+  // Metric cards data
+  const metricCards = [
+    {
+      title: 'Total Revenue',
+      value: formatCurrency(revenue.totalRevenue || 0),
+      change: '+15.3%',
+      changeLabel: 'from last month',
+      icon: DollarSign,
+      iconBg: '#013E37',
+      iconColor: '#FFFFFF',
+      gradient: 'linear-gradient(135deg, #013E37 0%, #2D6A5F 100%)',
+    },
+    {
+      title: 'Conversion Rate',
+      value: `${sales.conversionRate || 0}%`,
+      change: '+2.1%',
+      changeLabel: 'from last month',
+      icon: Target,
+      iconBg: '#2D6A5F',
+      iconColor: '#FFFFFF',
+      gradient: 'linear-gradient(135deg, #2D6A5F 0%, #4A8C7A 100%)',
+    },
+    {
+      title: 'Active Projects',
+      value: projects.active || 0,
+      change: '+4',
+      changeLabel: 'new this month',
+      icon: Briefcase,
+      iconBg: '#FFD966',
+      iconColor: '#013E37',
+      gradient: 'linear-gradient(135deg, #FFD966 0%, #FFEFB3 100%)',
+    },
+    {
+      title: 'Avg Productivity',
+      value: `${employees.averageProductivity || 0}%`,
+      change: '+5.2%',
+      changeLabel: 'from last month',
+      icon: Activity,
+      iconBg: '#4A8C7A',
+      iconColor: '#FFFFFF',
+      gradient: 'linear-gradient(135deg, #4A8C7A 0%, #2D6A5F 100%)',
+    },
+  ];
+
   return (
     <div style={styles.container}>
       {/* Header */}
       <div style={styles.header}>
-        <h1 style={styles.title}>Executive Dashboard</h1>
+        <div>
+          <h1 style={styles.title}>Executive Dashboard</h1>
+          <p style={styles.subtitle}>Welcome back! Here's what's happening with your business</p>
+        </div>
         <div style={styles.timeRangeContainer}>
           {['week', 'month', 'quarter', 'year'].map((range) => (
             <button
@@ -134,8 +200,8 @@ const ExecutiveDashboard = () => {
               onClick={() => setTimeRange(range)}
               style={{
                 ...styles.timeRangeButton,
-                backgroundColor: timeRange === range ? '#3B82F6' : '#F3F4F6',
-                color: timeRange === range ? '#FFFFFF' : '#374151',
+                backgroundColor: timeRange === range ? PRIMARY_COLOR : ACCENT_COLOR,
+                color: timeRange === range ? WHITE : TEXT_DARK,
               }}
             >
               {range.charAt(0).toUpperCase() + range.slice(1)}
@@ -146,34 +212,34 @@ const ExecutiveDashboard = () => {
 
       {/* Metrics Cards */}
       <div style={styles.metricsGrid}>
-        <div style={styles.metricCard}>
-          <p style={styles.metricLabel}>Total Revenue</p>
-          <p style={styles.metricValue}>
-            {formatCurrency(revenue.totalRevenue || 0)}
-          </p>
-          <p style={styles.metricChangePositive}>+15.3% from last month</p>
-        </div>
-        <div style={styles.metricCard}>
-          <p style={styles.metricLabel}>Conversion Rate</p>
-          <p style={styles.metricValue}>
-            {sales.conversionRate || 0}%
-          </p>
-          <p style={styles.metricChangePositive}>+2.1% from last month</p>
-        </div>
-        <div style={styles.metricCard}>
-          <p style={styles.metricLabel}>Active Projects</p>
-          <p style={styles.metricValue}>
-            {projects.active || 0}
-          </p>
-          <p style={styles.metricChangePositive}>+4 new this month</p>
-        </div>
-        <div style={styles.metricCard}>
-          <p style={styles.metricLabel}>Avg Productivity</p>
-          <p style={styles.metricValue}>
-            {employees.averageProductivity || 0}%
-          </p>
-          <p style={styles.metricChangePositive}>+5.2% from last month</p>
-        </div>
+        {metricCards.map((card, index) => {
+          const Icon = card.icon;
+          return (
+            <div key={index} style={styles.metricCard}>
+              <div style={styles.metricCardHeader}>
+                <div style={styles.metricIconWrapper}>
+                  <div style={{ ...styles.metricIcon, background: card.iconBg }}>
+                    <Icon size={20} color={card.iconColor} />
+                  </div>
+                </div>
+                <div style={styles.metricTrend}>
+                  <span style={styles.trendIndicator}>↑</span>
+                  <span style={styles.trendValue}>{card.change}</span>
+                </div>
+              </div>
+              <p style={styles.metricValue}>{card.value}</p>
+              <p style={styles.metricLabel}>{card.title}</p>
+              <div style={styles.metricFooter}>
+                <span style={styles.metricChangePositive}>
+                  {card.change} {card.changeLabel}
+                </span>
+              </div>
+              <div style={styles.metricProgressBar}>
+                <div style={{ ...styles.metricProgressFill, width: '65%', background: card.gradient }} />
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Charts */}
@@ -182,6 +248,7 @@ const ExecutiveDashboard = () => {
         <div style={styles.chartCard}>
           <div style={styles.chartHeader}>
             <h3 style={styles.chartTitle}>Revenue Trend</h3>
+            <span style={styles.chartBadge}>This {timeRange}</span>
           </div>
           <div style={styles.chartContent}>
             <div style={styles.chartContainer}>
@@ -189,19 +256,22 @@ const ExecutiveDashboard = () => {
                 <AreaChart data={displayRevenueData}>
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                      <stop offset="5%" stopColor={CHART_GRADIENT_START} stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor={CHART_GRADIENT_END} stopOpacity={0.1}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E8E0D0" />
+                  <XAxis dataKey="month" stroke={TEXT_LIGHT} />
+                  <YAxis tickFormatter={(value) => formatCurrency(value)} stroke={TEXT_LIGHT} />
+                  <Tooltip 
+                    formatter={(value) => formatCurrency(value)}
+                    contentStyle={{ backgroundColor: WHITE, borderColor: ACCENT_COLOR }}
+                  />
                   <Legend />
                   <Area
                     type="monotone"
                     dataKey="revenue"
-                    stroke="#3B82F6"
+                    stroke={PRIMARY_COLOR}
                     fillOpacity={1}
                     fill="url(#colorRevenue)"
                     name="Revenue"
@@ -216,6 +286,7 @@ const ExecutiveDashboard = () => {
         <div style={styles.chartCard}>
           <div style={styles.chartHeader}>
             <h3 style={styles.chartTitle}>Brand Performance</h3>
+            <span style={styles.chartBadge}>Revenue Share</span>
           </div>
           <div style={styles.chartContent}>
             <div style={styles.chartContainer}>
@@ -237,7 +308,10 @@ const ExecutiveDashboard = () => {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
+                  <Tooltip 
+                    formatter={(value) => formatCurrency(value)}
+                    contentStyle={{ backgroundColor: WHITE, borderColor: ACCENT_COLOR }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -248,16 +322,17 @@ const ExecutiveDashboard = () => {
         <div style={styles.chartCard}>
           <div style={styles.chartHeader}>
             <h3 style={styles.chartTitle}>Lead Pipeline</h3>
+            <span style={styles.chartBadge}>Stage Distribution</span>
           </div>
           <div style={styles.chartContent}>
             <div style={styles.chartContainer}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={displayStages}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="_id" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#3B82F6" name="Leads" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E8E0D0" />
+                  <XAxis dataKey="_id" stroke={TEXT_LIGHT} />
+                  <YAxis stroke={TEXT_LIGHT} />
+                  <Tooltip contentStyle={{ backgroundColor: WHITE, borderColor: ACCENT_COLOR }} />
+                  <Bar dataKey="count" fill={PRIMARY_COLOR} name="Leads" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -268,19 +343,20 @@ const ExecutiveDashboard = () => {
         <div style={styles.chartCard}>
           <div style={styles.chartHeader}>
             <h3 style={styles.chartTitle}>Department Productivity</h3>
+            <span style={styles.chartBadge}>Performance</span>
           </div>
           <div style={styles.chartContent}>
             <div style={styles.chartContainer}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={displayDepartments}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="department" />
-                  <YAxis yAxisId="left" />
-                  <YAxis yAxisId="right" orientation="right" />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E8E0D0" />
+                  <XAxis dataKey="department" stroke={TEXT_LIGHT} />
+                  <YAxis yAxisId="left" stroke={TEXT_LIGHT} />
+                  <YAxis yAxisId="right" orientation="right" stroke={TEXT_LIGHT} />
+                  <Tooltip contentStyle={{ backgroundColor: WHITE, borderColor: ACCENT_COLOR }} />
                   <Legend />
-                  <Bar yAxisId="left" dataKey="productivity" fill="#10B981" name="Productivity %" />
-                  <Bar yAxisId="right" dataKey="taskCompletion" fill="#3B82F6" name="Tasks Completed" />
+                  <Bar yAxisId="left" dataKey="productivity" fill="#2D6A5F" name="Productivity %" radius={[4, 4, 0, 0]} />
+                  <Bar yAxisId="right" dataKey="taskCompletion" fill={PRIMARY_COLOR} name="Tasks Completed" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -292,24 +368,29 @@ const ExecutiveDashboard = () => {
       <div style={styles.performersCard}>
         <div style={styles.performersHeader}>
           <h3 style={styles.performersTitle}>Top Performers</h3>
+          <span style={styles.chartBadge}>This Month</span>
         </div>
         <div style={styles.performersContent}>
           <div style={styles.performersGrid}>
             {displayPerformers.map((performer, index) => (
               <div key={index} style={styles.performerCard}>
+                <div style={styles.performerRank}>#{index + 1}</div>
                 <div style={styles.performerAvatar}>
                   {performer.name?.charAt(0) || '?'}
                 </div>
-                <div>
+                <div style={styles.performerInfo}>
                   <p style={styles.performerName}>
                     {performer.name || 'Unknown'}
                   </p>
                   <p style={styles.performerDepartment}>
                     {performer.department || 'N/A'}
                   </p>
-                  <p style={styles.performerScore}>
-                    Score: {performer.averageScore || 0}%
-                  </p>
+                </div>
+                <div style={styles.performerScore}>
+                  <span style={styles.performerScoreValue}>
+                    {performer.averageScore || 0}%
+                  </span>
+                  <span style={styles.performerScoreLabel}>Score</span>
                 </div>
               </div>
             ))}
@@ -326,91 +407,170 @@ const styles = {
     maxWidth: '1400px',
     margin: '0 auto',
     width: '100%',
+    backgroundColor: '#FFFDF5',
+    minHeight: '100vh',
   },
   loadingContainer: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     height: '96vh',
+    backgroundColor: '#FFFDF5',
   },
   header: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: '24px',
+    marginBottom: '32px',
     flexWrap: 'wrap',
     gap: '16px',
   },
   title: {
-    fontSize: '24px',
+    fontSize: '28px',
     fontWeight: '700',
-    color: '#111827',
+    color: PRIMARY_COLOR,
     margin: 0,
+    letterSpacing: '-0.5px',
+  },
+  subtitle: {
+    fontSize: '14px',
+    color: TEXT_LIGHT,
+    margin: '4px 0 0 0',
   },
   timeRangeContainer: {
     display: 'flex',
     gap: '8px',
   },
   timeRangeButton: {
-    padding: '8px 16px',
+    padding: '8px 20px',
     borderRadius: '8px',
     fontSize: '14px',
     fontWeight: '500',
-    border: 'none',
+    border: `1px solid ${ACCENT_COLOR}`,
     cursor: 'pointer',
     transition: 'all 0.2s ease',
   },
   metricsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
     gap: '24px',
-    marginBottom: '24px',
+    marginBottom: '32px',
   },
   metricCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: '12px',
+    backgroundColor: WHITE,
+    borderRadius: '16px',
     padding: '24px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0 2px 8px rgba(1, 62, 55, 0.08)',
+    border: `1px solid ${ACCENT_COLOR}`,
+    transition: 'all 0.3s ease',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  metricCardHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '16px',
+  },
+  metricIconWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  metricIcon: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  metricTrend: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '4px 12px',
+    backgroundColor: '#E8F5E9',
+    borderRadius: '20px',
+  },
+  trendIndicator: {
+    color: SUCCESS_COLOR,
+    fontSize: '14px',
+    fontWeight: '700',
+  },
+  trendValue: {
+    color: SUCCESS_COLOR,
+    fontSize: '13px',
+    fontWeight: '600',
+  },
+  metricValue: {
+    fontSize: '32px',
+    fontWeight: '700',
+    color: PRIMARY_COLOR,
+    margin: 0,
+    lineHeight: 1.2,
   },
   metricLabel: {
     fontSize: '14px',
-    color: '#6B7280',
-    margin: 0,
-  },
-  metricValue: {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#111827',
-    marginTop: '4px',
+    color: TEXT_LIGHT,
     margin: '4px 0 0 0',
+    fontWeight: '500',
+  },
+  metricFooter: {
+    marginTop: '12px',
   },
   metricChangePositive: {
-    fontSize: '14px',
-    color: '#22C55E',
-    marginTop: '4px',
-    margin: '4px 0 0 0',
+    fontSize: '13px',
+    color: SUCCESS_COLOR,
+    fontWeight: '500',
+  },
+  metricProgressBar: {
+    width: '100%',
+    height: '4px',
+    backgroundColor: '#F0F0F0',
+    borderRadius: '4px',
+    marginTop: '16px',
+    overflow: 'hidden',
+  },
+  metricProgressFill: {
+    height: '100%',
+    borderRadius: '4px',
+    transition: 'width 0.6s ease',
   },
   chartsGrid: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     gap: '24px',
-    marginBottom: '24px',
+    marginBottom: '32px',
   },
   chartCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+    backgroundColor: WHITE,
+    borderRadius: '16px',
+    boxShadow: '0 2px 8px rgba(1, 62, 55, 0.08)',
     overflow: 'hidden',
+    border: `1px solid ${ACCENT_COLOR}`,
+    transition: 'all 0.3s ease',
   },
   chartHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: '16px 24px',
-    borderBottom: '1px solid #E5E7EB',
+    borderBottom: `2px solid ${ACCENT_COLOR}`,
+    backgroundColor: '#FFFDF5',
   },
   chartTitle: {
     fontSize: '18px',
     fontWeight: '600',
-    color: '#111827',
+    color: PRIMARY_COLOR,
     margin: 0,
+  },
+  chartBadge: {
+    fontSize: '12px',
+    fontWeight: '500',
+    color: TEXT_LIGHT,
+    backgroundColor: '#F0F0F0',
+    padding: '4px 12px',
+    borderRadius: '20px',
   },
   chartContent: {
     padding: '24px',
@@ -420,19 +580,24 @@ const styles = {
     width: '100%',
   },
   performersCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+    backgroundColor: WHITE,
+    borderRadius: '16px',
+    boxShadow: '0 2px 8px rgba(1, 62, 55, 0.08)',
     overflow: 'hidden',
+    border: `1px solid ${ACCENT_COLOR}`,
   },
   performersHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: '16px 24px',
-    borderBottom: '1px solid #E5E7EB',
+    borderBottom: `2px solid ${ACCENT_COLOR}`,
+    backgroundColor: '#FFFDF5',
   },
   performersTitle: {
     fontSize: '18px',
     fontWeight: '600',
-    color: '#111827',
+    color: PRIMARY_COLOR,
     margin: 0,
   },
   performersContent: {
@@ -440,23 +605,34 @@ const styles = {
   },
   performersGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '24px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gap: '16px',
   },
   performerCard: {
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
+    gap: '12px',
     padding: '16px',
-    backgroundColor: '#F9FAFB',
-    borderRadius: '8px',
+    backgroundColor: '#FFFDF5',
+    borderRadius: '12px',
+    border: `1px solid ${ACCENT_COLOR}`,
+    transition: 'all 0.2s ease',
+    position: 'relative',
+  },
+  performerRank: {
+    position: 'absolute',
+    top: '8px',
+    right: '12px',
+    fontSize: '12px',
+    fontWeight: '700',
+    color: '#D0C8B8',
   },
   performerAvatar: {
     width: '48px',
     height: '48px',
     borderRadius: '50%',
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
+    backgroundColor: PRIMARY_COLOR,
+    color: WHITE,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -464,22 +640,37 @@ const styles = {
     fontWeight: '600',
     flexShrink: 0,
   },
+  performerInfo: {
+    flex: 1,
+  },
   performerName: {
     fontSize: '16px',
     fontWeight: '500',
-    color: '#111827',
+    color: PRIMARY_COLOR,
     margin: 0,
   },
   performerDepartment: {
-    fontSize: '14px',
-    color: '#6B7280',
+    fontSize: '13px',
+    color: TEXT_LIGHT,
     margin: 0,
   },
   performerScore: {
-    fontSize: '14px',
-    fontWeight: '500',
-    color: '#22C55E',
-    margin: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    paddingLeft: '12px',
+    borderLeft: `2px solid ${ACCENT_COLOR}`,
+  },
+  performerScoreValue: {
+    fontSize: '18px',
+    fontWeight: '700',
+    color: SUCCESS_COLOR,
+  },
+  performerScoreLabel: {
+    fontSize: '11px',
+    color: TEXT_LIGHT,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
   },
 };
 
@@ -487,17 +678,31 @@ const styles = {
 const styleSheet = document.createElement('style');
 styleSheet.textContent = `
   .metric-card:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    transition: box-shadow 0.3s ease;
+    box-shadow: 0 8px 24px rgba(1, 62, 55, 0.15) !important;
+    transform: translateY(-4px);
+    transition: all 0.3s ease;
   }
   
   .time-range-button:hover:not(.active) {
-    background-color: #E5E7EB !important;
+    background-color: #E8E0D0 !important;
+    border-color: #013E37 !important;
+  }
+  
+  .time-range-button.active {
+    background-color: #013E37 !important;
+    color: #FFFFFF !important;
   }
   
   .performer-card:hover {
-    background-color: #F3F4F6 !important;
-    transition: background-color 0.2s ease;
+    background-color: ${ACCENT_COLOR} !important;
+    border-color: ${PRIMARY_COLOR} !important;
+    transform: translateX(4px);
+    transition: all 0.2s ease;
+  }
+  
+  .chart-card:hover {
+    box-shadow: 0 8px 24px rgba(1, 62, 55, 0.12) !important;
+    transition: all 0.3s ease;
   }
   
   @media (max-width: 1024px) {
@@ -542,6 +747,15 @@ styleSheet.textContent = `
       flex: 1 !important;
       min-width: 60px !important;
       text-align: center !important;
+      padding: 8px 12px !important;
+    }
+    
+    .metric-value {
+      font-size: 24px !important;
+    }
+    
+    .title {
+      font-size: 22px !important;
     }
   }
 `;

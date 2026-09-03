@@ -1,4 +1,4 @@
-// pages/kpi/KPIComparison.jsx - COMPLETE FIXED VERSION
+// pages/kpi/KPIComparison.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -30,7 +30,7 @@ const KPIComparison = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const API_URL = 'https://crmserver-production-4a42.up.railway.app/api';
-  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F472B6'];
+  const COLORS = ['#013E37', '#0A5C54', '#1A7A6E', '#FFEFB3', '#2A9A8A', '#3ABAAA', '#4ACACA', '#5ADADA'];
 
   useEffect(() => {
     fetchAvailableKPIs();
@@ -113,7 +113,6 @@ const KPIComparison = () => {
         if (result.success) {
           const kpis = result.data || [];
           setAvailableKPIs(kpis);
-          // Auto-select first 3 KPIs if none selected
           if (selectedKPIs.length === 0 && kpis.length > 0) {
             const defaultSelection = kpis.slice(0, 3).map(k => k._id);
             setSelectedKPIs(defaultSelection);
@@ -199,379 +198,371 @@ const KPIComparison = () => {
   if (loading && selectedKPIs.length > 0) {
     return (
       <div className="kc-loading">
-        <div className="kc-spinner"></div>
+        <div className="kc-loading-spinner"></div>
         <p className="kc-loading-text">Loading comparison data...</p>
       </div>
     );
   }
 
   return (
-    <div className="kc-container">
-      {/* Header */}
-      <div className="kc-header">
-        <div className="kc-header-left">
-          <div className="kc-title-wrapper">
-            <div className="kc-title-icon">
-              <BarChart2 className="kc-title-svg" />
-            </div>
-            <div>
-              <h1 className="kc-title">KPI Comparison</h1>
-              <p className="kc-subtitle">Compare multiple KPIs side by side</p>
+    <>
+      <div className="kc-container">
+        {/* Header */}
+        <div className="kc-header">
+          <div className="kc-header-left">
+            <div className="kc-title-wrapper">
+              <div className="kc-title-icon">
+                <Layers className="kc-title-svg" />
+              </div>
+              <div>
+                <h1 className="kc-title">KPI Comparison</h1>
+                <p className="kc-subtitle">Compare multiple KPIs side by side</p>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="kc-header-right">
-          <select
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            className="kc-select"
-          >
-            <option value="weekly">📅 Weekly</option>
-            <option value="monthly">📅 Monthly</option>
-            <option value="quarterly">📅 Quarterly</option>
-            <option value="annual">📅 Annual</option>
-          </select>
-          <div className="kc-view-toggle">
-            <button
-              onClick={() => setViewType('bar')}
-              className={`kc-view-btn ${viewType === 'bar' ? 'kc-view-active' : 'kc-view-inactive'}`}
-              title="Bar Chart"
+          <div className="kc-header-right">
+            <select
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+              className="kc-select"
             >
-              <BarChart2 className="kc-view-icon" />
-            </button>
-            <button
-              onClick={() => setViewType('line')}
-              className={`kc-view-btn ${viewType === 'line' ? 'kc-view-active' : 'kc-view-inactive'}`}
-              title="Line Chart"
-            >
-              <TrendingUp className="kc-view-icon" />
-            </button>
-            <button
-              onClick={() => setViewType('radar')}
-              className={`kc-view-btn ${viewType === 'radar' ? 'kc-view-active' : 'kc-view-inactive'}`}
-              title="Radar Chart"
-            >
-              <Activity className="kc-view-icon" />
-            </button>
-          </div>
-          <button className="kc-icon-btn" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw className={`kc-refresh-icon ${refreshing ? 'kc-spin' : ''}`} />
-          </button>
-          <button className="kc-icon-btn">
-            <Download className="kc-btn-icon" />
-          </button>
-          <button
-            onClick={() => setShowSelector(!showSelector)}
-            className="kc-add-btn"
-          >
-            <Plus className="kc-btn-icon" />
-            Add KPI
-          </button>
-        </div>
-      </div>
-
-      {/* Selected KPIs */}
-      {selectedKPIs.length > 0 && (
-        <div className="kc-selected">
-          <span className="kc-selected-label">Selected KPIs:</span>
-          <div className="kc-selected-list">
-            {selectedKPIs.map((id, index) => (
-              <div 
-                key={id} 
-                className="kc-selected-item"
-                style={{ borderColor: COLORS[index % COLORS.length] }}
-              >
-                <span className="kc-selected-dot" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                <span className="kc-selected-name">{getKpiName(id)}</span>
-                <button
-                  onClick={() => toggleKPI(id)}
-                  className="kc-selected-remove"
-                >
-                  <X className="kc-selected-remove-icon" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* KPI Selector Modal */}
-      {showSelector && (
-        <div className="kc-modal-overlay" onClick={() => setShowSelector(false)}>
-          <div className="kc-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="kc-modal-header">
-              <div className="kc-modal-title-wrapper">
-                <Eye className="kc-modal-icon" />
-                <h3 className="kc-modal-title">Select KPIs to Compare</h3>
-              </div>
-              <button className="kc-modal-close" onClick={() => setShowSelector(false)}>
-                <X className="kc-modal-close-icon" />
-              </button>
-            </div>
-            
-            <div className="kc-modal-search">
-              <input
-                type="text"
-                placeholder="Search KPIs..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="kc-modal-search-input"
-              />
-            </div>
-
-            <div className="kc-modal-body">
-              <div className="kc-modal-grid">
-                {filteredKPIs.map((kpi) => {
-                  const isSelected = selectedKPIs.includes(kpi._id);
-                  return (
-                    <div
-                      key={kpi._id}
-                      className={`kc-modal-item ${isSelected ? 'kc-modal-item-selected' : ''}`}
-                      onClick={() => toggleKPI(kpi._id)}
-                    >
-                      <div className="kc-modal-item-left">
-                        <div className={`kc-modal-item-check ${isSelected ? 'kc-modal-item-checked' : ''}`}>
-                          {isSelected && <CheckCircle className="kc-modal-item-check-icon" />}
-                        </div>
-                        <div>
-                          <p className="kc-modal-item-name">{kpi.name}</p>
-                          <span className={`kc-modal-item-category ${getCategoryColor(kpi.category)}`}>
-                            {kpi.category || 'General'}
-                          </span>
-                        </div>
-                      </div>
-                      {isSelected && (
-                        <div className="kc-modal-item-indicator" />
-                      )}
-                    </div>
-                  );
-                })}
-                {filteredKPIs.length === 0 && (
-                  <div className="kc-modal-empty">
-                    <Target className="kc-modal-empty-icon" />
-                    <p>No KPIs found</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="kc-modal-footer">
-              <div className="kc-modal-footer-info">
-                <span className="kc-modal-footer-count">
-                  {selectedKPIs.length} KPI{selectedKPIs.length !== 1 ? 's' : ''} selected
-                </span>
-                <span className="kc-modal-footer-max">(Max 6)</span>
-              </div>
+              <option value="weekly">📅 Weekly</option>
+              <option value="monthly">📅 Monthly</option>
+              <option value="quarterly">📅 Quarterly</option>
+              <option value="annual">📅 Annual</option>
+            </select>
+            <div className="kc-view-toggle">
               <button
-                onClick={() => {
-                  setShowSelector(false);
-                  if (selectedKPIs.length > 0) {
-                    fetchComparisonData();
-                  }
-                }}
-                className="kc-modal-apply"
+                onClick={() => setViewType('bar')}
+                className={`kc-view-btn ${viewType === 'bar' ? 'kc-view-active' : 'kc-view-inactive'}`}
+                title="Bar Chart"
               >
-                <CheckCircle className="kc-btn-icon" />
-                Apply
+                <BarChart2 className="kc-view-icon" />
+              </button>
+              <button
+                onClick={() => setViewType('line')}
+                className={`kc-view-btn ${viewType === 'line' ? 'kc-view-active' : 'kc-view-inactive'}`}
+                title="Line Chart"
+              >
+                <TrendingUp className="kc-view-icon" />
+              </button>
+              <button
+                onClick={() => setViewType('radar')}
+                className={`kc-view-btn ${viewType === 'radar' ? 'kc-view-active' : 'kc-view-inactive'}`}
+                title="Radar Chart"
+              >
+                <Activity className="kc-view-icon" />
               </button>
             </div>
+            <button className="kc-icon-btn" onClick={handleRefresh} disabled={refreshing}>
+              <RefreshCw className={`kc-refresh-icon ${refreshing ? 'kc-spin' : ''}`} />
+            </button>
+            <button className="kc-icon-btn">
+              <Download className="kc-btn-icon" />
+            </button>
+            <button
+              onClick={() => setShowSelector(!showSelector)}
+              className="kc-add-btn"
+            >
+              <Plus className="kc-btn-icon" />
+              Add KPI
+            </button>
           </div>
         </div>
-      )}
 
-      {/* Chart */}
-      {selectedKPIs.length === 0 ? (
-        <div className="kc-empty">
-          <div className="kc-empty-icon-wrapper">
-            <BarChart2 className="kc-empty-icon" />
-          </div>
-          <h3 className="kc-empty-title">No KPIs Selected</h3>
-          <p className="kc-empty-subtitle">Click "Add KPI" to start comparing performance metrics</p>
-          <button className="kc-empty-btn" onClick={() => setShowSelector(true)}>
-            <Plus className="kc-btn-icon" />
-            Add KPI
-          </button>
-        </div>
-      ) : (
-        <div className="kc-chart-wrapper">
-          <div className="kc-chart-card">
-            <div className="kc-chart-header">
-              <h3 className="kc-chart-title">
-                {viewType === 'bar' && 'Bar Chart Comparison'}
-                {viewType === 'line' && 'Line Chart Comparison'}
-                {viewType === 'radar' && 'Radar Chart Comparison'}
-              </h3>
-              <span className="kc-chart-badge">
-                {selectedKPIs.length} KPIs
-              </span>
-            </div>
-            <div className="kc-chart-body">
-              <ResponsiveContainer width="100%" height={350}>
-                {viewType === 'bar' ? (
-                  <BarChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
-                    <YAxis stroke="#94a3b8" fontSize={12} />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: '#ffffff',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
-                      }}
-                    />
-                    <Legend />
-                    {selectedKPIs.map((id, index) => (
-                      <Bar 
-                        key={id} 
-                        dataKey={`kpi_${id}`} 
-                        name={getKpiName(id)}
-                        fill={COLORS[index % COLORS.length]} 
-                        radius={[4, 4, 0, 0]}
-                      />
-                    ))}
-                  </BarChart>
-                ) : viewType === 'line' ? (
-                  <LineChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
-                    <YAxis stroke="#94a3b8" fontSize={12} />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: '#ffffff',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
-                      }}
-                    />
-                    <Legend />
-                    {selectedKPIs.map((id, index) => (
-                      <Line 
-                        key={id} 
-                        type="monotone" 
-                        dataKey={`kpi_${id}`}
-                        name={getKpiName(id)}
-                        stroke={COLORS[index % COLORS.length]} 
-                        strokeWidth={2}
-                        dot={{ r: 4 }}
-                      />
-                    ))}
-                  </LineChart>
-                ) : (
-                  <RadarChart outerRadius={150} data={data}>
-                    <PolarGrid stroke="#e2e8f0" />
-                    <PolarAngleAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
-                    <PolarRadiusAxis stroke="#94a3b8" fontSize={12} />
-                    {selectedKPIs.map((id, index) => (
-                      <Radar 
-                        key={id} 
-                        name={getKpiName(id)}
-                        dataKey={`kpi_${id}`} 
-                        stroke={COLORS[index % COLORS.length]} 
-                        fill={COLORS[index % COLORS.length]} 
-                        fillOpacity={0.2} 
-                      />
-                    ))}
-                    <Legend />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: '#ffffff',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
-                      }}
-                    />
-                  </RadarChart>
-                )}
-              </ResponsiveContainer>
-            </div>
-
-            {/* Legend */}
-            <div className="kc-chart-legend">
+        {/* Selected KPIs */}
+        {selectedKPIs.length > 0 && (
+          <div className="kc-selected">
+            <span className="kc-selected-label">Selected KPIs:</span>
+            <div className="kc-selected-list">
               {selectedKPIs.map((id, index) => (
-                <div key={id} className="kc-legend-item">
-                  <div 
-                    className="kc-legend-dot"
-                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                  />
-                  <span className="kc-legend-name">{getKpiName(id)}</span>
-                  <span className={`kc-legend-category ${getCategoryColor(getKpiCategory(id))}`}>
-                    {getKpiCategory(id) || 'General'}
-                  </span>
+                <div 
+                  key={id} 
+                  className="kc-selected-item"
+                  style={{ borderColor: COLORS[index % COLORS.length] }}
+                >
+                  <span className="kc-selected-dot" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                  <span className="kc-selected-name">{getKpiName(id)}</span>
+                  <button
+                    onClick={() => toggleKPI(id)}
+                    className="kc-selected-remove"
+                  >
+                    <X className="kc-selected-remove-icon" />
+                  </button>
                 </div>
               ))}
             </div>
           </div>
+        )}
 
-          {/* Comparison Table */}
-          <div className="kc-table-wrapper">
-            <div className="kc-table-header">
-              <h3 className="kc-table-title">Comparison Summary</h3>
-              <span className="kc-table-count">{data.length} periods</span>
-            </div>
-            <div className="kc-table-container">
-              <table className="kc-table">
-                <thead>
-                  <tr>
-                    <th className="kc-table-th">Period</th>
-                    {selectedKPIs.map((id, index) => (
-                      <th key={id} className="kc-table-th">
-                        <span className="kc-table-th-inner">
-                          <span 
-                            className="kc-table-th-dot"
-                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                          />
-                          {getKpiName(id)}
-                        </span>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.map((item, idx) => (
-                    <tr key={idx} className="kc-table-row">
-                      <td className="kc-table-td kc-table-td-name">{item.name}</td>
-                      {selectedKPIs.map((id) => (
-                        <td key={id} className="kc-table-td kc-table-td-value">
-                          {item[`kpi_${id}`] !== undefined ? item[`kpi_${id}`] : '—'}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                  {data.length === 0 && (
-                    <tr>
-                      <td colSpan={selectedKPIs.length + 1} className="kc-table-empty">
-                        <div className="kc-table-empty-state">
-                          <Activity className="kc-table-empty-icon" />
-                          <p>No data available</p>
+        {/* KPI Selector Modal */}
+        {showSelector && (
+          <div className="kc-modal-overlay" onClick={() => setShowSelector(false)}>
+            <div className="kc-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="kc-modal-header">
+                <div className="kc-modal-title-wrapper">
+                  <Eye className="kc-modal-icon" />
+                  <h3 className="kc-modal-title">Select KPIs to Compare</h3>
+                </div>
+                <button className="kc-modal-close" onClick={() => setShowSelector(false)}>
+                  <X className="kc-modal-close-icon" />
+                </button>
+              </div>
+              
+              <div className="kc-modal-search">
+                <input
+                  type="text"
+                  placeholder="Search KPIs..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="kc-modal-search-input"
+                />
+              </div>
+
+              <div className="kc-modal-body">
+                <div className="kc-modal-grid">
+                  {filteredKPIs.map((kpi) => {
+                    const isSelected = selectedKPIs.includes(kpi._id);
+                    return (
+                      <div
+                        key={kpi._id}
+                        className={`kc-modal-item ${isSelected ? 'kc-modal-item-selected' : ''}`}
+                        onClick={() => toggleKPI(kpi._id)}
+                      >
+                        <div className="kc-modal-item-left">
+                          <div className={`kc-modal-item-check ${isSelected ? 'kc-modal-item-checked' : ''}`}>
+                            {isSelected && <CheckCircle className="kc-modal-item-check-icon" />}
+                          </div>
+                          <div>
+                            <p className="kc-modal-item-name">{kpi.name}</p>
+                            <span className={`kc-modal-item-category ${getCategoryColor(kpi.category)}`}>
+                              {kpi.category || 'General'}
+                            </span>
+                          </div>
                         </div>
-                      </td>
-                    </tr>
+                        {isSelected && (
+                          <div className="kc-modal-item-indicator" />
+                        )}
+                      </div>
+                    );
+                  })}
+                  {filteredKPIs.length === 0 && (
+                    <div className="kc-modal-empty">
+                      <Target className="kc-modal-empty-icon" />
+                      <p>No KPIs found</p>
+                    </div>
                   )}
-                </tbody>
-              </table>
+                </div>
+              </div>
+
+              <div className="kc-modal-footer">
+                <div className="kc-modal-footer-info">
+                  <span className="kc-modal-footer-count">
+                    {selectedKPIs.length} KPI{selectedKPIs.length !== 1 ? 's' : ''} selected
+                  </span>
+                  <span className="kc-modal-footer-max">(Max 6)</span>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowSelector(false);
+                    if (selectedKPIs.length > 0) {
+                      fetchComparisonData();
+                    }
+                  }}
+                  className="kc-modal-apply"
+                >
+                  <CheckCircle className="kc-btn-icon" />
+                  Apply
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Custom CSS */}
+        {/* Chart */}
+        {selectedKPIs.length === 0 ? (
+          <div className="kc-empty">
+            <div className="kc-empty-icon-wrapper">
+              <BarChart2 className="kc-empty-icon" />
+            </div>
+            <h3 className="kc-empty-title">No KPIs Selected</h3>
+            <p className="kc-empty-subtitle">Click "Add KPI" to start comparing performance metrics</p>
+            <button className="kc-empty-btn" onClick={() => setShowSelector(true)}>
+              <Plus className="kc-btn-icon" />
+              Add KPI
+            </button>
+          </div>
+        ) : (
+          <div className="kc-chart-wrapper">
+            <div className="kc-chart-card">
+              <div className="kc-chart-header">
+                <h3 className="kc-chart-title">
+                  {viewType === 'bar' && 'Bar Chart Comparison'}
+                  {viewType === 'line' && 'Line Chart Comparison'}
+                  {viewType === 'radar' && 'Radar Chart Comparison'}
+                </h3>
+                <span className="kc-chart-badge">
+                  {selectedKPIs.length} KPIs
+                </span>
+              </div>
+              <div className="kc-chart-body">
+                <ResponsiveContainer width="100%" height={350}>
+                  {viewType === 'bar' ? (
+                    <BarChart data={data}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#FFEFB3" />
+                      <XAxis dataKey="name" stroke="#013E37" opacity={0.5} fontSize={12} />
+                      <YAxis stroke="#013E37" opacity={0.5} fontSize={12} />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: '#FFFFFF',
+                          border: '1px solid #FFEFB3',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
+                        }}
+                      />
+                      <Legend />
+                      {selectedKPIs.map((id, index) => (
+                        <Bar 
+                          key={id} 
+                          dataKey={`kpi_${id}`} 
+                          name={getKpiName(id)}
+                          fill={COLORS[index % COLORS.length]} 
+                          radius={[4, 4, 0, 0]}
+                        />
+                      ))}
+                    </BarChart>
+                  ) : viewType === 'line' ? (
+                    <LineChart data={data}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#FFEFB3" />
+                      <XAxis dataKey="name" stroke="#013E37" opacity={0.5} fontSize={12} />
+                      <YAxis stroke="#013E37" opacity={0.5} fontSize={12} />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: '#FFFFFF',
+                          border: '1px solid #FFEFB3',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
+                        }}
+                      />
+                      <Legend />
+                      {selectedKPIs.map((id, index) => (
+                        <Line 
+                          key={id} 
+                          type="monotone" 
+                          dataKey={`kpi_${id}`}
+                          name={getKpiName(id)}
+                          stroke={COLORS[index % COLORS.length]} 
+                          strokeWidth={2}
+                          dot={{ r: 4, fill: COLORS[index % COLORS.length] }}
+                        />
+                      ))}
+                    </LineChart>
+                  ) : (
+                    <RadarChart outerRadius={150} data={data}>
+                      <PolarGrid stroke="#FFEFB3" />
+                      <PolarAngleAxis dataKey="name" stroke="#013E37" opacity={0.5} fontSize={12} />
+                      <PolarRadiusAxis stroke="#013E37" opacity={0.5} fontSize={12} />
+                      {selectedKPIs.map((id, index) => (
+                        <Radar 
+                          key={id} 
+                          name={getKpiName(id)}
+                          dataKey={`kpi_${id}`} 
+                          stroke={COLORS[index % COLORS.length]} 
+                          fill={COLORS[index % COLORS.length]} 
+                          fillOpacity={0.2} 
+                        />
+                      ))}
+                      <Legend />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: '#FFFFFF',
+                          border: '1px solid #FFEFB3',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
+                        }}
+                      />
+                    </RadarChart>
+                  )}
+                </ResponsiveContainer>
+              </div>
+
+              {/* Legend */}
+              <div className="kc-chart-legend">
+                {selectedKPIs.map((id, index) => (
+                  <div key={id} className="kc-legend-item">
+                    <div 
+                      className="kc-legend-dot"
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="kc-legend-name">{getKpiName(id)}</span>
+                    <span className={`kc-legend-category ${getCategoryColor(getKpiCategory(id))}`}>
+                      {getKpiCategory(id) || 'General'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Comparison Table */}
+            <div className="kc-table-wrapper">
+              <div className="kc-table-header">
+                <h3 className="kc-table-title">Comparison Summary</h3>
+                <span className="kc-table-count">{data.length} periods</span>
+              </div>
+              <div className="kc-table-container">
+                <table className="kc-table">
+                  <thead>
+                    <tr>
+                      <th className="kc-table-th">Period</th>
+                      {selectedKPIs.map((id, index) => (
+                        <th key={id} className="kc-table-th">
+                          <span className="kc-table-th-inner">
+                            <span 
+                              className="kc-table-th-dot"
+                              style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                            />
+                            {getKpiName(id)}
+                          </span>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.map((item, idx) => (
+                      <tr key={idx} className="kc-table-row" style={{ animationDelay: `${idx * 0.05}s` }}>
+                        <td className="kc-table-td kc-table-td-name">{item.name}</td>
+                        {selectedKPIs.map((id) => (
+                          <td key={id} className="kc-table-td kc-table-td-value">
+                            {item[`kpi_${id}`] !== undefined ? item[`kpi_${id}`] : '—'}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                    {data.length === 0 && (
+                      <tr>
+                        <td colSpan={selectedKPIs.length + 1} className="kc-table-empty">
+                          <div className="kc-table-empty-state">
+                            <Activity className="kc-table-empty-icon" />
+                            <p>No data available</p>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       <style>{`
         /* ============================================
            CONTAINER
            ============================================ */
         .kc-container {
-          padding: 24px 32px;
-          max-width: 1400px;
-          margin: 0 auto;
-          background: #f8fafc;
-          min-height: 100vh;
-          animation: kcFadeIn 0.4s ease;
-        }
-
-        @keyframes kcFadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+          padding: 0 0 24px 0;
+          max-width: 100%;
         }
 
         /* ============================================
@@ -582,21 +573,22 @@ const KPIComparison = () => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          min-height: 60vh;
+          min-height: 400px;
           gap: 16px;
         }
 
-        .kc-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #3b82f6;
+        .kc-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
           animation: kcSpin 0.8s linear infinite;
         }
 
         .kc-loading-text {
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           font-size: 14px;
           font-weight: 500;
         }
@@ -619,6 +611,7 @@ const KPIComparison = () => {
           margin-bottom: 24px;
           flex-wrap: wrap;
           gap: 16px;
+          animation: fadeInDown 0.6s ease;
         }
 
         .kc-header-left {
@@ -635,31 +628,32 @@ const KPIComparison = () => {
         .kc-title-icon {
           width: 48px;
           height: 48px;
-          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+          background: #013E37;
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.25);
         }
 
         .kc-title-svg {
           width: 24px;
           height: 24px;
-          color: #ffffff;
+          color: #FFEFB3;
         }
 
         .kc-title {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
           letter-spacing: -0.5px;
         }
 
         .kc-subtitle {
           font-size: 15px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
 
@@ -672,28 +666,32 @@ const KPIComparison = () => {
 
         .kc-select {
           padding: 8px 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
-          background: #ffffff;
-          color: #0f172a;
+          background: #FFFFFF;
+          color: #013E37;
           outline: none;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           min-width: 140px;
         }
 
         .kc-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+
+        .kc-select:hover {
+          border-color: #013E37;
         }
 
         .kc-view-toggle {
           display: flex;
           border-radius: 8px;
           overflow: hidden;
-          border: 1px solid #e2e8f0;
-          background: #ffffff;
+          border: 1px solid #FFEFB3;
+          background: #FFFFFF;
         }
 
         .kc-view-btn {
@@ -703,21 +701,23 @@ const KPIComparison = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .kc-view-active {
-          background: #3b82f6;
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
         }
 
         .kc-view-inactive {
-          background: #ffffff;
-          color: #94a3b8;
+          background: #FFFFFF;
+          color: #013E37;
+          opacity: 0.5;
         }
 
         .kc-view-inactive:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          opacity: 1;
         }
 
         .kc-view-icon {
@@ -730,21 +730,23 @@ const KPIComparison = () => {
           align-items: center;
           justify-content: center;
           padding: 8px 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
-          background: #ffffff;
+          background: #FFFFFF;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s ease;
+          color: #013E37;
         }
 
         .kc-icon-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .kc-refresh-icon {
           width: 16px;
           height: 16px;
+          transition: transform 0.3s ease;
         }
 
         .kc-btn-icon {
@@ -757,20 +759,21 @@ const KPIComparison = () => {
           align-items: center;
           gap: 8px;
           padding: 8px 18px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.3);
         }
 
         .kc-add-btn:hover {
+          background: #0A5C54;
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.4);
         }
 
         /* ============================================
@@ -781,17 +784,23 @@ const KPIComparison = () => {
           align-items: center;
           gap: 12px;
           padding: 12px 16px;
-          background: #ffffff;
+          background: #FFFFFF;
           border-radius: 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           margin-bottom: 20px;
           flex-wrap: wrap;
+          transition: all 0.3s ease;
+        }
+
+        .kc-selected:hover {
+          border-color: #013E37;
         }
 
         .kc-selected-label {
           font-size: 13px;
           font-weight: 500;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
         }
 
         .kc-selected-list {
@@ -807,7 +816,12 @@ const KPIComparison = () => {
           padding: 4px 10px 4px 8px;
           border-radius: 9999px;
           border: 2px solid;
-          background: #f8fafc;
+          background: #FFF9E6;
+          transition: all 0.3s ease;
+        }
+
+        .kc-selected-item:hover {
+          transform: scale(1.02);
         }
 
         .kc-selected-dot {
@@ -820,7 +834,7 @@ const KPIComparison = () => {
         .kc-selected-name {
           font-size: 13px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
         }
 
         .kc-selected-remove {
@@ -830,15 +844,16 @@ const KPIComparison = () => {
           padding: 2px;
           border: none;
           background: transparent;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.3;
           cursor: pointer;
           border-radius: 4px;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .kc-selected-remove:hover {
-          background: #f1f5f9;
-          color: #475569;
+          background: #FFEFB3;
+          opacity: 1;
         }
 
         .kc-selected-remove-icon {
@@ -852,31 +867,38 @@ const KPIComparison = () => {
         .kc-modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.5);
-          backdrop-filter: blur(8px);
+          background: rgba(1, 62, 55, 0.5);
+          backdrop-filter: blur(4px);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 9999;
           padding: 16px;
-          animation: kcFadeIn 0.3s ease;
+          animation: fadeIn 0.3s ease;
         }
 
         .kc-modal {
-          background: #ffffff;
+          background: #FFFFFF;
           border-radius: 16px;
+          border: 1px solid #FFEFB3;
           max-width: 640px;
           width: 100%;
           max-height: 85vh;
           display: flex;
           flex-direction: column;
-          box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
-          animation: kcModalIn 0.3s ease;
+          box-shadow: 0 24px 64px rgba(1, 62, 55, 0.2);
+          animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        @keyframes kcModalIn {
-          from { opacity: 0; transform: scale(0.95) translateY(20px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
+        @keyframes modalIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
         }
 
         .kc-modal-header {
@@ -884,7 +906,9 @@ const KPIComparison = () => {
           align-items: center;
           justify-content: space-between;
           padding: 20px 24px;
-          border-bottom: 1px solid #f1f5f9;
+          border-bottom: 1px solid #FFEFB3;
+          background: #FFEFB3;
+          border-radius: 16px 16px 0 0;
           flex-shrink: 0;
         }
 
@@ -897,13 +921,13 @@ const KPIComparison = () => {
         .kc-modal-icon {
           width: 24px;
           height: 24px;
-          color: #3b82f6;
+          color: #013E37;
         }
 
         .kc-modal-title {
           font-size: 20px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
@@ -913,15 +937,17 @@ const KPIComparison = () => {
           justify-content: center;
           padding: 8px;
           border: none;
-          background: #f1f5f9;
+          background: transparent;
           border-radius: 8px;
-          color: #64748b;
+          color: #013E37;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
+          opacity: 0.5;
         }
 
         .kc-modal-close:hover {
-          background: #e2e8f0;
+          background: rgba(1, 62, 55, 0.1);
+          opacity: 1;
           transform: rotate(90deg);
         }
 
@@ -932,23 +958,29 @@ const KPIComparison = () => {
 
         .kc-modal-search {
           padding: 12px 24px;
-          border-bottom: 1px solid #f1f5f9;
+          border-bottom: 1px solid #FFEFB3;
           flex-shrink: 0;
         }
 
         .kc-modal-search-input {
           width: 100%;
           padding: 8px 14px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           outline: none;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
+          color: #013E37;
         }
 
         .kc-modal-search-input:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+
+        .kc-modal-search-input::placeholder {
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .kc-modal-body {
@@ -962,12 +994,12 @@ const KPIComparison = () => {
         }
 
         .kc-modal-body::-webkit-scrollbar-track {
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 4px;
         }
 
         .kc-modal-body::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
+          background: #013E37;
           border-radius: 4px;
         }
 
@@ -982,20 +1014,20 @@ const KPIComparison = () => {
           align-items: center;
           justify-content: space-between;
           padding: 10px 14px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .kc-modal-item:hover {
-          border-color: #cbd5e1;
-          background: #f8fafc;
+          border-color: #013E37;
+          background: #FFF9E6;
         }
 
         .kc-modal-item-selected {
-          border-color: #3b82f6;
-          background: #eff6ff;
+          border-color: #013E37;
+          background: #FFF9E6;
         }
 
         .kc-modal-item-left {
@@ -1009,30 +1041,32 @@ const KPIComparison = () => {
         .kc-modal-item-check {
           width: 20px;
           height: 20px;
-          border: 2px solid #d1d5db;
+          border: 2px solid #013E37;
+          opacity: 0.2;
           border-radius: 4px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .kc-modal-item-checked {
-          background: #3b82f6;
-          border-color: #3b82f6;
+          background: #013E37;
+          border-color: #013E37;
+          opacity: 1;
         }
 
         .kc-modal-item-check-icon {
           width: 14px;
           height: 14px;
-          color: #ffffff;
+          color: #FFEFB3;
         }
 
         .kc-modal-item-name {
           font-size: 14px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
@@ -1042,21 +1076,26 @@ const KPIComparison = () => {
           padding: 1px 8px;
           border-radius: 10px;
           margin-left: 6px;
+          transition: all 0.3s ease;
         }
 
-        .kc-cat-productivity { background: #dbeafe; color: #1d4ed8; }
-        .kc-cat-quality { background: #d1fae5; color: #065f46; }
-        .kc-cat-efficiency { background: #f3e8ff; color: #6d28d9; }
-        .kc-cat-satisfaction { background: #fef3c7; color: #92400e; }
-        .kc-cat-growth { background: #d1fae5; color: #065f46; }
-        .kc-cat-retention { background: #ffedd5; color: #9a3412; }
-        .kc-cat-financial { background: #fee2e2; color: #991b1b; }
-        .kc-cat-default { background: #f3f4f6; color: #374151; }
+        .kc-modal-item-category:hover {
+          transform: scale(1.05);
+        }
+
+        .kc-cat-productivity { background: #013E37; color: #FFEFB3; }
+        .kc-cat-quality { background: #0A5C54; color: #FFEFB3; }
+        .kc-cat-efficiency { background: #1A7A6E; color: #FFEFB3; }
+        .kc-cat-satisfaction { background: #FFEFB3; color: #013E37; }
+        .kc-cat-growth { background: #2A9A8A; color: #FFEFB3; }
+        .kc-cat-retention { background: #3ABAAA; color: #FFEFB3; }
+        .kc-cat-financial { background: #013E37; color: #FFEFB3; }
+        .kc-cat-default { background: #FFEFB3; color: #013E37; }
 
         .kc-modal-item-indicator {
           width: 4px;
           height: 24px;
-          background: #3b82f6;
+          background: #013E37;
           border-radius: 4px;
           flex-shrink: 0;
         }
@@ -1067,7 +1106,8 @@ const KPIComparison = () => {
           flex-direction: column;
           align-items: center;
           padding: 40px 20px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .kc-modal-empty-icon {
@@ -1082,7 +1122,9 @@ const KPIComparison = () => {
           align-items: center;
           justify-content: space-between;
           padding: 16px 24px;
-          border-top: 1px solid #f1f5f9;
+          border-top: 1px solid #FFEFB3;
+          background: #FFF9E6;
+          border-radius: 0 0 16px 16px;
           flex-shrink: 0;
         }
 
@@ -1095,12 +1137,13 @@ const KPIComparison = () => {
         .kc-modal-footer-count {
           font-size: 14px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
         }
 
         .kc-modal-footer-max {
           font-size: 12px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .kc-modal-apply {
@@ -1108,20 +1151,21 @@ const KPIComparison = () => {
           align-items: center;
           gap: 8px;
           padding: 8px 20px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
 
         .kc-modal-apply:hover {
+          background: #0A5C54;
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
 
         /* ============================================
@@ -1132,39 +1176,41 @@ const KPIComparison = () => {
           flex-direction: column;
           align-items: center;
           padding: 60px 20px;
-          background: #ffffff;
+          background: #FFFFFF;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 2px dashed #FFEFB3;
           text-align: center;
         }
 
         .kc-empty-icon-wrapper {
           width: 80px;
           height: 80px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           margin-bottom: 16px;
+          animation: float 3s ease-in-out infinite;
         }
 
         .kc-empty-icon {
           width: 36px;
           height: 36px;
-          color: #94a3b8;
+          color: #013E37;
         }
 
         .kc-empty-title {
           font-size: 18px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .kc-empty-subtitle {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 4px 0 16px 0;
         }
 
@@ -1173,20 +1219,21 @@ const KPIComparison = () => {
           align-items: center;
           gap: 8px;
           padding: 8px 24px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
 
         .kc-empty-btn:hover {
+          background: #0A5C54;
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
 
         /* ============================================
@@ -1199,15 +1246,16 @@ const KPIComparison = () => {
         }
 
         .kc-chart-card {
-          background: #ffffff;
+          background: #FFFFFF;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           padding: 20px;
           transition: all 0.3s ease;
         }
 
         .kc-chart-card:hover {
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+          border-color: #013E37;
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
         }
 
         .kc-chart-header {
@@ -1220,15 +1268,15 @@ const KPIComparison = () => {
         .kc-chart-title {
           font-size: 16px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .kc-chart-badge {
           font-size: 11px;
           font-weight: 500;
-          color: #64748b;
-          background: #f1f5f9;
+          color: #013E37;
+          background: #FFEFB3;
           padding: 2px 10px;
           border-radius: 12px;
         }
@@ -1244,13 +1292,18 @@ const KPIComparison = () => {
           gap: 16px;
           margin-top: 16px;
           padding-top: 16px;
-          border-top: 1px solid #f1f5f9;
+          border-top: 1px solid #FFEFB3;
         }
 
         .kc-legend-item {
           display: flex;
           align-items: center;
           gap: 8px;
+          transition: all 0.3s ease;
+        }
+
+        .kc-legend-item:hover {
+          transform: scale(1.02);
         }
 
         .kc-legend-dot {
@@ -1263,7 +1316,7 @@ const KPIComparison = () => {
         .kc-legend-name {
           font-size: 13px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
         }
 
         .kc-legend-category {
@@ -1271,21 +1324,27 @@ const KPIComparison = () => {
           font-weight: 500;
           padding: 1px 8px;
           border-radius: 10px;
+          transition: all 0.3s ease;
+        }
+
+        .kc-legend-category:hover {
+          transform: scale(1.05);
         }
 
         /* ============================================
            TABLE
            ============================================ */
         .kc-table-wrapper {
-          background: #ffffff;
+          background: #FFFFFF;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           overflow: hidden;
           transition: all 0.3s ease;
         }
 
         .kc-table-wrapper:hover {
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+          border-color: #013E37;
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
         }
 
         .kc-table-header {
@@ -1293,21 +1352,22 @@ const KPIComparison = () => {
           align-items: center;
           justify-content: space-between;
           padding: 16px 20px;
-          border-bottom: 1px solid #f1f5f9;
+          border-bottom: 1px solid #FFEFB3;
+          background: #FFF9E6;
         }
 
         .kc-table-title {
           font-size: 16px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .kc-table-count {
           font-size: 12px;
           font-weight: 500;
-          color: #64748b;
-          background: #f1f5f9;
+          color: #013E37;
+          background: #FFEFB3;
           padding: 2px 10px;
           border-radius: 12px;
         }
@@ -1327,11 +1387,11 @@ const KPIComparison = () => {
           text-align: left;
           font-size: 11px;
           font-weight: 600;
-          color: #64748b;
+          color: #013E37;
           text-transform: uppercase;
           letter-spacing: 0.3px;
-          border-bottom: 1px solid #e2e8f0;
-          background: #f8fafc;
+          border-bottom: 2px solid #013E37;
+          background: #FFEFB3;
         }
 
         .kc-table-th-inner {
@@ -1348,18 +1408,26 @@ const KPIComparison = () => {
         }
 
         .kc-table-row {
-          border-bottom: 1px solid #f1f5f9;
+          border-bottom: 1px solid #FFEFB3;
           transition: background 0.2s ease;
+          animation: slideInRight 0.3s ease forwards;
+          opacity: 0;
         }
 
+        .kc-table-row:nth-child(1) { animation-delay: 0.05s; }
+        .kc-table-row:nth-child(2) { animation-delay: 0.1s; }
+        .kc-table-row:nth-child(3) { animation-delay: 0.15s; }
+        .kc-table-row:nth-child(4) { animation-delay: 0.2s; }
+        .kc-table-row:nth-child(5) { animation-delay: 0.25s; }
+
         .kc-table-row:hover {
-          background: #f8fafc;
+          background: #FFF9E6;
         }
 
         .kc-table-td {
           padding: 10px 16px;
           font-size: 14px;
-          color: #0f172a;
+          color: #013E37;
         }
 
         .kc-table-td-name {
@@ -1380,13 +1448,53 @@ const KPIComparison = () => {
           flex-direction: column;
           align-items: center;
           gap: 8px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .kc-table-empty-icon {
           width: 32px;
           height: 32px;
           opacity: 0.3;
+        }
+
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+        }
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
         }
 
         /* ============================================
@@ -1399,10 +1507,6 @@ const KPIComparison = () => {
         }
 
         @media (max-width: 768px) {
-          .kc-container {
-            padding: 16px;
-          }
-
           .kc-header {
             flex-direction: column;
             align-items: stretch;
@@ -1462,10 +1566,6 @@ const KPIComparison = () => {
         }
 
         @media (max-width: 480px) {
-          .kc-container {
-            padding: 12px;
-          }
-
           .kc-header-right {
             flex-direction: column;
           }
@@ -1539,7 +1639,7 @@ const KPIComparison = () => {
           }
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

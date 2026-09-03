@@ -1,10 +1,11 @@
+// components/goals/GoalProgress.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
   TrendingUp, TrendingDown, Clock, AlertCircle,
   CheckCircle, Calendar, Target, Users,
   BarChart2, Activity, RefreshCw, Award, Star,
-  Zap, ChevronDown, ChevronRight
+  Zap, ChevronDown, ChevronRight, Layers
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import toast from 'react-hot-toast';
@@ -31,7 +32,6 @@ const GoalProgress = ({ goalId }) => {
     else setLoading(true);
 
     try {
-      // Try to fetch from API
       let progressData = null;
       try {
         const response = await fetch(`${API_URL}/goals/${goalId}/progress?period=${period}`, {
@@ -51,7 +51,6 @@ const GoalProgress = ({ goalId }) => {
     } catch (error) {
       console.error('Error fetching progress:', error);
       toast.error('Failed to load progress data');
-      // Set mock data on error
       const mockData = getMockProgress();
       setProgress(mockData);
       setHistory(mockData?.history || []);
@@ -160,7 +159,7 @@ const GoalProgress = ({ goalId }) => {
   if (loading) {
     return (
       <div className="gp-loading">
-        <div className="gp-spinner"></div>
+        <div className="gp-loading-spinner"></div>
         <p className="gp-loading-text">Loading progress data...</p>
       </div>
     );
@@ -179,216 +178,217 @@ const GoalProgress = ({ goalId }) => {
   }
 
   return (
-    <div className="gp-container">
-      {/* Header */}
-      <div className="gp-header">
-        <div className="gp-header-left">
-          <div className="gp-title-wrapper">
-            <div className="gp-title-icon">
-              <Target className="gp-title-svg" />
+    <>
+      <div className="gp-container">
+        {/* Header */}
+        <div className="gp-header">
+          <div className="gp-header-left">
+            <div className="gp-title-wrapper">
+              <div className="gp-title-icon">
+                <Layers className="gp-title-svg" />
+              </div>
+              <div>
+                <h3 className="gp-title">Goal Progress</h3>
+                <p className="gp-subtitle">Track and monitor goal progress</p>
+              </div>
             </div>
-            <div>
-              <h3 className="gp-title">Goal Progress</h3>
-              <p className="gp-subtitle">Track and monitor goal progress</p>
-            </div>
           </div>
-        </div>
-        <div className="gp-header-right">
-          <select
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            className="gp-period-select"
-          >
-            {periodOptions.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-          <button className="gp-refresh-btn" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw className={`gp-refresh-icon ${refreshing ? 'gp-spin' : ''}`} />
-          </button>
-        </div>
-      </div>
-
-      {/* Current Progress */}
-      <div className="gp-current">
-        <div className="gp-current-header">
-          <span className="gp-current-label">Current Progress</span>
-          <span className={`gp-current-status ${getStatusColor(progress.status)}`}>
-            {getStatusIcon(progress.status)}
-            {getStatusLabel(progress.status)}
-          </span>
-        </div>
-
-        <div className="gp-current-stats">
-          <div className="gp-stat">
-            <p className="gp-stat-label">Progress</p>
-            <p className={`gp-stat-value ${getProgressColor(progress.progress)}`}>
-              {progress.progress}%
-            </p>
-            <span className="gp-stat-badge">{getProgressLabel(progress.progress)}</span>
-          </div>
-          <div className="gp-stat">
-            <p className="gp-stat-label">Expected</p>
-            <p className="gp-stat-value gp-stat-expected">{progress.expectedProgress || 0}%</p>
-            <span className="gp-stat-badge gp-stat-badge-gray">Target</span>
-          </div>
-          <div className="gp-stat">
-            <p className="gp-stat-label">Status</p>
-            <p className={`gp-stat-value gp-stat-status ${getStatusColor(progress.status)}`}>
-              {getStatusLabel(progress.status)}
-            </p>
-            <span className="gp-stat-badge gp-stat-badge-gray">Current</span>
-          </div>
-          <div className="gp-stat">
-            <p className="gp-stat-label">Target</p>
-            <p className="gp-stat-value gp-stat-target">
-              {progress.target?.value} {progress.target?.unit}
-            </p>
-            <span className="gp-stat-badge gp-stat-badge-gray">Goal</span>
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="gp-progress-wrapper">
-          <div className="gp-progress-bar">
-            <div 
-              className={`gp-progress-fill ${getProgressColor(progress.progress)}`}
-              style={{ width: `${progress.progress}%` }}
-            />
-          </div>
-          <div className="gp-progress-labels">
-            <span className="gp-progress-label">0%</span>
-            <span className="gp-progress-label gp-progress-expected">
-              Expected: {progress.expectedProgress || 0}%
-            </span>
-            <span className="gp-progress-label">100%</span>
-          </div>
-          <div className="gp-progress-marker" style={{ left: `${progress.progress}%` }}>
-            <div className="gp-progress-marker-dot" />
-            <span className="gp-progress-marker-text">{progress.progress}%</span>
-          </div>
-        </div>
-
-        {/* Progress Difference */}
-        <div className="gp-diff">
-          {progress.progress >= (progress.expectedProgress || 0) ? (
-            <div className="gp-diff-positive">
-              <TrendingUp className="gp-diff-icon" />
-              <span>
-                Ahead of target by {Math.abs(progress.progress - (progress.expectedProgress || 0))}%
-              </span>
-            </div>
-          ) : (
-            <div className="gp-diff-negative">
-              <TrendingDown className="gp-diff-icon" />
-              <span>
-                Behind target by {Math.abs(progress.progress - (progress.expectedProgress || 0))}%
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Progress Chart */}
-      {history.length > 0 && (
-        <div className="gp-chart">
-          <div className="gp-chart-header">
-            <h4 className="gp-chart-title">Progress Trend</h4>
-            <span className="gp-chart-badge">Area Chart</span>
-          </div>
-          <div className="gp-chart-body">
-            <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={history}>
-                <defs>
-                  <linearGradient id="gpGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05}/>
-                  </linearGradient>
-                  <linearGradient id="gpGradientExpected" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#EF4444" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#EF4444" stopOpacity={0.02}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="period" stroke="#94a3b8" fontSize={12} />
-                <YAxis domain={[0, 100]} stroke="#94a3b8" fontSize={12} />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
-                  }}
-                />
-                <Legend />
-                <Area
-                  type="monotone"
-                  dataKey="progressPercentage"
-                  name="Actual Progress"
-                  stroke="#3B82F6"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#gpGradient)"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="expectedProgress"
-                  name="Expected Progress"
-                  stroke="#EF4444"
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  fillOpacity={1}
-                  fill="url(#gpGradientExpected)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
-
-      {/* Milestones */}
-      {progress.milestones && progress.milestones.length > 0 && (
-        <div className="gp-milestones">
-          <div className="gp-milestones-header" onClick={() => setExpandedMilestones(!expandedMilestones)}>
-            <div className="gp-milestones-title-wrapper">
-              <Award className="gp-milestones-icon" />
-              <h4 className="gp-milestones-title">Milestones</h4>
-              <span className="gp-milestones-count">{progress.milestones.length}</span>
-            </div>
-            <button className="gp-milestones-toggle">
-              {expandedMilestones ? (
-                <ChevronDown className="gp-toggle-icon" />
-              ) : (
-                <ChevronRight className="gp-toggle-icon" />
-              )}
+          <div className="gp-header-right">
+            <select
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+              className="gp-period-select"
+            >
+              {periodOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            <button className="gp-refresh-btn" onClick={handleRefresh} disabled={refreshing}>
+              <RefreshCw className={`gp-refresh-icon ${refreshing ? 'gp-spin' : ''}`} />
             </button>
           </div>
-
-          {expandedMilestones && (
-            <div className="gp-milestones-list">
-              {progress.milestones.map((milestone, idx) => (
-                <div key={idx} className={`gp-milestone ${getMilestoneStatusColor(milestone.status)}`}>
-                  <div className="gp-milestone-left">
-                    <div className={`gp-milestone-dot ${getMilestoneStatusColor(milestone.status)}`} />
-                    <div className="gp-milestone-info">
-                      <p className="gp-milestone-name">{milestone.name}</p>
-                      <p className="gp-milestone-meta">
-                        Target: {milestone.targetValue} • 
-                        Achieved: {milestone.achievedValue || 'Not yet'}
-                      </p>
-                    </div>
-                  </div>
-                  <span className={`gp-milestone-status ${getMilestoneStatusColor(milestone.status)}`}>
-                    {getMilestoneStatusLabel(milestone.status)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
-      )}
 
-      {/* Custom CSS */}
+        {/* Current Progress */}
+        <div className="gp-current">
+          <div className="gp-current-header">
+            <span className="gp-current-label">Current Progress</span>
+            <span className={`gp-current-status ${getStatusColor(progress.status)}`}>
+              {getStatusIcon(progress.status)}
+              {getStatusLabel(progress.status)}
+            </span>
+          </div>
+
+          <div className="gp-current-stats">
+            <div className="gp-stat">
+              <p className="gp-stat-label">Progress</p>
+              <p className={`gp-stat-value ${getProgressColor(progress.progress)}`}>
+                {progress.progress}%
+              </p>
+              <span className="gp-stat-badge">{getProgressLabel(progress.progress)}</span>
+            </div>
+            <div className="gp-stat">
+              <p className="gp-stat-label">Expected</p>
+              <p className="gp-stat-value gp-stat-expected">{progress.expectedProgress || 0}%</p>
+              <span className="gp-stat-badge gp-stat-badge-gray">Target</span>
+            </div>
+            <div className="gp-stat">
+              <p className="gp-stat-label">Status</p>
+              <p className={`gp-stat-value gp-stat-status ${getStatusColor(progress.status)}`}>
+                {getStatusLabel(progress.status)}
+              </p>
+              <span className="gp-stat-badge gp-stat-badge-gray">Current</span>
+            </div>
+            <div className="gp-stat">
+              <p className="gp-stat-label">Target</p>
+              <p className="gp-stat-value gp-stat-target">
+                {progress.target?.value} {progress.target?.unit}
+              </p>
+              <span className="gp-stat-badge gp-stat-badge-gray">Goal</span>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="gp-progress-wrapper">
+            <div className="gp-progress-bar">
+              <div 
+                className={`gp-progress-fill ${getProgressColor(progress.progress)}`}
+                style={{ width: `${progress.progress}%` }}
+              />
+            </div>
+            <div className="gp-progress-labels">
+              <span className="gp-progress-label">0%</span>
+              <span className="gp-progress-label gp-progress-expected">
+                Expected: {progress.expectedProgress || 0}%
+              </span>
+              <span className="gp-progress-label">100%</span>
+            </div>
+            <div className="gp-progress-marker" style={{ left: `${progress.progress}%` }}>
+              <div className="gp-progress-marker-dot" />
+              <span className="gp-progress-marker-text">{progress.progress}%</span>
+            </div>
+          </div>
+
+          {/* Progress Difference */}
+          <div className="gp-diff">
+            {progress.progress >= (progress.expectedProgress || 0) ? (
+              <div className="gp-diff-positive">
+                <TrendingUp className="gp-diff-icon" />
+                <span>
+                  Ahead of target by {Math.abs(progress.progress - (progress.expectedProgress || 0))}%
+                </span>
+              </div>
+            ) : (
+              <div className="gp-diff-negative">
+                <TrendingDown className="gp-diff-icon" />
+                <span>
+                  Behind target by {Math.abs(progress.progress - (progress.expectedProgress || 0))}%
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Progress Chart */}
+        {history.length > 0 && (
+          <div className="gp-chart">
+            <div className="gp-chart-header">
+              <h4 className="gp-chart-title">Progress Trend</h4>
+              <span className="gp-chart-badge">Area Chart</span>
+            </div>
+            <div className="gp-chart-body">
+              <ResponsiveContainer width="100%" height={280}>
+                <AreaChart data={history}>
+                  <defs>
+                    <linearGradient id="gpGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#013E37" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#013E37" stopOpacity={0.05}/>
+                    </linearGradient>
+                    <linearGradient id="gpGradientExpected" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#EF4444" stopOpacity={0.4}/>
+                      <stop offset="95%" stopColor="#EF4444" stopOpacity={0.02}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#FFEFB3" />
+                  <XAxis dataKey="period" stroke="#013E37" opacity={0.5} fontSize={12} />
+                  <YAxis domain={[0, 100]} stroke="#013E37" opacity={0.5} fontSize={12} />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #FFEFB3',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 12px rgba(1,62,55,0.08)'
+                    }}
+                  />
+                  <Legend />
+                  <Area
+                    type="monotone"
+                    dataKey="progressPercentage"
+                    name="Actual Progress"
+                    stroke="#013E37"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#gpGradient)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="expectedProgress"
+                    name="Expected Progress"
+                    stroke="#EF4444"
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    fillOpacity={1}
+                    fill="url(#gpGradientExpected)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {/* Milestones */}
+        {progress.milestones && progress.milestones.length > 0 && (
+          <div className="gp-milestones">
+            <div className="gp-milestones-header" onClick={() => setExpandedMilestones(!expandedMilestones)}>
+              <div className="gp-milestones-title-wrapper">
+                <Award className="gp-milestones-icon" />
+                <h4 className="gp-milestones-title">Milestones</h4>
+                <span className="gp-milestones-count">{progress.milestones.length}</span>
+              </div>
+              <button className="gp-milestones-toggle">
+                {expandedMilestones ? (
+                  <ChevronDown className="gp-toggle-icon" />
+                ) : (
+                  <ChevronRight className="gp-toggle-icon" />
+                )}
+              </button>
+            </div>
+
+            {expandedMilestones && (
+              <div className="gp-milestones-list">
+                {progress.milestones.map((milestone, idx) => (
+                  <div key={idx} className={`gp-milestone ${getMilestoneStatusColor(milestone.status)}`}>
+                    <div className="gp-milestone-left">
+                      <div className={`gp-milestone-dot ${getMilestoneStatusColor(milestone.status)}`} />
+                      <div className="gp-milestone-info">
+                        <p className="gp-milestone-name">{milestone.name}</p>
+                        <p className="gp-milestone-meta">
+                          Target: {milestone.targetValue} • 
+                          Achieved: {milestone.achievedValue || 'Not yet'}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`gp-milestone-status ${getMilestoneStatusColor(milestone.status)}`}>
+                      {getMilestoneStatusLabel(milestone.status)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       <style>{`
         /* ============================================
            CONTAINER
@@ -396,10 +396,16 @@ const GoalProgress = ({ goalId }) => {
         .gp-container {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           padding: 20px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
           animation: gpFadeIn 0.4s ease;
+          transition: all 0.3s ease;
+        }
+
+        .gp-container:hover {
+          border-color: #013E37;
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
         }
 
         @keyframes gpFadeIn {
@@ -419,17 +425,18 @@ const GoalProgress = ({ goalId }) => {
           gap: 16px;
         }
 
-        .gp-spinner {
+        .gp-loading-spinner {
           width: 40px;
           height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #3b82f6;
+          border: 3px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
           animation: gpSpin 0.8s linear infinite;
         }
 
         .gp-loading-text {
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           font-size: 14px;
           font-weight: 500;
         }
@@ -468,30 +475,31 @@ const GoalProgress = ({ goalId }) => {
         .gp-title-icon {
           width: 40px;
           height: 40px;
-          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+          background: #013E37;
           border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.2);
         }
 
         .gp-title-svg {
           width: 20px;
           height: 20px;
-          color: #ffffff;
+          color: #FFEFB3;
         }
 
         .gp-title {
           font-size: 18px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .gp-subtitle {
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 0;
         }
 
@@ -503,19 +511,23 @@ const GoalProgress = ({ goalId }) => {
 
         .gp-period-select {
           padding: 6px 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 13px;
           background: #ffffff;
-          color: #0f172a;
+          color: #013E37;
           outline: none;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .gp-period-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+
+        .gp-period-select:hover {
+          border-color: #013E37;
         }
 
         .gp-refresh-btn {
@@ -523,16 +535,17 @@ const GoalProgress = ({ goalId }) => {
           align-items: center;
           justify-content: center;
           padding: 8px 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s ease;
+          color: #013E37;
         }
 
         .gp-refresh-btn:hover:not(:disabled) {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .gp-refresh-btn:disabled {
@@ -543,17 +556,23 @@ const GoalProgress = ({ goalId }) => {
         .gp-refresh-icon {
           width: 16px;
           height: 16px;
+          transition: transform 0.3s ease;
         }
 
         /* ============================================
            CURRENT PROGRESS
            ============================================ */
         .gp-current {
-          background: #f8fafc;
+          background: #FFF9E6;
           border-radius: 10px;
           padding: 16px 20px;
           margin-bottom: 20px;
-          border: 1px solid #f1f5f9;
+          border: 1px solid #FFEFB3;
+          transition: all 0.3s ease;
+        }
+
+        .gp-current:hover {
+          border-color: #013E37;
         }
 
         .gp-current-header {
@@ -566,7 +585,7 @@ const GoalProgress = ({ goalId }) => {
         .gp-current-label {
           font-size: 14px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
         }
 
         .gp-current-status {
@@ -577,13 +596,18 @@ const GoalProgress = ({ goalId }) => {
           border-radius: 12px;
           font-size: 13px;
           font-weight: 500;
+          transition: all 0.3s ease;
         }
 
-        .gp-status-on-track { background: #d1fae5; color: #22c55e; }
-        .gp-status-at-risk { background: #fef3c7; color: #f59e0b; }
-        .gp-status-behind { background: #fee2e2; color: #ef4444; }
-        .gp-status-completed { background: #d1fae5; color: #10b981; }
-        .gp-status-not-started { background: #f1f5f9; color: #64748b; }
+        .gp-current-status:hover {
+          transform: scale(1.05);
+        }
+
+        .gp-status-on-track { background: #013E37; color: #FFEFB3; }
+        .gp-status-at-risk { background: #FFEFB3; color: #013E37; }
+        .gp-status-behind { background: #FEE2E2; color: #991B1B; }
+        .gp-status-completed { background: #0A5C54; color: #FFEFB3; }
+        .gp-status-not-started { background: #FFEFB3; color: #013E37; }
 
         .gp-current-stats {
           display: grid;
@@ -594,11 +618,24 @@ const GoalProgress = ({ goalId }) => {
 
         .gp-stat {
           text-align: center;
+          animation: gpSlideUp 0.4s ease both;
+          opacity: 0;
+        }
+
+        .gp-stat:nth-child(1) { animation-delay: 0.05s; }
+        .gp-stat:nth-child(2) { animation-delay: 0.1s; }
+        .gp-stat:nth-child(3) { animation-delay: 0.15s; }
+        .gp-stat:nth-child(4) { animation-delay: 0.2s; }
+
+        @keyframes gpSlideUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .gp-stat-label {
           font-size: 12px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 0;
         }
 
@@ -608,8 +645,8 @@ const GoalProgress = ({ goalId }) => {
           margin: 2px 0 0 0;
         }
 
-        .gp-stat-expected { color: #0f172a; }
-        .gp-stat-target { color: #8b5cf6; }
+        .gp-stat-expected { color: #013E37; }
+        .gp-stat-target { color: #1A7A6E; }
         .gp-stat-status { font-size: 16px; }
 
         .gp-stat-badge {
@@ -621,12 +658,12 @@ const GoalProgress = ({ goalId }) => {
           margin-top: 2px;
         }
 
-        .gp-stat-badge-gray { background: #f1f5f9; color: #64748b; }
+        .gp-stat-badge-gray { background: #FFEFB3; color: #013E37; }
 
-        .gp-progress-green { color: #22c55e; }
-        .gp-progress-blue { color: #3b82f6; }
-        .gp-progress-yellow { color: #f59e0b; }
-        .gp-progress-red { color: #ef4444; }
+        .gp-progress-green { color: #013E37; }
+        .gp-progress-blue { color: #0A5C54; }
+        .gp-progress-yellow { color: #013E37; }
+        .gp-progress-red { color: #EF4444; }
 
         /* Progress Bar */
         .gp-progress-wrapper {
@@ -637,7 +674,7 @@ const GoalProgress = ({ goalId }) => {
         .gp-progress-bar {
           width: 100%;
           height: 8px;
-          background: #e2e8f0;
+          background: #FFEFB3;
           border-radius: 6px;
           overflow: visible;
           position: relative;
@@ -646,7 +683,7 @@ const GoalProgress = ({ goalId }) => {
         .gp-progress-fill {
           height: 100%;
           border-radius: 6px;
-          transition: width 0.8s ease;
+          transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
         }
 
@@ -655,11 +692,13 @@ const GoalProgress = ({ goalId }) => {
           justify-content: space-between;
           margin-top: 4px;
           font-size: 11px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .gp-progress-expected {
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           font-weight: 500;
         }
 
@@ -670,22 +709,22 @@ const GoalProgress = ({ goalId }) => {
           display: flex;
           flex-direction: column;
           align-items: center;
-          transition: left 0.8s ease;
+          transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .gp-progress-marker-dot {
           width: 12px;
           height: 12px;
           border-radius: 50%;
-          background: #3b82f6;
-          border: 2px solid #ffffff;
-          box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+          background: #013E37;
+          border: 2px solid #FFEFB3;
+          box-shadow: 0 2px 6px rgba(1, 62, 55, 0.3);
         }
 
         .gp-progress-marker-text {
           font-size: 10px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin-top: 2px;
         }
 
@@ -701,14 +740,20 @@ const GoalProgress = ({ goalId }) => {
           display: flex;
           align-items: center;
           gap: 8px;
-          color: #22c55e;
+          color: #013E37;
+          background: #E6F7EC;
+          padding: 8px 14px;
+          border-radius: 8px;
         }
 
         .gp-diff-negative {
           display: flex;
           align-items: center;
           gap: 8px;
-          color: #ef4444;
+          color: #991B1B;
+          background: #FEE2E2;
+          padding: 8px 14px;
+          border-radius: 8px;
         }
 
         .gp-diff-icon {
@@ -721,10 +766,16 @@ const GoalProgress = ({ goalId }) => {
            ============================================ */
         .gp-chart {
           background: #ffffff;
-          border: 1px solid #f1f5f9;
+          border: 1px solid #FFEFB3;
           border-radius: 10px;
           padding: 16px;
           margin-bottom: 20px;
+          transition: all 0.3s ease;
+        }
+
+        .gp-chart:hover {
+          border-color: #013E37;
+          box-shadow: 0 2px 12px rgba(1, 62, 55, 0.06);
         }
 
         .gp-chart-header {
@@ -737,15 +788,15 @@ const GoalProgress = ({ goalId }) => {
         .gp-chart-title {
           font-size: 15px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .gp-chart-badge {
           font-size: 11px;
           font-weight: 500;
-          color: #64748b;
-          background: #f1f5f9;
+          color: #013E37;
+          background: #FFEFB3;
           padding: 2px 10px;
           border-radius: 12px;
         }
@@ -759,10 +810,15 @@ const GoalProgress = ({ goalId }) => {
            MILESTONES
            ============================================ */
         .gp-milestones {
-          background: #f8fafc;
-          border: 1px solid #f1f5f9;
+          background: #FFF9E6;
+          border: 1px solid #FFEFB3;
           border-radius: 10px;
           overflow: hidden;
+          transition: all 0.3s ease;
+        }
+
+        .gp-milestones:hover {
+          border-color: #013E37;
         }
 
         .gp-milestones-header {
@@ -771,11 +827,11 @@ const GoalProgress = ({ goalId }) => {
           justify-content: space-between;
           padding: 14px 18px;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .gp-milestones-header:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
         }
 
         .gp-milestones-title-wrapper {
@@ -787,20 +843,20 @@ const GoalProgress = ({ goalId }) => {
         .gp-milestones-icon {
           width: 20px;
           height: 20px;
-          color: #f59e0b;
+          color: #013E37;
         }
 
         .gp-milestones-title {
           font-size: 15px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .gp-milestones-count {
           font-size: 12px;
           font-weight: 500;
-          color: #64748b;
+          color: #013E37;
           background: #ffffff;
           padding: 1px 10px;
           border-radius: 12px;
@@ -813,18 +869,20 @@ const GoalProgress = ({ goalId }) => {
           padding: 4px;
           border: none;
           background: transparent;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .gp-milestones-toggle:hover {
-          color: #475569;
+          opacity: 1;
         }
 
         .gp-toggle-icon {
           width: 18px;
           height: 18px;
+          transition: transform 0.3s ease;
         }
 
         .gp-milestones-list {
@@ -847,13 +905,25 @@ const GoalProgress = ({ goalId }) => {
           padding: 10px 14px;
           background: #ffffff;
           border-radius: 8px;
-          border: 1px solid #f1f5f9;
-          transition: all 0.2s ease;
+          border: 1px solid #FFEFB3;
+          transition: all 0.3s ease;
+          animation: gpSlideIn 0.3s ease both;
+          opacity: 0;
+        }
+
+        .gp-milestone:nth-child(1) { animation-delay: 0.05s; }
+        .gp-milestone:nth-child(2) { animation-delay: 0.1s; }
+        .gp-milestone:nth-child(3) { animation-delay: 0.15s; }
+        .gp-milestone:nth-child(4) { animation-delay: 0.2s; }
+
+        @keyframes gpSlideIn {
+          from { opacity: 0; transform: translateX(-10px); }
+          to { opacity: 1; transform: translateX(0); }
         }
 
         .gp-milestone:hover {
-          border-color: #e2e8f0;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+          border-color: #013E37;
+          box-shadow: 0 2px 8px rgba(1, 62, 55, 0.06);
         }
 
         .gp-milestone-left {
@@ -870,10 +940,10 @@ const GoalProgress = ({ goalId }) => {
           flex-shrink: 0;
         }
 
-        .gp-milestone-achieved .gp-milestone-dot { background: #22c55e; }
-        .gp-milestone-missed .gp-milestone-dot { background: #ef4444; }
-        .gp-milestone-in-progress .gp-milestone-dot { background: #f59e0b; }
-        .gp-milestone-pending .gp-milestone-dot { background: #94a3b8; }
+        .gp-milestone-achieved .gp-milestone-dot { background: #013E37; }
+        .gp-milestone-missed .gp-milestone-dot { background: #EF4444; }
+        .gp-milestone-in-progress .gp-milestone-dot { background: #FFEFB3; }
+        .gp-milestone-pending .gp-milestone-dot { background: #013E37; opacity: 0.3; }
 
         .gp-milestone-info {
           flex: 1;
@@ -882,13 +952,14 @@ const GoalProgress = ({ goalId }) => {
         .gp-milestone-name {
           font-size: 14px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .gp-milestone-meta {
           font-size: 12px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
 
@@ -898,17 +969,22 @@ const GoalProgress = ({ goalId }) => {
           padding: 2px 10px;
           border-radius: 12px;
           white-space: nowrap;
+          transition: all 0.3s ease;
         }
 
-        .gp-milestone-achieved { border-left: 3px solid #22c55e; }
-        .gp-milestone-missed { border-left: 3px solid #ef4444; }
-        .gp-milestone-in-progress { border-left: 3px solid #f59e0b; }
-        .gp-milestone-pending { border-left: 3px solid #94a3b8; }
+        .gp-milestone-status:hover {
+          transform: scale(1.05);
+        }
 
-        .gp-milestone-achieved .gp-milestone-status { background: #d1fae5; color: #22c55e; }
-        .gp-milestone-missed .gp-milestone-status { background: #fee2e2; color: #ef4444; }
-        .gp-milestone-in-progress .gp-milestone-status { background: #fef3c7; color: #f59e0b; }
-        .gp-milestone-pending .gp-milestone-status { background: #f1f5f9; color: #94a3b8; }
+        .gp-milestone-achieved { border-left: 3px solid #013E37; }
+        .gp-milestone-missed { border-left: 3px solid #EF4444; }
+        .gp-milestone-in-progress { border-left: 3px solid #FFEFB3; }
+        .gp-milestone-pending { border-left: 3px solid #013E37; opacity: 0.3; }
+
+        .gp-milestone-achieved .gp-milestone-status { background: #013E37; color: #FFEFB3; }
+        .gp-milestone-missed .gp-milestone-status { background: #FEE2E2; color: #991B1B; }
+        .gp-milestone-in-progress .gp-milestone-status { background: #FFEFB3; color: #013E37; }
+        .gp-milestone-pending .gp-milestone-status { background: #FFEFB3; color: #013E37; }
 
         /* ============================================
            EMPTY STATE
@@ -924,7 +1000,7 @@ const GoalProgress = ({ goalId }) => {
         .gp-empty-icon-wrapper {
           width: 72px;
           height: 72px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -935,19 +1011,21 @@ const GoalProgress = ({ goalId }) => {
         .gp-empty-icon {
           width: 32px;
           height: 32px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
         }
 
         .gp-empty-title {
           font-size: 16px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .gp-empty-subtitle {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 4px 0 0 0;
         }
 
@@ -1072,7 +1150,7 @@ const GoalProgress = ({ goalId }) => {
           }
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

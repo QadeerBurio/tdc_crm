@@ -1,4 +1,4 @@
-// pages/crm/Leads.jsx
+// pages/crm/Leads.jsx - COMPLETE FIXED VERSION WITH NEW COLOR SCHEME
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import LeadFormModal from '../../components/crm/LeadForm';
 
 const Leads = () => {
   const { token } = useAuth();
@@ -26,6 +27,8 @@ const Leads = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [actionLoading, setActionLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingLead, setEditingLead] = useState(null);
 
   const API_URL = 'https://crmserver-production-4a42.up.railway.app/api';
 
@@ -124,6 +127,27 @@ const Leads = () => {
     }
   };
 
+  const handleEditClick = (lead) => {
+    setEditingLead(lead);
+    setIsModalOpen(true);
+  };
+
+  const handleAddClick = () => {
+    setEditingLead(null);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setEditingLead(null);
+  };
+
+  const handleModalSuccess = () => {
+    setIsModalOpen(false);
+    setEditingLead(null);
+    fetchLeads(true);
+  };
+
   const formatDate = (date) => {
     if (!date) return 'N/A';
     return new Date(date).toLocaleDateString('en-US', {
@@ -135,27 +159,27 @@ const Leads = () => {
 
   const getStatusStyle = (status) => {
     const styles = {
-      active: { bg: '#D1FAE5', color: '#065F46', icon: UserCheck, label: 'Active' },
-      stale: { bg: '#FEF3C7', color: '#92400E', icon: Clock, label: 'Stale' },
-      converted: { bg: '#DBEAFE', color: '#1E40AF', icon: TrendingUp, label: 'Converted' },
-      lost: { bg: '#FEE2E2', color: '#991B1B', icon: UserX, label: 'Lost' },
+      active: { bg: '#E8F5E9', color: '#013E37', icon: UserCheck, label: 'Active' },
+      stale: { bg: '#FFEFB3', color: '#013E37', icon: Clock, label: 'Stale' },
+      converted: { bg: '#E8F5E9', color: '#013E37', icon: TrendingUp, label: 'Converted' },
+      lost: { bg: '#FFEBEE', color: '#D32F2F', icon: UserX, label: 'Lost' },
     };
     return styles[status] || styles.active;
   };
 
   const getStageColor = (stage) => {
     const colors = {
-      SCRAPED_SOURCED: '#8B5CF6',
-      INITIAL_VERIFICATION: '#3B82F6',
-      FIRST_SEQUENCE_SENT: '#06B6D4',
-      FOLLOW_UP_PROTOCOL: '#F59E0B',
-      DISCOVERY_CALL_SCHEDULED: '#8B5CF6',
-      PROPOSAL_PITCHED: '#EC4899',
-      NEGOTIATING: '#F97316',
-      WON: '#10B981',
-      LOST: '#EF4444'
+      SCRAPED_SOURCED: '#013E37',
+      INITIAL_VERIFICATION: '#0A5C54',
+      FIRST_SEQUENCE_SENT: '#1A7A6E',
+      FOLLOW_UP_PROTOCOL: '#2A9888',
+      DISCOVERY_CALL_SCHEDULED: '#3AB6A2',
+      PROPOSAL_PITCHED: '#4AD4BC',
+      NEGOTIATING: '#5AF2D6',
+      WON: '#013E37',
+      LOST: '#D32F2F'
     };
-    return colors[stage] || '#6B7280';
+    return colors[stage] || '#013E37';
   };
 
   const handleSearch = (e) => {
@@ -171,7 +195,6 @@ const Leads = () => {
     setShowFilters(false);
   };
 
-  // Stats
   const stats = {
     total: leads.length,
     active: leads.filter(l => l.status === 'active').length,
@@ -196,19 +219,17 @@ const Leads = () => {
           <h1 style={styles.pageTitle}>Leads</h1>
           <p style={styles.pageSubtitle}>Manage and track your leads through the pipeline</p>
         </div>
-        <Link to="/crm/leads/new" style={styles.addButtonLink}>
-          <button style={styles.primaryButton}>
-            <Plus size={18} />
-            Add Lead
-          </button>
-        </Link>
+        <button onClick={handleAddClick} style={styles.primaryButton}>
+          <Plus size={18} />
+          Add Lead
+        </button>
       </div>
 
       {/* Stats Cards */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <div style={{...styles.statIconWrapper, backgroundColor: '#EFF6FF'}}>
-            <Users size={18} color="#3B82F6" />
+          <div style={{...styles.statIconWrapper, backgroundColor: '#E8F5E9'}}>
+            <Users size={18} color="#013E37" />
           </div>
           <div>
             <p style={styles.statNumber}>{stats.total}</p>
@@ -216,8 +237,8 @@ const Leads = () => {
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={{...styles.statIconWrapper, backgroundColor: '#ECFDF5'}}>
-            <UserCheck size={18} color="#10B981" />
+          <div style={{...styles.statIconWrapper, backgroundColor: '#E8F5E9'}}>
+            <UserCheck size={18} color="#013E37" />
           </div>
           <div>
             <p style={styles.statNumber}>{stats.active}</p>
@@ -225,8 +246,8 @@ const Leads = () => {
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={{...styles.statIconWrapper, backgroundColor: '#F5F3FF'}}>
-            <TrendingUp size={18} color="#8B5CF6" />
+          <div style={{...styles.statIconWrapper, backgroundColor: '#FFEFB3'}}>
+            <TrendingUp size={18} color="#013E37" />
           </div>
           <div>
             <p style={styles.statNumber}>{stats.converted}</p>
@@ -234,8 +255,8 @@ const Leads = () => {
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={{...styles.statIconWrapper, backgroundColor: '#FEF2F2'}}>
-            <UserX size={18} color="#EF4444" />
+          <div style={{...styles.statIconWrapper, backgroundColor: '#FFEBEE'}}>
+            <UserX size={18} color="#D32F2F" />
           </div>
           <div>
             <p style={styles.statNumber}>{stats.lost}</p>
@@ -330,13 +351,13 @@ const Leads = () => {
                 <tr>
                   <td colSpan="8" style={styles.emptyState}>
                     <div style={styles.emptyContent}>
-                      <Users size={48} color="#94A3B8" />
+                      <Users size={48} color="#013E37" opacity="0.3" />
                       <p style={styles.emptyText}>No leads found</p>
                       <p style={styles.emptySubtext}>Create your first lead to get started</p>
-                      <Link to="/crm/leads/new" style={styles.emptyButton}>
+                      <button onClick={handleAddClick} style={styles.emptyButton}>
                         <Plus size={16} />
                         Add Lead
-                      </Link>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -374,9 +395,9 @@ const Leads = () => {
                           <Link to={`/crm/leads/${lead._id}`} style={styles.actionButtonView} title="View">
                             <Eye size={15} />
                           </Link>
-                          <Link to={`/crm/leads/${lead._id}/edit`} style={styles.actionButtonEdit} title="Edit">
+                          <button style={styles.actionButtonEdit} onClick={() => handleEditClick(lead)} title="Edit">
                             <Edit size={15} />
-                          </Link>
+                          </button>
                           <button style={styles.actionButtonDelete} onClick={() => handleDelete(lead)} disabled={actionLoading} title="Delete">
                             <Trash2 size={15} />
                           </button>
@@ -415,6 +436,14 @@ const Leads = () => {
           </div>
         </div>
       )}
+
+      {/* Lead Form Modal */}
+      <LeadFormModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onSuccess={handleModalSuccess}
+        initialData={editingLead}
+      />
     </div>
   );
 };
@@ -424,7 +453,7 @@ const styles = {
     padding: '24px 32px',
     maxWidth: '1400px',
     margin: '0 auto',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     minHeight: '100vh',
   },
   loadingContainer: {
@@ -436,15 +465,15 @@ const styles = {
     gap: '16px',
   },
   loadingText: {
-    color: '#64748B',
+    color: '#013E37',
     fontSize: '14px',
   },
   spinner: {
     width: '40px',
     height: '40px',
     borderRadius: '50%',
-    border: '3px solid #E5E7EB',
-    borderTopColor: '#3B82F6',
+    border: '3px solid #FFEFB3',
+    borderTopColor: '#013E37',
     animation: 'spin 0.8s linear infinite',
   },
   pageHeader: {
@@ -458,12 +487,13 @@ const styles = {
   pageTitle: {
     fontSize: '28px',
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#013E37',
     margin: 0,
   },
   pageSubtitle: {
     fontSize: '15px',
-    color: '#64748B',
+    color: '#013E37',
+    opacity: 0.7,
     marginTop: '4px',
   },
   primaryButton: {
@@ -471,17 +501,19 @@ const styles = {
     alignItems: 'center',
     gap: '8px',
     padding: '10px 24px',
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#013E37',
     color: '#FFFFFF',
     border: 'none',
     borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.3s ease',
   },
-  addButtonLink: {
-    textDecoration: 'none',
+  primaryButtonHover: {
+    backgroundColor: '#0A5C54',
+    transform: 'translateY(-1px)',
+    boxShadow: '0 4px 12px rgba(1, 62, 55, 0.2)',
   },
   statsGrid: {
     display: 'grid',
@@ -496,7 +528,13 @@ const styles = {
     backgroundColor: '#FFFFFF',
     borderRadius: '12px',
     padding: '16px 20px',
-    border: '1px solid #E2E8F0',
+    border: '1px solid #FFEFB3',
+    transition: 'all 0.3s ease',
+  },
+  statCardHover: {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 12px rgba(1, 62, 55, 0.06)',
+    borderColor: '#013E37',
   },
   statIconWrapper: {
     width: '40px',
@@ -510,13 +548,14 @@ const styles = {
   statNumber: {
     fontSize: '22px',
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#013E37',
     margin: 0,
     lineHeight: 1.2,
   },
   statLabel: {
     fontSize: '13px',
-    color: '#64748B',
+    color: '#013E37',
+    opacity: 0.7,
     margin: 0,
   },
   searchSection: {
@@ -531,13 +570,19 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
+    border: '1px solid #FFEFB3',
     borderRadius: '10px',
     padding: '0 14px',
     minWidth: '200px',
+    transition: 'all 0.3s ease',
+  },
+  searchBarFocus: {
+    borderColor: '#013E37',
+    boxShadow: '0 0 0 3px rgba(1, 62, 55, 0.1)',
   },
   searchIcon: {
-    color: '#94A3B8',
+    color: '#013E37',
+    opacity: 0.5,
     flexShrink: 0,
   },
   searchInput: {
@@ -547,7 +592,7 @@ const styles = {
     outline: 'none',
     fontSize: '14px',
     backgroundColor: 'transparent',
-    color: '#0F172A',
+    color: '#013E37',
     minWidth: '120px',
   },
   clearSearch: {
@@ -557,7 +602,8 @@ const styles = {
     padding: '4px',
     background: 'none',
     border: 'none',
-    color: '#94A3B8',
+    color: '#013E37',
+    opacity: 0.5,
     cursor: 'pointer',
   },
   actionButtons: {
@@ -570,13 +616,18 @@ const styles = {
     gap: '6px',
     padding: '10px 16px',
     backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
+    border: '1px solid #FFEFB3',
     borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '500',
-    color: '#475569',
+    color: '#013E37',
     cursor: 'pointer',
     whiteSpace: 'nowrap',
+    transition: 'all 0.3s ease',
+  },
+  filterToggleHover: {
+    borderColor: '#013E37',
+    backgroundColor: '#FFEFB3',
   },
   refreshButton: {
     display: 'flex',
@@ -584,14 +635,19 @@ const styles = {
     justifyContent: 'center',
     padding: '10px',
     backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
+    border: '1px solid #FFEFB3',
     borderRadius: '10px',
-    color: '#64748B',
+    color: '#013E37',
     cursor: 'pointer',
+    transition: 'all 0.3s ease',
+  },
+  refreshButtonHover: {
+    borderColor: '#013E37',
+    backgroundColor: '#FFEFB3',
   },
   filterPanel: {
     backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
+    border: '1px solid #FFEFB3',
     borderRadius: '10px',
     padding: '16px 20px',
     marginBottom: '16px',
@@ -612,36 +668,51 @@ const styles = {
   filterLabel: {
     fontSize: '12px',
     fontWeight: '600',
-    color: '#64748B',
+    color: '#013E37',
+    opacity: 0.7,
     textTransform: 'uppercase',
   },
   filterSelect: {
     padding: '8px 12px',
-    border: '1px solid #E2E8F0',
+    border: '1px solid #FFEFB3',
     borderRadius: '8px',
     fontSize: '14px',
     backgroundColor: '#FFFFFF',
-    color: '#0F172A',
+    color: '#013E37',
     outline: 'none',
     cursor: 'pointer',
+    transition: 'all 0.3s ease',
+  },
+  filterSelectFocus: {
+    borderColor: '#013E37',
+    boxShadow: '0 0 0 3px rgba(1, 62, 55, 0.1)',
   },
   clearFiltersButton: {
     padding: '8px 16px',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#FFEFB3',
     border: 'none',
     borderRadius: '8px',
     fontSize: '13px',
     fontWeight: '500',
-    color: '#475569',
+    color: '#013E37',
     cursor: 'pointer',
     whiteSpace: 'nowrap',
     alignSelf: 'center',
+    transition: 'all 0.3s ease',
+  },
+  clearFiltersButtonHover: {
+    backgroundColor: '#013E37',
+    color: '#FFFFFF',
   },
   tableWrapper: {
     backgroundColor: '#FFFFFF',
     borderRadius: '12px',
-    border: '1px solid #E2E8F0',
+    border: '1px solid #FFEFB3',
     overflow: 'hidden',
+    transition: 'all 0.3s ease',
+  },
+  tableWrapperHover: {
+    boxShadow: '0 4px 12px rgba(1, 62, 55, 0.06)',
   },
   tableContainer: {
     overflowX: 'auto',
@@ -655,13 +726,17 @@ const styles = {
     textAlign: 'left',
     fontSize: '12px',
     fontWeight: '600',
-    color: '#64748B',
+    color: '#013E37',
     textTransform: 'uppercase',
-    borderBottom: '1px solid #E2E8F0',
-    backgroundColor: '#F8FAFC',
+    borderBottom: '2px solid #013E37',
+    backgroundColor: '#FFEFB3',
   },
   tableRow: {
-    borderBottom: '1px solid #F1F5F9',
+    borderBottom: '1px solid #FFEFB3',
+    transition: 'background 0.2s ease',
+  },
+  tableRowHover: {
+    backgroundColor: '#FFEFB3',
   },
   companyCell: {
     padding: '12px 16px',
@@ -670,18 +745,23 @@ const styles = {
     textDecoration: 'none',
   },
   companyName: {
-    color: '#0F172A',
+    color: '#013E37',
     fontWeight: '600',
     fontSize: '14px',
+    transition: 'color 0.2s ease',
+  },
+  companyNameHover: {
+    color: '#0A5C54',
   },
   contactName: {
     padding: '12px 16px',
-    color: '#0F172A',
+    color: '#013E37',
     fontSize: '14px',
   },
   emailText: {
     padding: '12px 16px',
-    color: '#64748B',
+    color: '#013E37',
+    opacity: 0.7,
     fontSize: '13px',
   },
   sourceBadge: {
@@ -690,8 +770,8 @@ const styles = {
     borderRadius: '6px',
     fontSize: '12px',
     fontWeight: '500',
-    backgroundColor: '#F1F5F9',
-    color: '#475569',
+    backgroundColor: '#FFEFB3',
+    color: '#013E37',
   },
   stageBadge: {
     display: 'inline-flex',
@@ -722,7 +802,8 @@ const styles = {
   },
   dateText: {
     padding: '12px 16px',
-    color: '#64748B',
+    color: '#013E37',
+    opacity: 0.7,
     fontSize: '13px',
   },
   actionButtonsGroup: {
@@ -736,10 +817,15 @@ const styles = {
     justifyContent: 'center',
     padding: '6px 8px',
     borderRadius: '6px',
-    backgroundColor: '#EFF6FF',
-    color: '#3B82F6',
+    backgroundColor: '#E8F5E9',
+    color: '#013E37',
     cursor: 'pointer',
     textDecoration: 'none',
+    transition: 'all 0.2s ease',
+  },
+  actionButtonViewHover: {
+    backgroundColor: '#013E37',
+    color: '#FFFFFF',
   },
   actionButtonEdit: {
     display: 'inline-flex',
@@ -747,10 +833,15 @@ const styles = {
     justifyContent: 'center',
     padding: '6px 8px',
     borderRadius: '6px',
-    backgroundColor: '#FEF3C7',
-    color: '#F59E0B',
+    backgroundColor: '#FFEFB3',
+    color: '#013E37',
     cursor: 'pointer',
-    textDecoration: 'none',
+    border: 'none',
+    transition: 'all 0.2s ease',
+  },
+  actionButtonEditHover: {
+    backgroundColor: '#013E37',
+    color: '#FFFFFF',
   },
   actionButtonDelete: {
     display: 'inline-flex',
@@ -759,9 +850,14 @@ const styles = {
     padding: '6px 8px',
     borderRadius: '6px',
     border: 'none',
-    backgroundColor: '#FEF2F2',
-    color: '#EF4444',
+    backgroundColor: '#FFEBEE',
+    color: '#D32F2F',
     cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  actionButtonDeleteHover: {
+    backgroundColor: '#D32F2F',
+    color: '#FFFFFF',
   },
   paginationWrapper: {
     marginTop: '16px',
@@ -776,16 +872,22 @@ const styles = {
   paginationButton: {
     padding: '8px 16px',
     backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
+    border: '1px solid #FFEFB3',
     borderRadius: '8px',
     cursor: 'pointer',
     fontSize: '14px',
-    color: '#0F172A',
-    transition: 'all 0.2s ease',
+    color: '#013E37',
+    transition: 'all 0.3s ease',
+  },
+  paginationButtonHover: {
+    backgroundColor: '#013E37',
+    color: '#FFFFFF',
+    borderColor: '#013E37',
   },
   paginationInfo: {
     fontSize: '14px',
-    color: '#64748B',
+    color: '#013E37',
+    opacity: 0.7,
   },
   emptyState: {
     textAlign: 'center',
@@ -800,12 +902,13 @@ const styles = {
   emptyText: {
     fontSize: '18px',
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#013E37',
     margin: 0,
   },
   emptySubtext: {
     fontSize: '14px',
-    color: '#94A3B8',
+    color: '#013E37',
+    opacity: 0.5,
     margin: 0,
   },
   emptyButton: {
@@ -813,7 +916,7 @@ const styles = {
     alignItems: 'center',
     gap: '8px',
     padding: '8px 20px',
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#013E37',
     color: '#FFFFFF',
     border: 'none',
     borderRadius: '8px',
@@ -822,6 +925,12 @@ const styles = {
     cursor: 'pointer',
     textDecoration: 'none',
     marginTop: '8px',
+    transition: 'all 0.3s ease',
+  },
+  emptyButtonHover: {
+    backgroundColor: '#0A5C54',
+    transform: 'translateY(-1px)',
+    boxShadow: '0 4px 12px rgba(1, 62, 55, 0.2)',
   },
 };
 
@@ -834,33 +943,106 @@ styleSheet.textContent = `
   }
   
   .primary-button:hover:not(:disabled) {
-    background-color: #2563EB !important;
+    background-color: #0A5C54 !important;
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(1, 62, 55, 0.2);
   }
   
   .stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 12px rgba(1, 62, 55, 0.06);
+    border-color: #013E37;
   }
   
   .table-row:hover {
-    background-color: #F8FAFC !important;
+    background-color: #FFEFB3 !important;
   }
   
   .company-link:hover .company-name {
-    color: #3B82F6 !important;
+    color: #0A5C54 !important;
   }
   
   .action-button-view:hover:not(:disabled) {
-    background-color: #DBEAFE !important;
+    background-color: #013E37 !important;
+    color: #FFFFFF !important;
   }
   
   .action-button-edit:hover:not(:disabled) {
-    background-color: #FDE68A !important;
+    background-color: #013E37 !important;
+    color: #FFFFFF !important;
   }
   
   .action-button-delete:hover:not(:disabled) {
-    background-color: #FEE2E2 !important;
+    background-color: #D32F2F !important;
+    color: #FFFFFF !important;
+  }
+  
+  .filter-toggle:hover:not(:disabled) {
+    border-color: #013E37 !important;
+    background-color: #FFEFB3 !important;
+  }
+  
+  .refresh-button:hover:not(:disabled) {
+    border-color: #013E37 !important;
+    background-color: #FFEFB3 !important;
+  }
+  
+  .clear-filters-button:hover:not(:disabled) {
+    background-color: #013E37 !important;
+    color: #FFFFFF !important;
+  }
+  
+  .pagination-button:hover:not(:disabled):not(:disabled) {
+    background-color: #013E37 !important;
+    color: #FFFFFF !important;
+    border-color: #013E37 !important;
+  }
+  
+  .empty-button:hover:not(:disabled) {
+    background-color: #0A5C54 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(1, 62, 55, 0.2);
+  }
+  
+  .search-bar:focus-within {
+    border-color: #013E37 !important;
+    box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1) !important;
+  }
+  
+  .filter-select:focus {
+    border-color: #013E37 !important;
+    box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1) !important;
+  }
+  
+  @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: 1fr 1fr !important;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .stats-grid {
+      grid-template-columns: 1fr !important;
+    }
+    
+    .search-section {
+      flex-direction: column !important;
+    }
+    
+    .search-bar {
+      width: 100% !important;
+    }
+    
+    .action-buttons {
+      width: 100% !important;
+      justify-content: stretch !important;
+    }
+    
+    .filter-toggle,
+    .refresh-button {
+      flex: 1 !important;
+      justify-content: center !important;
+    }
   }
 `;
 document.head.appendChild(styleSheet);

@@ -74,7 +74,6 @@ const SuperAdminDashboard = () => {
         timeout: 10000
       };
 
-      // Fetch all data in parallel
       const [
         usersRes,
         leadsRes,
@@ -103,46 +102,38 @@ const SuperAdminDashboard = () => {
       let brandsData = [];
       let activityData = [];
 
-      // Process Users
       if (usersRes.status === 'fulfilled' && usersRes.value.data) {
         totalUsers = usersRes.value.data.pagination?.total || usersRes.value.data.data?.length || 0;
       }
 
-      // Process Leads
       if (leadsRes.status === 'fulfilled' && leadsRes.value.data) {
         totalLeads = leadsRes.value.data.pagination?.total || leadsRes.value.data.data?.length || 0;
       }
 
-      // Process Projects
       if (projectsRes.status === 'fulfilled' && projectsRes.value.data) {
         const data = projectsRes.value.data;
         totalProjects = data.pagination?.total || data.data?.length || 0;
         activeProjects = data.data?.filter(p => p.status === 'active').length || 0;
       }
 
-      // Process Companies
       if (companiesRes.status === 'fulfilled' && companiesRes.value.data) {
         totalCompanies = companiesRes.value.data.pagination?.total || companiesRes.value.data.data?.length || 0;
       }
 
-      // Process Revenue
       if (revenueRes.status === 'fulfilled' && revenueRes.value.data) {
         totalRevenue = revenueRes.value.data.totalRevenue || 0;
       }
 
-      // Process Brands - ensure it's an array
       if (brandsRes.status === 'fulfilled' && brandsRes.value.data) {
         const data = brandsRes.value.data;
         brandsData = Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [];
       }
 
-      // Process Activity - ensure it's an array
       if (activityRes.status === 'fulfilled' && activityRes.value.data) {
         const data = activityRes.value.data;
         activityData = Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [];
       }
 
-      // Mock growth data
       const mockGrowth = {
         usersGrowth: 8,
         leadsGrowth: 12,
@@ -152,7 +143,6 @@ const SuperAdminDashboard = () => {
         productivityGrowth: 7,
       };
 
-      // Default brands if none fetched or invalid
       if (!brandsData || brandsData.length === 0) {
         brandsData = [
           { brandName: 'Tech Solutions', revenue: 125000, leads: 45, clients: 28, growth: 12 },
@@ -162,7 +152,6 @@ const SuperAdminDashboard = () => {
         ];
       }
 
-      // Default activity if none fetched or invalid
       if (!activityData || activityData.length === 0) {
         activityData = getDefaultActivity();
       }
@@ -193,7 +182,6 @@ const SuperAdminDashboard = () => {
       if (err.response?.status === 401 || err.response?.status === 403) {
         logout();
       } else {
-        // Use mock data
         setStats({
           totalUsers: 124,
           totalLeads: 156,
@@ -283,8 +271,8 @@ const SuperAdminDashboard = () => {
       value: stats.totalUsers,
       change: stats.usersGrowth,
       icon: Users,
-      color: '#3b82f6',
-      bg: '#eff6ff',
+      color: '#013E37',
+      bg: '#FFEFB3',
       link: '/admin/users',
     },
     {
@@ -292,8 +280,8 @@ const SuperAdminDashboard = () => {
       value: `$${stats.totalRevenue.toLocaleString()}`,
       change: stats.revenueGrowth,
       icon: DollarSign,
-      color: '#22c55e',
-      bg: '#f0fdf4',
+      color: '#013E37',
+      bg: '#FFEFB3',
       link: '/analytics/revenue',
     },
     {
@@ -301,8 +289,8 @@ const SuperAdminDashboard = () => {
       value: stats.activeProjects,
       change: stats.projectsGrowth,
       icon: Briefcase,
-      color: '#8b5cf6',
-      bg: '#f5f3ff',
+      color: '#013E37',
+      bg: '#FFEFB3',
       link: '/projects',
     },
     {
@@ -310,8 +298,8 @@ const SuperAdminDashboard = () => {
       value: stats.totalLeads,
       change: stats.leadsGrowth,
       icon: UserPlus,
-      color: '#f59e0b',
-      bg: '#fffbeb',
+      color: '#013E37',
+      bg: '#FFEFB3',
       link: '/crm/leads',
     },
     {
@@ -319,8 +307,8 @@ const SuperAdminDashboard = () => {
       value: stats.totalCompanies,
       change: stats.companiesGrowth,
       icon: Building2,
-      color: '#ef4444',
-      bg: '#fef2f2',
+      color: '#013E37',
+      bg: '#FFEFB3',
       link: '/crm/companies',
     },
     {
@@ -328,40 +316,39 @@ const SuperAdminDashboard = () => {
       value: `${stats.averageProductivity}%`,
       change: stats.productivityGrowth,
       icon: Activity,
-      color: '#06b6d4',
-      bg: '#ecfeff',
+      color: '#013E37',
+      bg: '#FFEFB3',
       link: '/analytics/productivity',
     },
   ];
 
   const getActivityIcon = (type) => {
     const icons = {
-      lead: { icon: UserPlus, color: '#3b82f6', bg: '#eff6ff' },
-      project: { icon: Briefcase, color: '#8b5cf6', bg: '#f5f3ff' },
-      user: { icon: Users, color: '#22c55e', bg: '#f0fdf4' },
-      company: { icon: Building2, color: '#f59e0b', bg: '#fffbeb' },
-      revenue: { icon: DollarSign, color: '#06b6d4', bg: '#ecfeff' },
+      lead: { icon: UserPlus, color: '#013E37', bg: '#FFEFB3' },
+      project: { icon: Briefcase, color: '#013E37', bg: '#FFEFB3' },
+      user: { icon: Users, color: '#013E37', bg: '#FFEFB3' },
+      company: { icon: Building2, color: '#013E37', bg: '#FFEFB3' },
+      revenue: { icon: DollarSign, color: '#013E37', bg: '#FFEFB3' },
     };
     return icons[type] || icons.lead;
   };
 
   const getStatusBadge = (status) => {
     const badges = {
-      new: { label: 'New', color: '#3b82f6', bg: '#eff6ff' },
-      completed: { label: 'Completed', color: '#22c55e', bg: '#f0fdf4' },
-      active: { label: 'Active', color: '#8b5cf6', bg: '#f5f3ff' },
-      success: { label: 'Success', color: '#06b6d4', bg: '#ecfeff' },
-      pending: { label: 'Pending', color: '#f59e0b', bg: '#fffbeb' },
+      new: { label: 'New', color: '#013E37', bg: '#FFEFB3' },
+      completed: { label: 'Completed', color: '#013E37', bg: '#FFEFB3' },
+      active: { label: 'Active', color: '#013E37', bg: '#FFEFB3' },
+      success: { label: 'Success', color: '#013E37', bg: '#FFEFB3' },
+      pending: { label: 'Pending', color: '#013E37', bg: '#FFEFB3' },
     };
     return badges[status] || badges.new;
   };
 
-  // Safely render activity items - ensure recentActivity is an array
   const renderActivityItems = () => {
     if (!Array.isArray(recentActivity) || recentActivity.length === 0) {
       return (
         <div style={styles.emptyState}>
-          <Activity size={32} style={{ color: '#9ca3af', margin: '0 auto 8px', display: 'block' }} />
+          <Activity size={32} style={{ color: '#013E37', margin: '0 auto 8px', display: 'block' }} />
           <p style={styles.emptyStateText}>No recent activity</p>
         </div>
       );
@@ -450,32 +437,42 @@ const SuperAdminDashboard = () => {
 
       {/* Stats Grid */}
       <div style={styles.statsGrid}>
-        {statCards.map((stat, index) => (
-          <Link to={stat.link} key={index} style={styles.statCardLink}>
-            <div style={styles.statCard}>
-              <div style={styles.statContent}>
-                <div style={styles.statLeft}>
-                  <p style={styles.statTitle}>{stat.title}</p>
-                  <p style={styles.statValue}>{stat.value}</p>
+        {statCards.map((stat, index) => {
+          const gradientColors = [
+            'linear-gradient(135deg, #013E37 0%, #013E37 100%)',
+            'linear-gradient(135deg, #013E37 0%, #013E37 100%)',
+            'linear-gradient(135deg, #013E37 0%, #013E37 100%)',
+            'linear-gradient(135deg, #013E37 0%, #013E37 100%)',
+            'linear-gradient(135deg, #013E37 0%, #013E37 100%)',
+            'linear-gradient(135deg, #013E37 0%, #013E37 100%)',
+          ];
+          return (
+            <Link to={stat.link} key={index} style={styles.statCardLink}>
+              <div style={{ ...styles.statCard, background: gradientColors[index % gradientColors.length] }}>
+                <div style={styles.statContent}>
+                  <div style={styles.statLeft}>
+                    <p style={styles.statTitle}>{stat.title}</p>
+                    <p style={styles.statValue}>{stat.value}</p>
+                  </div>
+                  <div style={styles.statIconWrapper}>
+                    <stat.icon style={styles.statIcon} size={28} />
+                  </div>
                 </div>
-                <div style={{ ...styles.statIconWrapper, backgroundColor: stat.bg }}>
-                  <stat.icon style={{ ...styles.statIcon, color: stat.color }} size={24} />
+                <div style={styles.statFooter}>
+                  <span style={stat.change >= 0 ? styles.changeUp : styles.changeDown}>
+                    {stat.change >= 0 ? (
+                      <TrendingUp style={styles.changeIcon} size={16} />
+                    ) : (
+                      <TrendingDown style={styles.changeIcon} size={16} />
+                    )}
+                    {Math.abs(stat.change)}%
+                  </span>
+                  <span style={styles.changeText}>vs last month</span>
                 </div>
               </div>
-              <div style={styles.statFooter}>
-                <span style={stat.change >= 0 ? styles.changeUp : styles.changeDown}>
-                  {stat.change >= 0 ? (
-                    <TrendingUp style={styles.changeIcon} size={16} />
-                  ) : (
-                    <TrendingDown style={styles.changeIcon} size={16} />
-                  )}
-                  {Math.abs(stat.change)}%
-                </span>
-                <span style={styles.changeText}>vs last month</span>
-              </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </div>
 
       {/* Bottom Grid: Segment Performance + Recent Activity */}
@@ -498,8 +495,8 @@ const SuperAdminDashboard = () => {
                     <h3 style={styles.brandName}>{brand.brandName || 'Unknown'}</h3>
                     <span style={{
                       ...styles.brandBadge,
-                      backgroundColor: (brand.revenue || 0) > 100000 ? '#f0fdf4' : '#fffbeb',
-                      color: (brand.revenue || 0) > 100000 ? '#22c55e' : '#f59e0b',
+                      backgroundColor: (brand.revenue || 0) > 100000 ? '#FFEFB3' : '#FFEFB3',
+                      color: '#013E37',
                     }}>
                       {(brand.revenue || 0) > 100000 ? 'High' : 'Medium'}
                     </span>
@@ -521,7 +518,7 @@ const SuperAdminDashboard = () => {
                       <span style={styles.brandStatLabel}>Growth</span>
                       <span style={{
                         ...styles.brandStatValue,
-                        color: (brand.growth || 0) > 10 ? '#22c55e' : '#f59e0b',
+                        color: (brand.growth || 0) > 10 ? '#013E37' : '#013E37',
                       }}>
                         {brand.growth || 0}%
                       </span>
@@ -555,19 +552,27 @@ const SuperAdminDashboard = () => {
       <div style={styles.quickActionsSection}>
         <div style={styles.quickActionsGrid}>
           <Link to="/admin/users/new" style={styles.quickAction}>
-            <Users size={24} style={styles.quickActionIconBlue} />
+            <div style={styles.quickActionIconWrapper}>
+              <Users size={24} style={styles.quickActionIcon} />
+            </div>
             <span style={styles.quickActionText}>Add User</span>
           </Link>
           <Link to="/crm/leads/new" style={styles.quickAction}>
-            <Target size={24} style={styles.quickActionIconGreen} />
+            <div style={styles.quickActionIconWrapper}>
+              <Target size={24} style={styles.quickActionIcon} />
+            </div>
             <span style={styles.quickActionText}>Create Goal</span>
           </Link>
           <Link to="/crm/companies/new" style={styles.quickAction}>
-            <Building2 size={24} style={styles.quickActionIconPurple} />
+            <div style={styles.quickActionIconWrapper}>
+              <Building2 size={24} style={styles.quickActionIcon} />
+            </div>
             <span style={styles.quickActionText}>New Segment</span>
           </Link>
           <Link to="/analytics/reports" style={styles.quickAction}>
-            <BarChart3 size={24} style={styles.quickActionIconYellow} />
+            <div style={styles.quickActionIconWrapper}>
+              <BarChart3 size={24} style={styles.quickActionIcon} />
+            </div>
             <span style={styles.quickActionText}>View Reports</span>
           </Link>
         </div>
@@ -582,36 +587,119 @@ const SuperAdminDashboard = () => {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }
         }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
         .stat-card {
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+        }
+        .stat-card::before {
+          content: '';
+          position: absolute;
+          top: -50%;
+          right: -50%;
+          width: 100%;
+          height: 100%;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 50%;
+          transform: scale(0);
+          transition: transform 0.6s ease;
+        }
+        .stat-card:hover::before {
+          transform: scale(3);
         }
         .stat-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+          transform: translateY(-6px);
+          box-shadow: 0 12px 30px rgba(1, 62, 55, 0.2);
         }
+        
         .brand-card {
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+        }
+        .brand-card::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, #013E37, #FFEFB3);
+          transform: scaleX(0);
+          transition: transform 0.3s ease;
+        }
+        .brand-card:hover::after {
+          transform: scaleX(1);
         }
         .brand-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          transform: translateY(-3px);
+          box-shadow: 0 8px 20px rgba(1, 62, 55, 0.1);
         }
+        
         .quick-action {
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+        }
+        .quick-action::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, #FFEFB3, transparent);
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+        .quick-action:hover::before {
+          opacity: 0.1;
         }
         .quick-action:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          transform: translateY(-4px);
+          box-shadow: 0 8px 20px rgba(1, 62, 55, 0.12);
+          border-color: #013E37;
         }
+        
         .activity-item {
-          transition: background 0.2s ease;
+          transition: all 0.2s ease;
+          border-radius: 8px;
+          border-left: 3px solid transparent;
         }
         .activity-item:hover {
-          background: #f9fafb;
+          background-color: #FFEFB3;
+          border-left-color: #013E37;
         }
+
+        .period-btn {
+          transition: all 0.2s ease;
+        }
+        .period-btn:hover {
+          background-color: rgba(255, 239, 179, 0.2);
+        }
+
+        .refresh-button {
+          transition: all 0.2s ease;
+        }
+        .refresh-button:hover {
+          background-color: rgba(255, 239, 179, 0.15);
+          transform: scale(1.02);
+        }
+
         @media (max-width: 1024px) {
           .bottom-grid {
             grid-template-columns: 1fr !important;
+          }
+          .stats-grid {
+            grid-template-columns: repeat(3, 1fr) !important;
           }
         }
         @media (max-width: 768px) {
@@ -682,23 +770,26 @@ const styles = {
   spinner: {
     width: '48px',
     height: '48px',
-    border: '4px solid #e5e7eb',
-    borderTopColor: '#3b82f6',
+    border: '4px solid #FFEFB3',
+    borderTopColor: '#013E37',
     borderRadius: '50%',
     animation: 'spin 1s linear infinite',
     margin: '0 auto',
   },
   loadingText: {
     marginTop: '12px',
-    color: '#6b7280',
+    color: '#013E37',
     fontSize: '14px',
+    fontWeight: '500',
   },
   welcomeSection: {
-    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+    background: 'linear-gradient(135deg, #013E37 0%, #013E37 100%)',
     borderRadius: '16px',
     padding: '28px 32px',
     color: '#ffffff',
     marginBottom: '24px',
+    border: '2px solid #FFEFB3',
+    boxShadow: '0 4px 12px rgba(1, 62, 55, 0.1)',
   },
   welcomeHeader: {
     display: 'flex',
@@ -714,9 +805,10 @@ const styles = {
   },
   welcomeSubtitle: {
     marginTop: '4px',
-    color: '#bfdbfe',
+    color: '#FFEFB3',
     margin: '4px 0 0 0',
     fontSize: '15px',
+    opacity: 0.9,
   },
   welcomeActions: {
     display: 'flex',
@@ -726,7 +818,7 @@ const styles = {
   },
   periodSelector: {
     display: 'flex',
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255, 239, 179, 0.15)',
     borderRadius: '8px',
     padding: '4px',
     gap: '2px',
@@ -736,20 +828,20 @@ const styles = {
     borderRadius: '6px',
     border: 'none',
     backgroundColor: 'transparent',
-    color: 'rgba(255,255,255,0.7)',
+    color: 'rgba(255, 239, 179, 0.7)',
     fontSize: '13px',
     fontWeight: '500',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
   },
   periodBtnActive: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    color: '#ffffff',
+    backgroundColor: '#FFEFB3',
+    color: '#013E37',
   },
   refreshButton: {
-    background: 'rgba(255, 255, 255, 0.2)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    color: '#ffffff',
+    background: 'rgba(255, 239, 179, 0.15)',
+    border: '1px solid rgba(255, 239, 179, 0.3)',
+    color: '#FFEFB3',
     padding: '8px 18px',
     borderRadius: '8px',
     cursor: 'pointer',
@@ -762,111 +854,124 @@ const styles = {
   demoBanner: {
     marginTop: '14px',
     padding: '10px 16px',
-    background: 'rgba(255, 255, 255, 0.12)',
+    background: 'rgba(255, 239, 179, 0.12)',
     borderRadius: '8px',
     fontSize: '14px',
-    color: '#fcd34d',
+    color: '#FFEFB3',
     display: 'flex',
     alignItems: 'center',
   },
   statsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gridTemplateColumns: 'repeat(3, 1fr)',
     gap: '20px',
-    marginBottom: '24px',
   },
   statCardLink: {
     textDecoration: 'none',
     display: 'block',
   },
   statCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    padding: '20px 22px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
-    border: '1px solid #f3f4f6',
-    transition: 'all 0.2s ease',
+    borderRadius: '14px',
+    padding: '22px 24px',
+    boxShadow: '0 4px 15px rgba(1, 62, 55, 0.08)',
+    border: '2px solid #FFEFB3',
+    transition: 'all 0.3s ease',
     cursor: 'pointer',
     height: '100%',
-    
+    display: 'flex',
+    flexDirection: 'column',
+    position: 'relative',
+    overflow: 'hidden',
   },
   statContent: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
+    flex: 1,
   },
   statLeft: {
     flex: 1,
   },
   statTitle: {
     fontSize: '13px',
-    color: '#6b7280',
+    color: '#FFEFB3',
     margin: 0,
     fontWeight: '500',
+    opacity: 0.8,
+    letterSpacing: '0.5px',
+    textTransform: 'uppercase',
   },
   statValue: {
-    fontSize: '26px',
+    fontSize: '28px',
     fontWeight: '700',
-    color: '#111827',
-    marginTop: '4px',
+    color: '#ffffff',
+    marginTop: '6px',
+    letterSpacing: '0.5px',
   },
   statIconWrapper: {
-    padding: '10px',
-    borderRadius: '10px',
+    padding: '12px',
+    borderRadius: '12px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
+    backgroundColor: 'rgba(255, 239, 179, 0.15)',
+    border: '2px solid rgba(255, 239, 179, 0.2)',
   },
   statIcon: {
-    width: '22px',
-    height: '22px',
+    width: '28px',
+    height: '28px',
+    color: '#FFEFB3',
   },
   statFooter: {
-    marginTop: '14px',
+    marginTop: '16px',
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
     fontSize: '13px',
+    paddingTop: '14px',
+    borderTop: '1px solid rgba(255, 239, 179, 0.15)',
   },
   changeUp: {
-    color: '#22c55e',
+    color: '#FFEFB3',
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
     fontWeight: '600',
   },
   changeDown: {
-    color: '#ef4444',
+    color: '#FFEFB3',
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
     fontWeight: '600',
+    opacity: 0.6,
   },
   changeIcon: {
     width: '16px',
     height: '16px',
   },
   changeText: {
-    color: '#6b7280',
+    color: 'rgba(255, 239, 179, 0.6)',
     fontSize: '13px',
   },
   bottomGrid: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     gap: '24px',
-    marginBottom: '24px',
+    marginBottom: '28px',
   },
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
-    border: '1px solid #f3f4f6',
+    borderRadius: '14px',
+    boxShadow: '0 2px 10px rgba(1, 62, 55, 0.06)',
+    border: '2px solid #FFEFB3',
     overflow: 'hidden',
   },
   cardHeader: {
     padding: '18px 24px',
-    borderBottom: '1px solid #f3f4f6',
+    borderBottom: '2px solid #FFEFB3',
+    backgroundColor: '#faf9f6',
   },
   cardHeaderBetween: {
     display: 'flex',
@@ -876,7 +981,7 @@ const styles = {
   cardTitle: {
     fontSize: '17px',
     fontWeight: '600',
-    color: '#111827',
+    color: '#013E37',
     margin: 0,
   },
   cardContent: {
@@ -884,12 +989,14 @@ const styles = {
   },
   viewAllLink: {
     fontSize: '14px',
-    color: '#3b82f6',
+    color: '#013E37',
     textDecoration: 'none',
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
     fontWeight: '500',
+    opacity: 0.7,
+    transition: 'all 0.2s ease',
   },
   brandsGrid: {
     display: 'grid',
@@ -898,33 +1005,35 @@ const styles = {
   },
   brandCard: {
     padding: '16px',
-    backgroundColor: '#fafbfc',
-    borderRadius: '10px',
-    border: '1px solid #f3f4f6',
-    transition: 'all 0.2s ease',
+    backgroundColor: '#ffffff',
+    borderRadius: '12px',
+    border: '2px solid #FFEFB3',
+    transition: 'all 0.3s ease',
+    position: 'relative',
   },
   brandHeader: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: '10px',
+    marginBottom: '12px',
   },
   brandName: {
     fontSize: '14px',
     fontWeight: '600',
-    color: '#111827',
+    color: '#013E37',
     margin: 0,
   },
   brandBadge: {
-    padding: '2px 10px',
+    padding: '2px 12px',
     borderRadius: '12px',
     fontSize: '11px',
     fontWeight: '600',
+    border: '1px solid #013E37',
   },
   brandStats: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '6px',
+    gap: '8px',
   },
   brandStat: {
     display: 'flex',
@@ -932,17 +1041,21 @@ const styles = {
   },
   brandStatLabel: {
     fontSize: '11px',
-    color: '#6b7280',
+    color: '#013E37',
+    opacity: 0.6,
+    textTransform: 'uppercase',
+    letterSpacing: '0.3px',
   },
   brandStatValue: {
     fontSize: '15px',
     fontWeight: '600',
-    color: '#111827',
+    color: '#013E37',
+    marginTop: '2px',
   },
   activityList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
+    gap: '6px',
   },
   activityItem: {
     display: 'flex',
@@ -950,7 +1063,8 @@ const styles = {
     gap: '12px',
     padding: '10px 12px',
     borderRadius: '8px',
-    transition: 'background 0.2s ease',
+    transition: 'all 0.2s ease',
+    borderLeft: '3px solid transparent',
   },
   activityIcon: {
     width: '36px',
@@ -960,6 +1074,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
+    border: '2px solid #013E37',
   },
   activityIconSvg: {
     width: '18px',
@@ -971,7 +1086,7 @@ const styles = {
   },
   activityTitle: {
     fontSize: '14px',
-    color: '#111827',
+    color: '#013E37',
     margin: 0,
     fontWeight: '500',
   },
@@ -983,16 +1098,19 @@ const styles = {
   },
   activityTime: {
     fontSize: '12px',
-    color: '#6b7280',
+    color: '#013E37',
+    opacity: 0.6,
   },
   activityBadge: {
     fontSize: '10px',
     fontWeight: '600',
-    padding: '1px 10px',
+    padding: '1px 12px',
     borderRadius: '12px',
+    border: '1px solid #013E37',
   },
   quickActionsSection: {
     marginTop: '4px',
+    marginBottom: '20px',
   },
   quickActionsGrid: {
     display: 'grid',
@@ -1000,48 +1118,50 @@ const styles = {
     gap: '16px',
   },
   quickAction: {
-    padding: '18px 16px',
+    padding: '20px 16px',
     backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    border: '1px solid #f3f4f6',
+    borderRadius: '14px',
+    border: '2px solid #FFEFB3',
     textAlign: 'center',
     textDecoration: 'none',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.3s ease',
     cursor: 'pointer',
     display: 'block',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
+    boxShadow: '0 2px 8px rgba(1, 62, 55, 0.04)',
+    position: 'relative',
+    overflow: 'hidden',
   },
-  quickActionIconBlue: {
-    margin: '0 auto',
-    color: '#3b82f6',
+  quickActionIconWrapper: {
+    width: '48px',
+    height: '48px',
+    borderRadius: '12px',
+    backgroundColor: '#FFEFB3',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: '0 auto 10px',
+    border: '2px solid #013E37',
+    transition: 'all 0.3s ease',
   },
-  quickActionIconGreen: {
+  quickActionIcon: {
     margin: '0 auto',
-    color: '#22c55e',
-  },
-  quickActionIconPurple: {
-    margin: '0 auto',
-    color: '#8b5cf6',
-  },
-  quickActionIconYellow: {
-    margin: '0 auto',
-    color: '#f59e0b',
+    color: '#013E37',
   },
   quickActionText: {
     display: 'block',
-    marginTop: '8px',
     fontSize: '14px',
     fontWeight: '500',
-    color: '#374151',
+    color: '#013E37',
   },
   emptyState: {
     textAlign: 'center',
     padding: '32px 16px',
   },
   emptyStateText: {
-    color: '#6b7280',
+    color: '#013E37',
     fontSize: '14px',
     margin: 0,
+    opacity: 0.6,
   },
 };
 

@@ -1,4 +1,4 @@
-// pages/crm/Deals.jsx
+// pages/crm/Deals.jsx - WITHOUT CLIENTS API
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
@@ -6,7 +6,9 @@ import {
   Plus, Search, Filter, X, Eye, Edit, Trash2, ChevronDown,
   RefreshCw, Briefcase, Clock, AlertCircle, CheckCircle, XCircle,
   FileText, DollarSign, Users, Calendar, TrendingUp, ArrowLeft,
-  UserCheck, Building2, Mail, Phone, MapPin, Globe, Send
+  UserCheck, Building2, Mail, Phone, MapPin, Globe, Send,
+  Award, Target, Zap, Save, Package, Tag, Calendar as CalendarIcon,
+  User, Building, Percent, Activity
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -33,7 +35,6 @@ const Deals = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [leads, setLeads] = useState([]);
-  const [clients, setClients] = useState([]);
   const [isCreating, setIsCreating] = useState(false);
   const [isViewing, setIsViewing] = useState(false);
   const [viewingDeal, setViewingDeal] = useState(null);
@@ -52,11 +53,9 @@ const Deals = () => {
 
   const API_URL = 'https://crmserver-production-4a42.up.railway.app/api';
 
-  // Fetch deals on mount and when filters change
   useEffect(() => {
     fetchDeals();
     fetchLeadsForDropdown();
-    fetchClientsForDropdown();
   }, [currentPage, searchTerm, filterStatus, filterStage]);
 
   const fetchDeals = async (isRefresh = false) => {
@@ -109,20 +108,6 @@ const Deals = () => {
     }
   };
 
-  const fetchClientsForDropdown = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/clients`, {
-        params: { limit: 100 },
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (response.data && response.data.success) {
-        setClients(response.data.data || []);
-      }
-    } catch (err) {
-      console.error('Error fetching clients:', err);
-    }
-  };
-
   const handleDelete = async () => {
     if (!selectedDeal) return;
     
@@ -161,7 +146,6 @@ const Deals = () => {
     }
   };
 
-  // Handle create form input changes
   const handleFormChange = (e) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
@@ -169,7 +153,6 @@ const Deals = () => {
       [name]: type === 'number' ? parseFloat(value) || 0 : value
     }));
 
-    // Auto-calculate probability based on stage
     if (name === 'stage') {
       const stageProbability = {
         'qualification': 20,
@@ -184,7 +167,6 @@ const Deals = () => {
       }));
     }
 
-    // Auto-populate deal name from lead
     if (name === 'leadId' && value) {
       const selectedLead = leads.find(l => l._id === value);
       if (selectedLead && !formData.dealName) {
@@ -196,7 +178,6 @@ const Deals = () => {
     }
   };
 
-  // Handle product changes
   const handleProductChange = (index, field, value) => {
     const updatedProducts = [...formData.products];
     updatedProducts[index] = {
@@ -227,7 +208,6 @@ const Deals = () => {
     }));
   };
 
-  // Create deal
   const handleCreateDeal = async (e) => {
     e.preventDefault();
     setActionLoading(true);
@@ -269,7 +249,6 @@ const Deals = () => {
     }
   };
 
-  // View deal details
   const viewDeal = async (dealId) => {
     try {
       setActionLoading(true);
@@ -290,13 +269,13 @@ const Deals = () => {
 
   const getStageColor = (stage) => {
     const colors = {
-      qualification: { bg: '#EFF6FF', text: '#3B82F6' },
-      proposal: { bg: '#FFFBEB', text: '#F59E0B' },
-      negotiation: { bg: '#F5F3FF', text: '#8B5CF6' },
-      closed_won: { bg: '#D1FAE5', text: '#10B981' },
-      closed_lost: { bg: '#FEE2E2', text: '#EF4444' },
+      qualification: { bg: '#FFEFB3', text: '#013E37', icon: AlertCircle },
+      proposal: { bg: '#FFEFB3', text: '#013E37', icon: FileText },
+      negotiation: { bg: '#FFEFB3', text: '#013E37', icon: Users },
+      closed_won: { bg: '#E8F5E9', text: '#013E37', icon: CheckCircle },
+      closed_lost: { bg: '#FFEBEE', text: '#D32F2F', icon: XCircle },
     };
-    return colors[stage] || { bg: '#F3F4F6', text: '#6B7280' };
+    return colors[stage] || { bg: '#FFEFB3', text: '#013E37', icon: Briefcase };
   };
 
   const getStageIcon = (stage) => {
@@ -313,22 +292,25 @@ const Deals = () => {
   const getStatusStyle = (status) => {
     const statusStyles = {
       won: {
-        backgroundColor: '#D1FAE5',
-        color: '#065F46',
+        backgroundColor: '#013E37',
+        color: '#FFFFFF',
         icon: CheckCircle,
-        label: 'Won'
+        label: 'Won',
+        emoji: '🏆'
       },
       lost: {
-        backgroundColor: '#FEE2E2',
-        color: '#991B1B',
+        backgroundColor: '#FFEBEE',
+        color: '#D32F2F',
         icon: XCircle,
-        label: 'Lost'
+        label: 'Lost',
+        emoji: '❌'
       },
       active: {
-        backgroundColor: '#FEF3C7',
-        color: '#92400E',
+        backgroundColor: '#FFEFB3',
+        color: '#013E37',
         icon: Clock,
-        label: 'Active'
+        label: 'Active',
+        emoji: '🔄'
       },
     };
     return statusStyles[status] || statusStyles.active;
@@ -376,331 +358,315 @@ const Deals = () => {
 
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.spinner} />
-        <p style={styles.loadingText}>Loading deals...</p>
+      <div className="deals-loading">
+        <div className="deals-spinner"></div>
+        <p className="deals-loading-text">Loading deals...</p>
       </div>
     );
   }
 
-  // Render View Deal Modal
+  // ============================================
+  // VIEW DEAL MODAL - COMPACT & MODERN
+  // ============================================
   if (isViewing && viewingDeal) {
     const statusStyle = getStatusStyle(viewingDeal.status);
     const StatusIcon = statusStyle.icon;
-    const stageColors = getStageColor(viewingDeal.stage);
-    const StageIcon = getStageIcon(viewingDeal.stage);
+    const stageData = getStageColor(viewingDeal.stage);
+    const StageIcon = stageData.icon || Briefcase;
+    
+    const totalProductsValue = viewingDeal.products?.reduce((sum, p) => sum + (p.total || 0), 0) || 0;
+    const displayValue = totalProductsValue > 0 ? totalProductsValue : viewingDeal.value;
     
     return (
-      <div style={styles.modalOverlay} onClick={() => { setIsViewing(false); setViewingDeal(null); }}>
-        <div style={{...styles.modal, maxWidth: '700px'}} onClick={e => e.stopPropagation()}>
-          <div style={styles.modalHeader}>
-            <h3 style={styles.modalTitle}>{viewingDeal.dealName}</h3>
-            <button style={styles.modalCloseButton} onClick={() => { setIsViewing(false); setViewingDeal(null); }}>
+      <div className="deals-modal-overlay" onClick={() => { setIsViewing(false); setViewingDeal(null); }}>
+        <div className="deals-view-modal" onClick={e => e.stopPropagation()}>
+          {/* Header - Same style as Create Deal Modal */}
+          <div className="deals-view-header">
+            <div>
+              <h3 className="deals-view-title">{viewingDeal.dealName}</h3>
+              <p className="deals-view-subtitle">
+                {viewingDeal.leadId?.companyName || viewingDeal.clientId?.companyName || 'No Company'}
+              </p>
+            </div>
+            <button className="deals-view-close" onClick={() => { setIsViewing(false); setViewingDeal(null); }}>
               <X size={20} />
             </button>
           </div>
-          <div style={styles.modalBody}>
-            <div style={styles.viewDealGrid}>
-              <div style={styles.viewDealItem}>
-                <label style={styles.viewDealLabel}>Value</label>
-                <span style={styles.viewDealValue}>{formatCurrency(viewingDeal.value)}</span>
+
+          <div className="deals-view-body">
+            {/* Stats Grid - Compact Cards */}
+            <div className="deals-view-stats-grid">
+              <div className="deals-view-stat-card">
+                <div className="deals-view-stat-icon-wrapper" style={{ backgroundColor: '#FFEFB3' }}>
+                  <DollarSign size={16} color="#013E37" />
+                </div>
+                <div>
+                  <span className="deals-view-stat-label">Value</span>
+                  <span className="deals-view-stat-value">{formatCurrency(displayValue)}</span>
+                </div>
               </div>
-              <div style={styles.viewDealItem}>
-                <label style={styles.viewDealLabel}>Stage</label>
-                <span style={{...styles.stageBadge, backgroundColor: stageColors.bg, color: stageColors.text}}>
-                  <StageIcon size={12} /> {viewingDeal.stage?.replace('_', ' ').toUpperCase() || 'N/A'}
-                </span>
+              
+              <div className="deals-view-stat-card">
+                <div className="deals-view-stat-icon-wrapper" style={{ backgroundColor: '#FFEFB3' }}>
+                  <Target size={16} color="#013E37" />
+                </div>
+                <div>
+                  <span className="deals-view-stat-label">Stage</span>
+                  <span className="deals-view-stage-badge" style={{ backgroundColor: stageData.bg, color: stageData.text }}>
+                    <StageIcon size={12} /> 
+                    {viewingDeal.stage?.replace('_', ' ').toUpperCase() || 'N/A'}
+                  </span>
+                </div>
               </div>
-              <div style={styles.viewDealItem}>
-                <label style={styles.viewDealLabel}>Status</label>
-                <span style={{...styles.statusBadge, backgroundColor: statusStyle.backgroundColor, color: statusStyle.color}}>
-                  <StatusIcon size={12} /> {statusStyle.label}
-                </span>
+              
+              <div className="deals-view-stat-card">
+                <div className="deals-view-stat-icon-wrapper" style={{ backgroundColor: '#FFEFB3' }}>
+                  <Percent size={16} color="#013E37" />
+                </div>
+                <div>
+                  <span className="deals-view-stat-label">Probability</span>
+                  <div className="deals-view-probability">
+                    <div className="deals-view-probability-bar">
+                      <div className="deals-view-probability-fill" style={{ 
+                        width: `${viewingDeal.probability || 0}%`,
+                        backgroundColor: (viewingDeal.probability || 0) >= 70 ? '#013E37' : (viewingDeal.probability || 0) >= 40 ? '#FFD580' : '#D32F2F'
+                      }} />
+                    </div>
+                    <span className="deals-view-probability-text">{viewingDeal.probability || 0}%</span>
+                  </div>
+                </div>
               </div>
-              <div style={styles.viewDealItem}>
-                <label style={styles.viewDealLabel}>Probability</label>
-                <span style={styles.viewDealValue}>{viewingDeal.probability || 0}%</span>
+              
+              <div className="deals-view-stat-card">
+                <div className="deals-view-stat-icon-wrapper" style={{ backgroundColor: '#FFEFB3' }}>
+                  <CalendarIcon size={16} color="#013E37" />
+                </div>
+                <div>
+                  <span className="deals-view-stat-label">Expected Close</span>
+                  <span className="deals-view-stat-value">
+                    {viewingDeal.expectedCloseDate ? formatDate(viewingDeal.expectedCloseDate) : 'N/A'}
+                  </span>
+                </div>
               </div>
             </div>
-            
+
+            {/* Status Badge Row */}
+            <div className="deals-view-status-row">
+              <span className="deals-view-status-badge" style={{ 
+                backgroundColor: statusStyle.backgroundColor,
+                color: statusStyle.color
+              }}>
+                <StatusIcon size={14} /> {statusStyle.label}
+              </span>
+            </div>
+
+            {/* Description */}
             {viewingDeal.description && (
-              <div style={styles.viewDealSection}>
-                <label style={styles.viewDealLabel}>Description</label>
-                <p style={styles.viewDealText}>{viewingDeal.description}</p>
+              <div className="deals-view-description">
+                <FileText size={14} color="#013E37" />
+                <p>{viewingDeal.description}</p>
               </div>
             )}
 
-            <div style={styles.viewDealSection}>
-              <label style={styles.viewDealLabel}>Products</label>
-              {viewingDeal.products && viewingDeal.products.length > 0 ? (
-                <div style={styles.viewProductsList}>
-                  {viewingDeal.products.map((p, i) => (
-                    <div key={i} style={styles.viewProductItem}>
-                      <span>{p.name || 'Product'}</span>
-                      <span>{p.quantity} × {formatCurrency(p.price)} = {formatCurrency(p.total)}</span>
-                    </div>
-                  ))}
-                  <div style={styles.viewProductTotal}>
-                    <strong>Total:</strong> {formatCurrency(viewingDeal.products.reduce((sum, p) => sum + (p.total || 0), 0))}
-                  </div>
+            {/* Products & Related - Compact Grid */}
+            <div className="deals-view-grid">
+              {/* Products */}
+              <div className="deals-view-card">
+                <div className="deals-view-card-header">
+                  <Package size={14} color="#013E37" />
+                  <h4>Products</h4>
+                  {viewingDeal.products && viewingDeal.products.length > 0 && (
+                    <span className="deals-view-badge">{viewingDeal.products.length}</span>
+                  )}
                 </div>
-              ) : (
-                <span style={styles.viewDealText}>No products</span>
-              )}
-            </div>
+                <div className="deals-view-card-body">
+                  {viewingDeal.products && viewingDeal.products.length > 0 ? (
+                    <>
+                      {viewingDeal.products.map((p, i) => (
+                        <div key={i} className="deals-view-product">
+                          <span className="deals-view-product-name">{p.name || 'Product'}</span>
+                          <span className="deals-view-product-details">
+                            {p.quantity} × {formatCurrency(p.price)}
+                          </span>
+                          <span className="deals-view-product-total">{formatCurrency(p.total)}</span>
+                        </div>
+                      ))}
+                      <div className="deals-view-total-row">
+                        <span>Total</span>
+                        <span className="deals-view-total-value">{formatCurrency(totalProductsValue)}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="deals-view-empty">
+                      <Package size={20} color="#013E37" opacity="0.3" />
+                      <span>No products</span>
+                    </div>
+                  )}
+                </div>
+              </div>
 
-            <div style={styles.viewDealSection}>
-              <label style={styles.viewDealLabel}>Related</label>
-              <div style={styles.viewDealRelated}>
-                {viewingDeal.leadId && (
-                  <span><strong>Lead:</strong> {viewingDeal.leadId.companyName || 'N/A'}</span>
-                )}
-                {viewingDeal.clientId && (
-                  <span><strong>Client:</strong> {viewingDeal.clientId.companyName || 'N/A'}</span>
-                )}
-                {viewingDeal.expectedCloseDate && (
-                  <span><strong>Expected Close:</strong> {formatDate(viewingDeal.expectedCloseDate)}</span>
-                )}
+              {/* Related */}
+              <div className="deals-view-card">
+                <div className="deals-view-card-header">
+                  <Users size={14} color="#013E37" />
+                  <h4>Related</h4>
+                </div>
+                <div className="deals-view-card-body">
+                  {viewingDeal.leadId && (
+                    <div className="deals-view-related-item">
+                      <span className="deals-view-related-label">Lead</span>
+                      <span className="deals-view-related-value">
+                        <Building size={14} />
+                        {viewingDeal.leadId.companyName || 'N/A'}
+                      </span>
+                    </div>
+                  )}
+                  {viewingDeal.clientId && (
+                    <div className="deals-view-related-item">
+                      <span className="deals-view-related-label">Client</span>
+                      <span className="deals-view-related-value">
+                        <Building size={14} />
+                        {viewingDeal.clientId.companyName || 'N/A'}
+                      </span>
+                    </div>
+                  )}
+                  {viewingDeal.assignedTo && (
+                    <div className="deals-view-related-item">
+                      <span className="deals-view-related-label">Assigned To</span>
+                      <span className="deals-view-related-value">
+                        <User size={14} />
+                        {viewingDeal.assignedTo.firstName} {viewingDeal.assignedTo.lastName}
+                      </span>
+                    </div>
+                  )}
+                  {viewingDeal.expectedCloseDate && (
+                    <div className="deals-view-related-item">
+                      <span className="deals-view-related-label">Close Date</span>
+                      <span className="deals-view-related-value">
+                        <CalendarIcon size={14} />
+                        {formatDate(viewingDeal.expectedCloseDate)}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
+          </div>
 
-            <div style={styles.modalActions}>
-              <button style={styles.modalCancelButton} onClick={() => { setIsViewing(false); setViewingDeal(null); }}>
-                Close
+          {/* Footer Actions - Same as Create Deal */}
+          <div className="deals-view-actions">
+            <button className="deals-view-btn deals-view-btn-cancel" onClick={() => { setIsViewing(false); setViewingDeal(null); }}>
+              Close
+            </button>
+            {viewingDeal.status !== 'won' && viewingDeal.status !== 'lost' && (
+              <button 
+                className="deals-view-btn deals-view-btn-primary"
+                onClick={() => {
+                  handleMarkWon(viewingDeal._id);
+                  setIsViewing(false);
+                  setViewingDeal(null);
+                }}
+              >
+                <CheckCircle size={16} /> Mark as Won
               </button>
-              {viewingDeal.status !== 'won' && viewingDeal.status !== 'lost' && (
-                <button 
-                  style={{...styles.modalPrimaryButton, backgroundColor: '#10B981'}}
-                  onClick={() => {
-                    handleMarkWon(viewingDeal._id);
-                    setIsViewing(false);
-                    setViewingDeal(null);
-                  }}
-                >
-                  <CheckCircle size={16} /> Mark as Won
-                </button>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>
     );
   }
 
-  // Render Create Form
-  if (isCreating) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.pageHeader}>
-          <div style={styles.headerLeft}>
-            <button style={styles.backButton} onClick={() => setIsCreating(false)}>
-              <ArrowLeft size={20} />
-            </button>
-            <div>
-              <h1 style={styles.pageTitle}>Create New Deal</h1>
-              <p style={styles.pageSubtitle}>Add a new deal to track in your pipeline</p>
-            </div>
-          </div>
-          <div style={styles.headerActions}>
-            <button style={{...styles.secondaryButton}} onClick={() => setIsCreating(false)}>
-              Cancel
-            </button>
-            <button style={{...styles.primaryButton}} onClick={handleCreateDeal} disabled={actionLoading}>
-              {actionLoading ? 'Creating...' : 'Create Deal'}
-            </button>
-          </div>
-        </div>
-
-        <div style={styles.formGrid}>
-          <div style={styles.formColumn}>
-            <div style={styles.card}>
-              <div style={styles.cardHeader}><h3 style={styles.cardTitle}>Basic Information</h3></div>
-              <div style={styles.cardContent}>
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Deal Name *</label>
-                  <input type="text" name="dealName" value={formData.dealName} onChange={handleFormChange} style={styles.formInput} placeholder="Enter deal name" required />
-                </div>
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Description</label>
-                  <textarea name="description" value={formData.description} onChange={handleFormChange} style={styles.formTextarea} placeholder="Enter deal description" rows={3} />
-                </div>
-              </div>
-            </div>
-
-            <div style={styles.card}>
-              <div style={styles.cardHeader}>
-                <h3 style={styles.cardTitle}>Products / Services</h3>
-                <button style={styles.smallButton} onClick={addProduct}><Plus size={16} /> Add Product</button>
-              </div>
-              <div style={styles.cardContent}>
-                {formData.products.length === 0 ? (
-                  <p style={styles.emptyText}>No products added. Click "Add Product" to add.</p>
-                ) : (
-                  formData.products.map((product, index) => (
-                    <div key={index} style={styles.productRow}>
-                      <div style={styles.productField}>
-                        <input type="text" value={product.name} onChange={(e) => handleProductChange(index, 'name', e.target.value)} style={styles.productInput} placeholder="Product name" />
-                      </div>
-                      <div style={styles.productField}>
-                        <input type="number" value={product.quantity} onChange={(e) => handleProductChange(index, 'quantity', e.target.value)} style={styles.productInputSmall} placeholder="Qty" min="1" />
-                      </div>
-                      <div style={styles.productField}>
-                        <input type="number" value={product.price} onChange={(e) => handleProductChange(index, 'price', e.target.value)} style={styles.productInputSmall} placeholder="Price" min="0" />
-                      </div>
-                      <div style={styles.productField}>
-                        <span style={styles.productTotal}>${(product.total || 0).toFixed(2)}</span>
-                      </div>
-                      <button style={styles.removeProductButton} onClick={() => removeProduct(index)}><X size={16} /></button>
-                    </div>
-                  ))
-                )}
-                {formData.products.length > 0 && (
-                  <div style={styles.productTotalRow}>
-                    <span style={styles.productTotalLabel}>Total Deal Value:</span>
-                    <span style={styles.productTotalValue}>${formData.products.reduce((sum, p) => sum + (p.total || 0), 0).toFixed(2)}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div style={styles.formColumn}>
-            <div style={styles.card}>
-              <div style={styles.cardHeader}><h3 style={styles.cardTitle}>Pipeline Settings</h3></div>
-              <div style={styles.cardContent}>
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Stage</label>
-                  <select name="stage" value={formData.stage} onChange={handleFormChange} style={styles.formSelect}>
-                    <option value="qualification">Qualification</option>
-                    <option value="proposal">Proposal</option>
-                    <option value="negotiation">Negotiation</option>
-                    <option value="closed_won">Closed Won</option>
-                    <option value="closed_lost">Closed Lost</option>
-                  </select>
-                </div>
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Probability (%)</label>
-                  <input type="number" name="probability" value={formData.probability} onChange={handleFormChange} style={styles.formInput} min="0" max="100" />
-                </div>
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Expected Close Date</label>
-                  <input type="date" name="expectedCloseDate" value={formData.expectedCloseDate} onChange={handleFormChange} style={styles.formInput} />
-                </div>
-              </div>
-            </div>
-
-            <div style={styles.card}>
-              <div style={styles.cardHeader}><h3 style={styles.cardTitle}>Associations</h3></div>
-              <div style={styles.cardContent}>
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Related Lead (Optional)</label>
-                  <select name="leadId" value={formData.leadId} onChange={handleFormChange} style={styles.formSelect}>
-                    <option value="">Select a lead...</option>
-                    {leads.map(lead => (
-                      <option key={lead._id} value={lead._id}>
-                        {lead.companyName} - {lead.contactName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Related Client (Optional)</label>
-                  <select name="clientId" value={formData.clientId} onChange={handleFormChange} style={styles.formSelect}>
-                    <option value="">Select a client...</option>
-                    {clients.map(client => (
-                      <option key={client._id} value={client._id}>
-                        {client.companyName} - {client.contactName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Main List View
+  // ============================================
+  // MAIN LIST VIEW
+  // ============================================
   return (
-    <div style={styles.container}>
-      <div style={styles.pageHeader}>
+    <div className="deals-container">
+      <div className="deals-header">
         <div>
-          <h1 style={styles.pageTitle}>Deals</h1>
-          <p style={styles.pageSubtitle}>Manage and track your sales deals pipeline</p>
+          <h1 className="deals-title">Deals</h1>
+          <p className="deals-subtitle">Manage and track your sales deals pipeline</p>
         </div>
-        <button style={styles.primaryButton} onClick={() => setIsCreating(true)}>
+        <button className="deals-btn deals-btn-primary" onClick={() => setIsCreating(true)}>
           <Plus size={18} /> Create Deal
         </button>
       </div>
 
-      <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
-          <div style={{...styles.statIconWrapper, backgroundColor: '#EFF6FF'}}><Briefcase size={18} color="#3B82F6" /></div>
+      {/* Stats Cards */}
+      <div className="deals-stats">
+        <div className="deals-stat-card">
+          <div className="deals-stat-icon" style={{ backgroundColor: '#FFEFB3' }}>
+            <Briefcase size={18} color="#013E37" />
+          </div>
           <div>
-            <p style={styles.statNumber}>{stats.total}</p>
-            <p style={styles.statLabel}>Total Deals</p>
-            <p style={styles.statSubtext}>{formatCurrency(stats.totalValue)}</p>
+            <p className="deals-stat-number">{stats.total}</p>
+            <p className="deals-stat-label">Total Deals</p>
+            <p className="deals-stat-subtext">{formatCurrency(stats.totalValue)}</p>
           </div>
         </div>
-        <div style={styles.statCard}>
-          <div style={{...styles.statIconWrapper, backgroundColor: '#FFFBEB'}}><Clock size={18} color="#F59E0B" /></div>
+        <div className="deals-stat-card">
+          <div className="deals-stat-icon" style={{ backgroundColor: '#FFEFB3' }}>
+            <Clock size={18} color="#013E37" />
+          </div>
           <div>
-            <p style={styles.statNumber}>{stats.active}</p>
-            <p style={styles.statLabel}>Active</p>
-            <p style={styles.statSubtext}>In Progress</p>
+            <p className="deals-stat-number">{stats.active}</p>
+            <p className="deals-stat-label">Active</p>
+            <p className="deals-stat-subtext">In Progress</p>
           </div>
         </div>
-        <div style={styles.statCard}>
-          <div style={{...styles.statIconWrapper, backgroundColor: '#ECFDF5'}}><CheckCircle size={18} color="#10B981" /></div>
+        <div className="deals-stat-card">
+          <div className="deals-stat-icon" style={{ backgroundColor: '#E8F5E9' }}>
+            <CheckCircle size={18} color="#013E37" />
+          </div>
           <div>
-            <p style={styles.statNumber}>{stats.won}</p>
-            <p style={styles.statLabel}>Won</p>
-            <p style={styles.statSubtext}>Closed Deals</p>
+            <p className="deals-stat-number">{stats.won}</p>
+            <p className="deals-stat-label">Won</p>
+            <p className="deals-stat-subtext">Closed Deals</p>
           </div>
         </div>
-        <div style={styles.statCard}>
-          <div style={{...styles.statIconWrapper, backgroundColor: '#FEF2F2'}}><XCircle size={18} color="#EF4444" /></div>
+        <div className="deals-stat-card">
+          <div className="deals-stat-icon" style={{ backgroundColor: '#FFEBEE' }}>
+            <XCircle size={18} color="#D32F2F" />
+          </div>
           <div>
-            <p style={styles.statNumber}>{stats.lost}</p>
-            <p style={styles.statLabel}>Lost</p>
-            <p style={styles.statSubtext}>Closed Lost</p>
+            <p className="deals-stat-number">{stats.lost}</p>
+            <p className="deals-stat-label">Lost</p>
+            <p className="deals-stat-subtext">Closed Lost</p>
           </div>
         </div>
       </div>
 
-      <div style={styles.searchSection}>
-        <div style={styles.searchBar}>
-          <Search size={18} style={styles.searchIcon} />
-          <input type="text" placeholder="Search deals by name or company..." value={searchTerm} onChange={handleSearch} style={styles.searchInput} />
-          {searchTerm && <button style={styles.clearSearch} onClick={() => setSearchTerm('')}><X size={16} /></button>}
+      {/* Search and Filters */}
+      <div className="deals-search-section">
+        <div className="deals-search-bar">
+          <Search size={18} className="deals-search-icon" />
+          <input type="text" placeholder="Search deals by name or company..." value={searchTerm} onChange={handleSearch} className="deals-search-input" />
+          {searchTerm && <button className="deals-clear-search" onClick={() => setSearchTerm('')}><X size={16} /></button>}
         </div>
-        <div style={styles.actionButtons}>
-          <button style={styles.filterToggle} onClick={() => setShowFilters(!showFilters)}>
-            <Filter size={16} /> Filters <ChevronDown size={14} style={{ transform: showFilters ? 'rotate(180deg)' : 'none' }} />
+        <div className="deals-action-buttons">
+          <button className="deals-filter-toggle" onClick={() => setShowFilters(!showFilters)}>
+            <Filter size={16} /> Filters <ChevronDown size={14} className={showFilters ? 'deals-rotate' : ''} />
           </button>
-          <button style={styles.refreshButton} onClick={() => fetchDeals(true)} disabled={refreshing}>
-            <RefreshCw size={16} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
+          <button className="deals-refresh-btn" onClick={() => fetchDeals(true)} disabled={refreshing}>
+            <RefreshCw size={16} className={refreshing ? 'deals-spin' : ''} />
           </button>
         </div>
       </div>
 
       {showFilters && (
-        <div style={styles.filterPanel}>
-          <div style={styles.filterRow}>
-            <div style={styles.filterGroup}>
-              <label style={styles.filterLabel}>Status</label>
-              <select value={filterStatus} onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }} style={styles.filterSelect}>
+        <div className="deals-filter-panel">
+          <div className="deals-filter-row">
+            <div className="deals-filter-group">
+              <label className="deals-filter-label">Status</label>
+              <select value={filterStatus} onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }} className="deals-filter-select">
                 <option value="">All Status</option>
                 <option value="active">Active</option>
                 <option value="won">Won</option>
                 <option value="lost">Lost</option>
               </select>
             </div>
-            <div style={styles.filterGroup}>
-              <label style={styles.filterLabel}>Stage</label>
-              <select value={filterStage} onChange={(e) => { setFilterStage(e.target.value); setCurrentPage(1); }} style={styles.filterSelect}>
+            <div className="deals-filter-group">
+              <label className="deals-filter-label">Stage</label>
+              <select value={filterStage} onChange={(e) => { setFilterStage(e.target.value); setCurrentPage(1); }} className="deals-filter-select">
                 <option value="">All Stages</option>
                 <option value="qualification">Qualification</option>
                 <option value="proposal">Proposal</option>
@@ -709,35 +675,36 @@ const Deals = () => {
                 <option value="closed_lost">Closed Lost</option>
               </select>
             </div>
-            <button style={styles.clearFiltersButton} onClick={clearFilters}>Clear Filters</button>
+            <button className="deals-clear-filters" onClick={clearFilters}>Clear Filters</button>
           </div>
         </div>
       )}
 
-      <div style={styles.tableWrapper}>
-        <div style={styles.tableContainer}>
-          <table style={styles.table}>
+      {/* Table */}
+      <div className="deals-table-wrapper">
+        <div className="deals-table-container">
+          <table className="deals-table">
             <thead>
               <tr>
-                <th style={styles.tableHeader}>Deal Name</th>
-                <th style={styles.tableHeader}>Company</th>
-                <th style={{...styles.tableHeader, textAlign: 'right'}}>Value</th>
-                <th style={styles.tableHeader}>Stage</th>
-                <th style={styles.tableHeader}>Status</th>
-                <th style={styles.tableHeader}>Probability</th>
-                <th style={styles.tableHeader}>Expected Close</th>
-                <th style={{...styles.tableHeader, textAlign: 'center'}}>Actions</th>
+                <th className="deals-table-header">Deal Name</th>
+                <th className="deals-table-header">Company</th>
+                <th className="deals-table-header deals-text-right">Value</th>
+                <th className="deals-table-header">Stage</th>
+                <th className="deals-table-header">Status</th>
+                <th className="deals-table-header">Probability</th>
+                <th className="deals-table-header">Expected Close</th>
+                <th className="deals-table-header deals-text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
               {deals.length === 0 ? (
                 <tr>
-                  <td colSpan="8" style={styles.emptyState}>
-                    <div style={styles.emptyContent}>
-                      <Briefcase size={48} color="#94A3B8" />
-                      <p style={styles.emptyText}>No deals found</p>
-                      <p style={styles.emptySubtext}>Create your first deal to start tracking</p>
-                      <button style={styles.emptyButton} onClick={() => setIsCreating(true)}><Plus size={16} /> Create Deal</button>
+                  <td colSpan="8" className="deals-empty-state">
+                    <div className="deals-empty-content">
+                      <Briefcase size={48} color="#013E37" opacity="0.3" />
+                      <p className="deals-empty-text">No deals found</p>
+                      <p className="deals-empty-subtext">Create your first deal to start tracking</p>
+                      <button className="deals-empty-btn" onClick={() => setIsCreating(true)}><Plus size={16} /> Create Deal</button>
                     </div>
                   </td>
                 </tr>
@@ -749,51 +716,51 @@ const Deals = () => {
                   const StageIcon = getStageIcon(deal.stage);
                   
                   return (
-                    <tr key={deal._id} style={styles.tableRow}>
-                      <td style={styles.dealCell}>
-                        <span style={styles.dealName}>{deal.dealName}</span>
+                    <tr key={deal._id} className="deals-table-row">
+                      <td className="deals-deal-cell">
+                        <span className="deals-deal-name">{deal.dealName}</span>
                       </td>
                       <td>
-                        <span style={styles.companyText}>
+                        <span className="deals-company-text">
                           {deal.leadId?.companyName || deal.clientId?.companyName || 'N/A'}
                         </span>
                       </td>
-                      <td style={{ textAlign: 'right' }}>
-                        <span style={styles.valueText}>{formatCurrency(deal.value)}</span>
+                      <td className="deals-text-right">
+                        <span className="deals-value-text">{formatCurrency(deal.value)}</span>
                       </td>
                       <td>
-                        <span style={{...styles.stageBadge, backgroundColor: stageColors.bg, color: stageColors.text}}>
-                          <StageIcon size={12} style={styles.stageIcon} />
+                        <span className="deals-stage-badge" style={{ backgroundColor: stageColors.bg, color: stageColors.text }}>
+                          <StageIcon size={12} className="deals-stage-icon" />
                           {deal.stage ? deal.stage.replace('_', ' ').toUpperCase() : 'N/A'}
                         </span>
                       </td>
                       <td>
-                        <span style={{...styles.statusBadge, backgroundColor: statusStyle.backgroundColor, color: statusStyle.color}}>
-                          <StatusIcon size={12} style={styles.statusIcon} /> {statusStyle.label}
+                        <span className="deals-status-badge" style={{ backgroundColor: statusStyle.backgroundColor, color: statusStyle.color }}>
+                          <StatusIcon size={12} className="deals-status-icon" /> {statusStyle.label}
                         </span>
                       </td>
                       <td>
-                        <div style={styles.probabilityContainer}>
-                          <div style={styles.probabilityBar}>
-                            <div style={{...styles.probabilityFill, width: `${deal.probability || 0}%`, backgroundColor: (deal.probability || 0) >= 70 ? '#10B981' : (deal.probability || 0) >= 40 ? '#F59E0B' : '#EF4444'}} />
+                        <div className="deals-probability">
+                          <div className="deals-probability-bar">
+                            <div className="deals-probability-fill" style={{ width: `${deal.probability || 0}%`, backgroundColor: (deal.probability || 0) >= 70 ? '#013E37' : (deal.probability || 0) >= 40 ? '#FFD580' : '#D32F2F' }} />
                           </div>
-                          <span style={styles.probabilityText}>{deal.probability || 0}%</span>
+                          <span className="deals-probability-text">{deal.probability || 0}%</span>
                         </div>
                       </td>
                       <td>
-                        <span style={styles.dateText}>{deal.expectedCloseDate ? formatDate(deal.expectedCloseDate) : 'N/A'}</span>
+                        <span className="deals-date-text">{deal.expectedCloseDate ? formatDate(deal.expectedCloseDate) : 'N/A'}</span>
                       </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <div style={styles.actionButtonsGroup}>
-                          <button style={styles.actionButtonView} onClick={() => viewDeal(deal._id)} title="View">
+                      <td className="deals-text-center">
+                        <div className="deals-action-group">
+                          <button className="deals-action-view" onClick={() => viewDeal(deal._id)} title="View">
                             <Eye size={15} />
                           </button>
                           {deal.status !== 'won' && deal.status !== 'lost' && (
-                            <button style={styles.actionButtonWon} onClick={() => handleMarkWon(deal._id)} disabled={actionLoading} title="Mark as Won">
+                            <button className="deals-action-won" onClick={() => handleMarkWon(deal._id)} disabled={actionLoading} title="Mark as Won">
                               <CheckCircle size={15} />
                             </button>
                           )}
-                          <button style={styles.actionButtonDelete} onClick={() => { setSelectedDeal(deal); setShowDeleteModal(true); }} title="Delete">
+                          <button className="deals-action-delete" onClick={() => { setSelectedDeal(deal); setShowDeleteModal(true); }} title="Delete">
                             <Trash2 size={15} />
                           </button>
                         </div>
@@ -808,169 +775,1683 @@ const Deals = () => {
       </div>
 
       {pagination.totalPages > 1 && (
-        <div style={styles.paginationWrapper}>
-          <div style={styles.paginationContainer}>
-            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} style={{...styles.paginationButton, opacity: currentPage === 1 ? 0.5 : 1}}>Previous</button>
-            <span style={styles.paginationInfo}>Page {currentPage} of {pagination.totalPages}</span>
-            <button onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))} disabled={currentPage === pagination.totalPages} style={{...styles.paginationButton, opacity: currentPage === pagination.totalPages ? 0.5 : 1}}>Next</button>
+        <div className="deals-pagination">
+          <div className="deals-pagination-container">
+            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="deals-pagination-btn" style={{ opacity: currentPage === 1 ? 0.5 : 1 }}>Previous</button>
+            <span className="deals-pagination-info">Page {currentPage} of {pagination.totalPages}</span>
+            <button onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))} disabled={currentPage === pagination.totalPages} className="deals-pagination-btn" style={{ opacity: currentPage === pagination.totalPages ? 0.5 : 1 }}>Next</button>
           </div>
         </div>
       )}
 
+      {/* Delete Modal */}
       {showDeleteModal && (
-        <div style={styles.modalOverlay} onClick={() => setShowDeleteModal(false)}>
-          <div style={styles.modal} onClick={e => e.stopPropagation()}>
-            <h3 style={styles.modalTitle}>Delete Deal</h3>
-            <div style={styles.modalContent}>
-              <div style={styles.modalIconWrapper}><Trash2 size={40} color="#EF4444" /></div>
-              <p style={styles.modalText}>Are you sure you want to delete <strong>{selectedDeal?.dealName}</strong>?</p>
-              <p style={styles.modalSubtext}>This action cannot be undone. All associated data will be permanently removed.</p>
-              <div style={styles.modalActions}>
-                <button style={styles.modalCancelButton} onClick={() => { setShowDeleteModal(false); setSelectedDeal(null); }} disabled={deleteLoading}>Cancel</button>
-                <button style={styles.modalDeleteButton} onClick={handleDelete} disabled={deleteLoading}>{deleteLoading ? 'Deleting...' : 'Delete Deal'}</button>
-              </div>
+        <div className="deals-modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="deals-modal" onClick={e => e.stopPropagation()}>
+            <div className="deals-modal-icon-wrapper">
+              <Trash2 size={40} color="#D32F2F" />
+            </div>
+            <h3 className="deals-modal-title">Delete Deal</h3>
+            <p className="deals-modal-text">Are you sure you want to delete <strong>{selectedDeal?.dealName}</strong>?</p>
+            <p className="deals-modal-subtext">This action cannot be undone. All associated data will be permanently removed.</p>
+            <div className="deals-modal-actions">
+              <button className="deals-modal-btn deals-modal-btn-cancel" onClick={() => { setShowDeleteModal(false); setSelectedDeal(null); }} disabled={deleteLoading}>Cancel</button>
+              <button className="deals-modal-btn deals-modal-btn-danger" onClick={handleDelete} disabled={deleteLoading}>{deleteLoading ? 'Deleting...' : 'Delete Deal'}</button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Create Deal Modal */}
+      {isCreating && (
+        <div className="deals-modal-overlay" onClick={() => setIsCreating(false)}>
+          <div className="deals-modal deals-modal-create" onClick={e => e.stopPropagation()}>
+            <div className="deals-modal-header">
+              <div>
+                <h3 className="deals-modal-title">Create New Deal</h3>
+                <p className="deals-modal-subtitle">Add a new deal to track in your pipeline</p>
+              </div>
+              <button className="deals-modal-close" onClick={() => setIsCreating(false)}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateDeal} className="deals-modal-form">
+              <div className="deals-modal-form-grid">
+                {/* Left Column */}
+                <div className="deals-modal-form-col">
+                  {/* Basic Information */}
+                  <div className="deals-modal-card">
+                    <div className="deals-modal-card-header">
+                      <h4 className="deals-modal-card-title">
+                        <FileText size={14} /> Basic Information
+                      </h4>
+                    </div>
+                    <div className="deals-modal-card-body">
+                      <div className="deals-form-group">
+                        <label className="deals-form-label">Deal Name</label>
+                        <input 
+                          type="text" 
+                          name="dealName" 
+                          value={formData.dealName} 
+                          onChange={handleFormChange} 
+                          className="deals-form-input" 
+                          placeholder="Enter deal name" 
+                          required 
+                        />
+                      </div>
+                      <div className="deals-form-group">
+                        <label className="deals-form-label">Description</label>
+                        <textarea 
+                          name="description" 
+                          value={formData.description} 
+                          onChange={handleFormChange} 
+                          className="deals-form-textarea" 
+                          placeholder="Enter deal description" 
+                          rows={2} 
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Products */}
+                  <div className="deals-modal-card">
+                    <div className="deals-modal-card-header">
+                      <h4 className="deals-modal-card-title">
+                        <Package size={14} /> Products
+                      </h4>
+                      <button type="button" className="deals-small-btn" onClick={addProduct}>
+                        <Plus size={12} /> Add
+                      </button>
+                    </div>
+                    <div className="deals-modal-card-body">
+                      {formData.products.length === 0 ? (
+                        <div className="deals-empty-products">
+                          <Package size={24} color="#013E37" opacity="0.3" />
+                          <p>No products added.</p>
+                          <span>Click "Add" to add items.</span>
+                        </div>
+                      ) : (
+                        <>
+                          {formData.products.map((product, index) => (
+                            <div key={index} className="deals-product-row">
+                              <div className="deals-product-field">
+                                <input 
+                                  type="text" 
+                                  value={product.name} 
+                                  onChange={(e) => handleProductChange(index, 'name', e.target.value)} 
+                                  className="deals-product-input" 
+                                  placeholder="Product name" 
+                                />
+                              </div>
+                              <div className="deals-product-field deals-product-field-sm">
+                                <input 
+                                  type="number" 
+                                  value={product.quantity} 
+                                  onChange={(e) => handleProductChange(index, 'quantity', e.target.value)} 
+                                  className="deals-product-input-sm" 
+                                  placeholder="Qty" 
+                                  min="1" 
+                                />
+                              </div>
+                              <div className="deals-product-field deals-product-field-sm">
+                                <input 
+                                  type="number" 
+                                  value={product.price} 
+                                  onChange={(e) => handleProductChange(index, 'price', e.target.value)} 
+                                  className="deals-product-input-sm" 
+                                  placeholder="Price" 
+                                  min="0" 
+                                />
+                              </div>
+                              <div className="deals-product-field deals-product-field-total">
+                                <span className="deals-product-total">${(product.total || 0).toFixed(0)}</span>
+                              </div>
+                              <button type="button" className="deals-remove-product" onClick={() => removeProduct(index)}>
+                                <X size={14} />
+                              </button>
+                            </div>
+                          ))}
+                          <div className="deals-product-total-row">
+                            <span className="deals-product-total-label">Total:</span>
+                            <span className="deals-product-total-value">
+                              ${formData.products.reduce((sum, p) => sum + (p.total || 0), 0).toFixed(0)}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="deals-modal-form-col">
+                  {/* Pipeline Settings */}
+                  <div className="deals-modal-card">
+                    <div className="deals-modal-card-header">
+                      <h4 className="deals-modal-card-title">
+                        <Target size={14} /> Pipeline
+                      </h4>
+                    </div>
+                    <div className="deals-modal-card-body">
+                      <div className="deals-form-group">
+                        <label className="deals-form-label">Stage</label>
+                        <select name="stage" value={formData.stage} onChange={handleFormChange} className="deals-form-select">
+                          <option value="qualification">Qualification</option>
+                          <option value="proposal">Proposal</option>
+                          <option value="negotiation">Negotiation</option>
+                          <option value="closed_won">Closed Won</option>
+                          <option value="closed_lost">Closed Lost</option>
+                        </select>
+                      </div>
+                      <div className="deals-form-group">
+                        <label className="deals-form-label">Probability</label>
+                        <input 
+                          type="number" 
+                          name="probability" 
+                          value={formData.probability} 
+                          onChange={handleFormChange} 
+                          className="deals-form-input" 
+                          min="0" 
+                          max="100" 
+                        />
+                      </div>
+                      <div className="deals-form-group">
+                        <label className="deals-form-label">Expected Close</label>
+                        <input 
+                          type="date" 
+                          name="expectedCloseDate" 
+                          value={formData.expectedCloseDate} 
+                          onChange={handleFormChange} 
+                          className="deals-form-input" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Associations */}
+                  <div className="deals-modal-card">
+                    <div className="deals-modal-card-header">
+                      <h4 className="deals-modal-card-title">
+                        <Users size={14} /> Associations
+                      </h4>
+                    </div>
+                    <div className="deals-modal-card-body">
+                      <div className="deals-form-group">
+                        <label className="deals-form-label">Related Lead</label>
+                        <select name="leadId" value={formData.leadId} onChange={handleFormChange} className="deals-form-select">
+                          <option value="">Select a lead...</option>
+                          {leads.map(lead => (
+                            <option key={lead._id} value={lead._id}>
+                              {lead.companyName}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="deals-form-group" style={{ display: 'none' }}>
+                        <label className="deals-form-label">Client ID</label>
+                        <input 
+                          type="text" 
+                          name="clientId" 
+                          value={formData.clientId} 
+                          onChange={handleFormChange} 
+                          className="deals-form-input" 
+                          placeholder="Enter client ID (optional)" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="deals-modal-actions">
+                <button type="button" className="deals-modal-btn deals-modal-btn-cancel" onClick={() => setIsCreating(false)} disabled={actionLoading}>
+                  Cancel
+                </button>
+                <button type="submit" className="deals-modal-btn deals-modal-btn-primary" disabled={actionLoading}>
+                  <Save size={16} />
+                  {actionLoading ? 'Creating...' : 'Create Deal'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        /* ============================================
+           CONTAINER
+           ============================================ */
+        .deals-container {
+          padding: 24px 32px;
+          max-width: 1400px;
+          margin: 0 auto;
+          background: #FFFFFF;
+          min-height: 100vh;
+        }
+
+        /* ============================================
+           LOADING
+           ============================================ */
+        .deals-loading {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 60vh;
+          gap: 16px;
+          background: #FFFFFF;
+        }
+        .deals-spinner {
+          width: 40px;
+          height: 40px;
+          border: 3px solid #FFEFB3;
+          border-top-color: #013E37;
+          border-radius: 50%;
+          animation: dealsSpin 0.8s linear infinite;
+        }
+        @keyframes dealsSpin {
+          to { transform: rotate(360deg); }
+        }
+        .deals-loading-text {
+          color: #013E37;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .deals-spin {
+          animation: dealsSpin 1s linear infinite;
+        }
+        .deals-rotate {
+          transform: rotate(180deg);
+        }
+
+        /* ============================================
+           HEADER
+           ============================================ */
+        .deals-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 24px;
+          flex-wrap: wrap;
+          gap: 16px;
+        }
+        .deals-title {
+          font-size: 28px;
+          font-weight: 700;
+          color: #013E37;
+          margin: 0;
+          letter-spacing: -0.5px;
+        }
+        .deals-subtitle {
+          font-size: 15px;
+          color: #013E37;
+          opacity: 0.7;
+          margin-top: 4px;
+        }
+
+        .deals-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 24px;
+          border-radius: 10px;
+          font-size: 14px;
+          font-weight: 600;
+          border: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          text-decoration: none;
+        }
+        .deals-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        .deals-btn-primary {
+          background: #013E37;
+          color: #FFFFFF;
+          box-shadow: 0 2px 8px rgba(1, 62, 55, 0.3);
+        }
+        .deals-btn-primary:hover:not(:disabled) {
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.3);
+        }
+        .deals-small-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 10px;
+          background: #FFEFB3;
+          border: 1px solid #FFEFB3;
+          border-radius: 4px;
+          font-size: 12px;
+          font-weight: 500;
+          color: #013E37;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .deals-small-btn:hover {
+          background: #013E37;
+          color: #FFFFFF;
+          border-color: #013E37;
+        }
+
+        /* ============================================
+           STATS
+           ============================================ */
+        .deals-stats {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+        .deals-stat-card {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          background: #FFFFFF;
+          border-radius: 12px;
+          padding: 16px 20px;
+          border: 1px solid #FFEFB3;
+          transition: all 0.3s ease;
+        }
+        .deals-stat-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
+          border-color: #013E37;
+        }
+        .deals-stat-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .deals-stat-number {
+          font-size: 22px;
+          font-weight: 700;
+          color: #013E37;
+          margin: 0;
+          line-height: 1.2;
+        }
+        .deals-stat-label {
+          font-size: 13px;
+          color: #013E37;
+          opacity: 0.7;
+          margin: 0;
+          font-weight: 500;
+        }
+        .deals-stat-subtext {
+          font-size: 12px;
+          color: #013E37;
+          opacity: 0.5;
+          margin-top: 2px;
+        }
+
+        /* ============================================
+           SEARCH
+           ============================================ */
+        .deals-search-section {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 16px;
+          flex-wrap: wrap;
+        }
+        .deals-search-bar {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          background: #FFFFFF;
+          border: 1px solid #FFEFB3;
+          border-radius: 10px;
+          padding: 0 14px;
+          min-width: 200px;
+          transition: all 0.3s ease;
+        }
+        .deals-search-bar:focus-within {
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+        .deals-search-icon {
+          color: #013E37;
+          opacity: 0.5;
+          flex-shrink: 0;
+        }
+        .deals-search-input {
+          flex: 1;
+          padding: 10px 12px;
+          border: none;
+          outline: none;
+          font-size: 14px;
+          background: transparent;
+          color: #013E37;
+          min-width: 120px;
+        }
+        .deals-clear-search {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 4px;
+          background: none;
+          border: none;
+          color: #013E37;
+          opacity: 0.5;
+          cursor: pointer;
+        }
+        .deals-action-buttons {
+          display: flex;
+          gap: 8px;
+        }
+        .deals-filter-toggle {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 10px 16px;
+          background: #FFFFFF;
+          border: 1px solid #FFEFB3;
+          border-radius: 10px;
+          font-size: 14px;
+          font-weight: 500;
+          color: #013E37;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.3s ease;
+        }
+        .deals-filter-toggle:hover {
+          background: #FFEFB3;
+          border-color: #013E37;
+        }
+        .deals-refresh-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 10px;
+          background: #FFFFFF;
+          border: 1px solid #FFEFB3;
+          border-radius: 10px;
+          color: #013E37;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .deals-refresh-btn:hover:not(:disabled) {
+          background: #FFEFB3;
+          border-color: #013E37;
+        }
+
+        /* ============================================
+           FILTERS
+           ============================================ */
+        .deals-filter-panel {
+          background: #FFFFFF;
+          border: 1px solid #FFEFB3;
+          border-radius: 10px;
+          padding: 16px 20px;
+          margin-bottom: 16px;
+          animation: dealsSlideDown 0.3s ease;
+        }
+        @keyframes dealsSlideDown {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .deals-filter-row {
+          display: flex;
+          align-items: flex-end;
+          gap: 16px;
+          flex-wrap: wrap;
+        }
+        .deals-filter-group {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          flex: 1;
+          min-width: 150px;
+        }
+        .deals-filter-label {
+          font-size: 12px;
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.7;
+          text-transform: uppercase;
+        }
+        .deals-filter-select {
+          padding: 8px 12px;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          font-size: 14px;
+          background: #FFFFFF;
+          color: #013E37;
+          outline: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .deals-filter-select:focus {
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+        .deals-clear-filters {
+          padding: 8px 16px;
+          background: #FFEFB3;
+          border: none;
+          border-radius: 8px;
+          font-size: 13px;
+          font-weight: 500;
+          color: #013E37;
+          cursor: pointer;
+          white-space: nowrap;
+          align-self: center;
+          transition: all 0.3s ease;
+        }
+        .deals-clear-filters:hover {
+          background: #013E37;
+          color: #FFFFFF;
+        }
+
+        /* ============================================
+           TABLE
+           ============================================ */
+        .deals-table-wrapper {
+          background: #FFFFFF;
+          border-radius: 12px;
+          border: 1px solid #FFEFB3;
+          overflow: hidden;
+          transition: all 0.3s ease;
+        }
+        .deals-table-wrapper:hover {
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
+        }
+        .deals-table-container {
+          overflow-x: auto;
+        }
+        .deals-table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        .deals-table-header {
+          padding: 12px 16px;
+          text-align: left;
+          font-size: 12px;
+          font-weight: 600;
+          color: #013E37;
+          text-transform: uppercase;
+          border-bottom: 2px solid #013E37;
+          background: #FFEFB3;
+        }
+        .deals-text-right { text-align: right; }
+        .deals-text-center { text-align: center; }
+        .deals-table-row {
+          border-bottom: 1px solid #FFEFB3;
+          transition: background 0.2s ease;
+        }
+        .deals-table-row:hover {
+          background: #FFEFB3;
+        }
+        .deals-deal-cell { padding: 12px 16px; }
+        .deals-deal-name {
+          color: #013E37;
+          font-weight: 600;
+          font-size: 14px;
+        }
+        .deals-company-text {
+          padding: 12px 16px;
+          color: #013E37;
+          opacity: 0.7;
+          font-size: 13px;
+        }
+        .deals-value-text {
+          padding: 12px 16px;
+          font-weight: 600;
+          color: #013E37;
+          font-size: 14px;
+        }
+        .deals-stage-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 10px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 500;
+        }
+        .deals-status-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 10px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 500;
+        }
+        .deals-probability {
+          padding: 12px 16px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .deals-probability-bar {
+          flex: 1;
+          height: 6px;
+          background: #FFEFB3;
+          border-radius: 3px;
+          overflow: hidden;
+          min-width: 40px;
+        }
+        .deals-probability-fill {
+          height: 100%;
+          border-radius: 3px;
+          transition: width 0.6s ease;
+        }
+        .deals-probability-text {
+          font-size: 12px;
+          font-weight: 600;
+          color: #013E37;
+          min-width: 36px;
+        }
+        .deals-date-text {
+          padding: 12px 16px;
+          color: #013E37;
+          opacity: 0.7;
+          font-size: 13px;
+        }
+        .deals-action-group {
+          display: flex;
+          gap: 4px;
+          justify-content: center;
+        }
+        .deals-action-view {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px 8px;
+          border-radius: 6px;
+          border: none;
+          background: #FFEFB3;
+          color: #013E37;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .deals-action-view:hover:not(:disabled) {
+          background: #013E37;
+          color: #FFFFFF;
+        }
+        .deals-action-won {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px 8px;
+          border-radius: 6px;
+          border: none;
+          background: #FFEFB3;
+          color: #013E37;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .deals-action-won:hover:not(:disabled) {
+          background: #013E37;
+          color: #FFFFFF;
+        }
+        .deals-action-delete {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px 8px;
+          border-radius: 6px;
+          border: none;
+          background: #FFEBEE;
+          color: #D32F2F;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .deals-action-delete:hover:not(:disabled) {
+          background: #D32F2F;
+          color: #FFFFFF;
+        }
+
+        .deals-pagination {
+          margin-top: 16px;
+          display: flex;
+          justify-content: center;
+        }
+        .deals-pagination-container {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+        .deals-pagination-btn {
+          padding: 8px 16px;
+          background: #FFFFFF;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 14px;
+          color: #013E37;
+          transition: all 0.3s ease;
+        }
+        .deals-pagination-btn:hover:not(:disabled) {
+          background: #013E37;
+          color: #FFFFFF;
+          border-color: #013E37;
+        }
+        .deals-pagination-info {
+          font-size: 14px;
+          color: #013E37;
+          opacity: 0.7;
+        }
+
+        .deals-empty-state {
+          text-align: center;
+          padding: 48px 16px;
+        }
+        .deals-empty-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+        }
+        .deals-empty-text {
+          font-size: 18px;
+          font-weight: 600;
+          color: #013E37;
+          margin: 0;
+        }
+        .deals-empty-subtext {
+          font-size: 14px;
+          color: #013E37;
+          opacity: 0.5;
+          margin: 0;
+        }
+        .deals-empty-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 20px;
+          background: #013E37;
+          color: #FFFFFF;
+          border: none;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          margin-top: 8px;
+          transition: all 0.3s ease;
+        }
+        .deals-empty-btn:hover {
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.2);
+        }
+
+        /* ============================================
+           MODAL OVERLAY
+           ============================================ */
+        .deals-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(1, 62, 55, 0.5);
+          backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: 20px;
+          animation: dealsFadeIn 0.3s ease;
+        }
+        @keyframes dealsFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        /* ============================================
+           MODAL - COMPACT SIZE
+           ============================================ */
+        .deals-modal {
+          background: #FFFFFF;
+          border-radius: 16px;
+          border: 1px solid #FFEFB3;
+          box-shadow: 0 20px 60px rgba(1, 62, 55, 0.2);
+          animation: dealsModalIn 0.3s ease;
+          max-width: 500px;
+          width: 100%;
+        }
+        .deals-modal-lg {
+          max-width: 700px;
+          width: 100%;
+        }
+        .deals-modal-create {
+          max-width: 780px;
+          width: 100%;
+          padding: 0;
+          overflow: hidden;
+        }
+        @keyframes dealsModalIn {
+          from { opacity: 0; transform: scale(0.95) translateY(20px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* ============================================
+           MODAL HEADER - COMPACT
+           ============================================ */
+        .deals-modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px 24px;
+          border-bottom: 1px solid #FFEFB3;
+          background: #FFEFB3;
+        }
+        .deals-modal-header .deals-modal-title {
+          font-size: 18px;
+          font-weight: 700;
+          color: #013E37;
+          margin: 0;
+        }
+        .deals-modal-header .deals-modal-subtitle {
+          font-size: 13px;
+          color: #013E37;
+          opacity: 0.6;
+          margin: 2px 0 0 0;
+        }
+        .deals-modal-close {
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: #013E37;
+          opacity: 0.5;
+          padding: 4px;
+          border-radius: 6px;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .deals-modal-close:hover {
+          background: rgba(1, 62, 55, 0.1);
+          opacity: 1;
+        }
+
+        /* ============================================
+           VIEW DEAL MODAL - COMPACT & MODERN
+           ============================================ */
+        .deals-view-modal {
+          max-width: 580px;
+          width: 100%;
+          background: #FFFFFF;
+          border-radius: 16px;
+          border: 1px solid #FFEFB3;
+          box-shadow: 0 20px 60px rgba(1, 62, 55, 0.25);
+          animation: dealsModalIn 0.3s ease;
+          overflow: hidden;
+          max-height: 90vh;
+          display: flex;
+          flex-direction: column;
+        }
+
+        /* View Modal Header - Same as Create Deal */
+        .deals-view-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px 24px;
+          border-bottom: 1px solid #FFEFB3;
+          background: #FFEFB3;
+          flex-shrink: 0;
+        }
+        .deals-view-title {
+          font-size: 18px;
+          font-weight: 700;
+          color: #013E37;
+          margin: 0;
+        }
+        .deals-view-subtitle {
+          font-size: 13px;
+          color: #013E37;
+          opacity: 0.6;
+          margin: 2px 0 0 0;
+        }
+        .deals-view-close {
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: #013E37;
+          opacity: 0.5;
+          padding: 4px;
+          border-radius: 6px;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .deals-view-close:hover {
+          background: rgba(1, 62, 55, 0.1);
+          opacity: 1;
+        }
+
+        /* View Modal Body */
+        .deals-view-body {
+          padding: 20px 24px;
+          overflow-y: auto;
+          flex: 1;
+        }
+
+        /* Stats Grid - 4 Compact Cards */
+        .deals-view-stats-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 8px;
+          margin-bottom: 12px;
+        }
+        .deals-view-stat-card {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 12px;
+          background: #FFFFFF;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          transition: all 0.2s ease;
+        }
+        .deals-view-stat-card:hover {
+          border-color: #013E37;
+        }
+        .deals-view-stat-icon-wrapper {
+          width: 32px;
+          height: 32px;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .deals-view-stat-label {
+          font-size: 10px;
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.5;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+          display: block;
+        }
+        .deals-view-stat-value {
+          font-size: 14px;
+          font-weight: 600;
+          color: #013E37;
+          display: block;
+        }
+        .deals-view-stage-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 2px 8px;
+          border-radius: 4px;
+          font-size: 11px;
+          font-weight: 500;
+        }
+        .deals-view-probability {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          width: 100%;
+        }
+        .deals-view-probability-bar {
+          flex: 1;
+          height: 4px;
+          background: #FFEFB3;
+          border-radius: 2px;
+          overflow: hidden;
+          min-width: 30px;
+        }
+        .deals-view-probability-fill {
+          height: 100%;
+          border-radius: 2px;
+          transition: width 0.6s ease;
+        }
+        .deals-view-probability-text {
+          font-size: 12px;
+          font-weight: 600;
+          color: #013E37;
+          min-width: 28px;
+        }
+
+        /* Status Row */
+        .deals-view-status-row {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 12px;
+        }
+        .deals-view-status-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 4px 14px;
+          border-radius: 20px;
+          font-size: 13px;
+          font-weight: 500;
+        }
+
+        /* Description */
+        .deals-view-description {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          padding: 10px 12px;
+          background: #F8FAFC;
+          border-radius: 8px;
+          border-left: 3px solid #FFEFB3;
+          margin-bottom: 12px;
+        }
+        .deals-view-description p {
+          margin: 0;
+          font-size: 13px;
+          color: #013E37;
+          line-height: 1.5;
+          flex: 1;
+        }
+
+        /* Grid for Products & Related */
+        .deals-view-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+
+        .deals-view-card {
+          background: #FFFFFF;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        .deals-view-card:hover {
+          border-color: #013E37;
+        }
+        .deals-view-card-header {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 12px;
+          background: #F8FAFC;
+          border-bottom: 1px solid #FFEFB3;
+        }
+        .deals-view-card-header h4 {
+          font-size: 12px;
+          font-weight: 600;
+          color: #013E37;
+          margin: 0;
+          flex: 1;
+        }
+        .deals-view-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 20px;
+          height: 20px;
+          padding: 0 6px;
+          background: #FFEFB3;
+          color: #013E37;
+          border-radius: 10px;
+          font-size: 11px;
+          font-weight: 600;
+        }
+        .deals-view-card-body {
+          padding: 8px 12px;
+          max-height: 150px;
+          overflow-y: auto;
+        }
+
+        /* Products */
+        .deals-view-product {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 4px 0;
+          border-bottom: 1px solid #FFEFB3;
+          font-size: 12px;
+        }
+        .deals-view-product:last-child {
+          border-bottom: none;
+        }
+        .deals-view-product-name {
+          flex: 1;
+          font-weight: 500;
+          color: #013E37;
+        }
+        .deals-view-product-details {
+          color: #013E37;
+          opacity: 0.6;
+        }
+        .deals-view-product-total {
+          font-weight: 600;
+          color: #013E37;
+        }
+        .deals-view-total-row {
+          display: flex;
+          justify-content: space-between;
+          padding-top: 6px;
+          margin-top: 6px;
+          border-top: 2px solid #013E37;
+          font-size: 13px;
+          font-weight: 600;
+          color: #013E37;
+        }
+        .deals-view-total-value {
+          color: #013E37;
+        }
+        .deals-view-empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 12px;
+          color: #013E37;
+          opacity: 0.4;
+          font-size: 12px;
+        }
+        .deals-view-empty span {
+          margin-top: 4px;
+        }
+
+        /* Related */
+        .deals-view-related-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 4px 0;
+          border-bottom: 1px solid #FFEFB3;
+          font-size: 12px;
+        }
+        .deals-view-related-item:last-child {
+          border-bottom: none;
+        }
+        .deals-view-related-label {
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.5;
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+        }
+        .deals-view-related-value {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-weight: 500;
+          color: #013E37;
+          font-size: 12px;
+        }
+        .deals-view-related-value svg {
+          opacity: 0.5;
+        }
+
+        /* View Modal Footer - Same as Create Deal */
+        .deals-view-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 8px;
+          padding: 12px 24px 16px 24px;
+          border-top: 1px solid #FFEFB3;
+          background: #F8FAFC;
+          flex-shrink: 0;
+          border-radius: 0 0 16px 16px;
+        }
+        .deals-view-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 20px;
+          border-radius: 8px;
+          font-size: 13px;
+          font-weight: 500;
+          border: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .deals-view-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        .deals-view-btn-cancel {
+          background: transparent;
+          color: #013E37;
+          border: 1px solid #FFEFB3;
+        }
+        .deals-view-btn-cancel:hover:not(:disabled) {
+          background: #FFEFB3;
+          border-color: #013E37;
+        }
+        .deals-view-btn-primary {
+          background: #013E37;
+          color: #FFFFFF;
+        }
+        .deals-view-btn-primary:hover:not(:disabled) {
+          background: #0A5C54;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.3);
+        }
+
+        /* ============================================
+           MODAL FORM - COMPACT
+           ============================================ */
+        .deals-modal-form {
+          padding: 20px 24px;
+        }
+        .deals-modal-form-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+        .deals-modal-form-col {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        /* ============================================
+           MODAL CARD - COMPACT
+           ============================================ */
+        .deals-modal-card {
+          background: #FFFFFF;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        .deals-modal-card:hover {
+          border-color: #013E37;
+        }
+        .deals-modal-card-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 8px 12px;
+          background: #F8FAFC;
+          border-bottom: 1px solid #FFEFB3;
+        }
+        .deals-modal-card-title {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          font-weight: 600;
+          color: #013E37;
+          margin: 0;
+        }
+        .deals-modal-card-body {
+          padding: 12px;
+        }
+
+        /* ============================================
+           FORM ELEMENTS - COMPACT
+           ============================================ */
+        .deals-form-group {
+          margin-bottom: 10px;
+        }
+        .deals-form-group:last-child {
+          margin-bottom: 0;
+        }
+        .deals-form-label {
+          display: block;
+          font-size: 12px;
+          font-weight: 500;
+          color: #013E37;
+          opacity: 0.7;
+          margin-bottom: 3px;
+        }
+        .deals-form-input,
+        .deals-form-select,
+        .deals-form-textarea {
+          width: 100%;
+          padding: 6px 10px;
+          border: 1px solid #FFEFB3;
+          border-radius: 6px;
+          font-size: 13px;
+          color: #013E37;
+          background: #FFFFFF;
+          outline: none;
+          transition: all 0.3s ease;
+          box-sizing: border-box;
+          font-family: inherit;
+        }
+        .deals-form-input:focus,
+        .deals-form-select:focus,
+        .deals-form-textarea:focus {
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+        .deals-form-textarea {
+          resize: vertical;
+          min-height: 50px;
+        }
+
+        /* ============================================
+           PRODUCTS - COMPACT
+           ============================================ */
+        .deals-empty-products {
+          text-align: center;
+          padding: 16px;
+          color: #013E37;
+          opacity: 0.5;
+        }
+        .deals-empty-products p {
+          margin: 4px 0 0 0;
+          font-weight: 500;
+          font-size: 13px;
+        }
+        .deals-empty-products span {
+          font-size: 12px;
+        }
+        .deals-product-row {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-bottom: 6px;
+          padding: 6px;
+          background: #F8FAFC;
+          border-radius: 6px;
+          border: 1px solid #FFEFB3;
+        }
+        .deals-product-field {
+          flex: 1;
+        }
+        .deals-product-field-sm {
+          flex: 0.5;
+          min-width: 50px;
+        }
+        .deals-product-field-total {
+          flex: 0.4;
+          min-width: 50px;
+        }
+        .deals-product-input {
+          width: 100%;
+          padding: 4px 8px;
+          border: 1px solid #FFEFB3;
+          border-radius: 4px;
+          font-size: 12px;
+          outline: none;
+          box-sizing: border-box;
+          color: #013E37;
+          background: #FFFFFF;
+          transition: all 0.3s ease;
+        }
+        .deals-product-input:focus {
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+        .deals-product-input-sm {
+          width: 100%;
+          padding: 4px 8px;
+          border: 1px solid #FFEFB3;
+          border-radius: 4px;
+          font-size: 12px;
+          outline: none;
+          box-sizing: border-box;
+          color: #013E37;
+          background: #FFFFFF;
+          transition: all 0.3s ease;
+        }
+        .deals-product-input-sm:focus {
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+        .deals-product-total {
+          font-size: 13px;
+          font-weight: 600;
+          color: #013E37;
+          display: inline-block;
+        }
+        .deals-remove-product {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 2px;
+          background: transparent;
+          border: none;
+          color: #D32F2F;
+          cursor: pointer;
+          border-radius: 4px;
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+        }
+        .deals-remove-product:hover {
+          background: #FFEBEE;
+        }
+        .deals-product-total-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 6px 0 0 0;
+          border-top: 1px solid #FFEFB3;
+          margin-top: 6px;
+        }
+        .deals-product-total-label {
+          font-size: 13px;
+          font-weight: 500;
+          color: #013E37;
+          opacity: 0.7;
+        }
+        .deals-product-total-value {
+          font-size: 14px;
+          font-weight: 700;
+          color: #013E37;
+        }
+
+        /* ============================================
+           MODAL ACTIONS - COMPACT
+           ============================================ */
+        .deals-modal-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 8px;
+          padding: 12px 24px 16px 24px;
+          border-top: 1px solid #FFEFB3;
+          background: #F8FAFC;
+        }
+        .deals-modal-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 20px;
+          border-radius: 8px;
+          font-size: 13px;
+          font-weight: 500;
+          border: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .deals-modal-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        .deals-modal-btn-cancel {
+          background: transparent;
+          color: #013E37;
+          border: 1px solid #FFEFB3;
+        }
+        .deals-modal-btn-cancel:hover:not(:disabled) {
+          background: #FFEFB3;
+          border-color: #013E37;
+        }
+        .deals-modal-btn-primary {
+          background: #013E37;
+          color: #FFFFFF;
+        }
+        .deals-modal-btn-primary:hover:not(:disabled) {
+          background: #0A5C54;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.3);
+        }
+        .deals-modal-btn-danger {
+          background: #D32F2F;
+          color: #FFFFFF;
+        }
+        .deals-modal-btn-danger:hover:not(:disabled) {
+          background: #B71C1C;
+        }
+        .deals-modal-btn-success {
+          background: #013E37;
+          color: #FFFFFF;
+        }
+        .deals-modal-btn-success:hover:not(:disabled) {
+          background: #0A5C54;
+        }
+        .deals-modal-icon-wrapper {
+          width: 64px;
+          height: 64px;
+          border-radius: 50%;
+          background: #FFEBEE;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 12px;
+        }
+        .deals-modal-text {
+          font-size: 16px;
+          font-weight: 500;
+          color: #013E37;
+          margin: 0;
+        }
+        .deals-modal-subtext {
+          font-size: 14px;
+          color: #013E37;
+          opacity: 0.7;
+          margin: 0;
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 1024px) {
+          .deals-modal-form-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .deals-container { padding: 16px; }
+          .deals-header {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .deals-header .deals-btn {
+            width: 100%;
+            justify-content: center;
+          }
+          .deals-title { font-size: 22px; }
+          .deals-stats { grid-template-columns: 1fr 1fr; }
+          .deals-search-section { flex-direction: column; }
+          .deals-search-bar { width: 100%; }
+          .deals-action-buttons { width: 100%; }
+          .deals-filter-toggle { flex: 1; justify-content: center; }
+          .deals-filter-row { flex-direction: column; align-items: stretch; }
+          .deals-filter-group { min-width: unset; }
+          .deals-clear-filters { align-self: stretch; }
+          .deals-action-group { flex-wrap: wrap; justify-content: center; }
+          .deals-modal-create { max-width: 95%; }
+          .deals-modal-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+          }
+          .deals-modal-form { padding: 16px; }
+          .deals-modal-form-grid { grid-template-columns: 1fr; gap: 12px; }
+          .deals-modal-actions {
+            flex-direction: column;
+            padding: 12px 16px;
+          }
+          .deals-modal-btn { width: 100%; justify-content: center; }
+          .deals-product-row { flex-wrap: wrap; }
+          .deals-product-field-sm { flex: 1; min-width: 50px; }
+          
+          /* View Modal Responsive */
+          .deals-view-modal {
+            max-width: 95%;
+            max-height: 95vh;
+          }
+          .deals-view-header {
+            padding: 14px 18px;
+          }
+          .deals-view-title {
+            font-size: 16px;
+          }
+          .deals-view-body {
+            padding: 16px 18px;
+          }
+          .deals-view-stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+          }
+          .deals-view-stat-card {
+            padding: 8px 10px;
+          }
+          .deals-view-stat-value {
+            font-size: 13px;
+          }
+          .deals-view-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+          }
+          .deals-view-actions {
+            flex-direction: column;
+            padding: 10px 18px 14px;
+          }
+          .deals-view-btn {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .deals-container { padding: 12px; }
+          .deals-stats { grid-template-columns: 1fr; }
+          .deals-stat-card { padding: 12px 16px; }
+          .deals-stat-number { font-size: 18px; }
+          .deals-title { font-size: 20px; }
+          .deals-action-group { flex-direction: column; gap: 4px; }
+          .deals-action-view,
+          .deals-action-won,
+          .deals-action-delete { width: 100%; justify-content: center; }
+          .deals-modal { padding: 16px; }
+          .deals-modal-header { padding: 12px 16px; }
+          .deals-modal-header .deals-modal-title { font-size: 16px; }
+          .deals-modal-form { padding: 12px; }
+          .deals-modal-actions { padding: 12px; }
+          .deals-product-row { flex-direction: column; align-items: stretch; }
+          .deals-product-field-sm { width: 100%; }
+          .deals-pagination-container { flex-wrap: wrap; justify-content: center; }
+          
+          /* View Modal Mobile */
+          .deals-view-header {
+            padding: 12px 14px;
+          }
+          .deals-view-title {
+            font-size: 15px;
+          }
+          .deals-view-subtitle {
+            font-size: 12px;
+          }
+          .deals-view-body {
+            padding: 12px 14px;
+          }
+          .deals-view-stats-grid {
+            grid-template-columns: 1fr;
+          }
+          .deals-view-stat-card {
+            padding: 8px 10px;
+          }
+          .deals-view-actions {
+            padding: 10px 14px 12px;
+          }
+          .deals-view-btn {
+            font-size: 13px;
+            padding: 8px 16px;
+          }
+        }
+      `}</style>
     </div>
   );
 };
-
-// ============================================
-// STYLES (same as before - keeping compact)
-// ============================================
-const styles = {
-  container: { padding: '24px 32px', maxWidth: '1400px', margin: '0 auto', backgroundColor: '#F8FAFC', minHeight: '100vh' },
-  loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '64vh', gap: '16px' },
-  loadingText: { color: '#64748B', fontSize: '14px', fontWeight: '500' },
-  spinner: { width: '40px', height: '40px', borderRadius: '50%', border: '3px solid #E5E7EB', borderTopColor: '#3B82F6', animation: 'spin 0.8s linear infinite' },
-  pageHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' },
-  headerLeft: { display: 'flex', alignItems: 'center', gap: '16px' },
-  backButton: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px', borderRadius: '8px', border: '1px solid #E2E8F0', backgroundColor: '#FFFFFF', cursor: 'pointer', color: '#475569' },
-  pageTitle: { fontSize: '28px', fontWeight: '700', color: '#0F172A', margin: 0, letterSpacing: '-0.5px' },
-  pageSubtitle: { fontSize: '15px', color: '#64748B', marginTop: '4px' },
-  headerActions: { display: 'flex', gap: '8px' },
-  primaryButton: { display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px', backgroundColor: '#3B82F6', color: '#FFFFFF', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)' },
-  secondaryButton: { display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px', backgroundColor: '#F1F5F9', color: '#475569', border: '1px solid #E2E8F0', borderRadius: '10px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' },
-  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' },
-  statCard: { display: 'flex', alignItems: 'center', gap: '14px', backgroundColor: '#FFFFFF', borderRadius: '12px', padding: '16px 20px', border: '1px solid #E2E8F0' },
-  statIconWrapper: { width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  statNumber: { fontSize: '22px', fontWeight: '700', color: '#0F172A', margin: 0, lineHeight: 1.2 },
-  statLabel: { fontSize: '13px', color: '#64748B', margin: 0, fontWeight: '500' },
-  statSubtext: { fontSize: '12px', color: '#94A3B8', marginTop: '2px' },
-  searchSection: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' },
-  searchBar: { flex: 1, display: 'flex', alignItems: 'center', backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '0 14px', minWidth: '200px' },
-  searchIcon: { color: '#94A3B8', flexShrink: 0 },
-  searchInput: { flex: 1, padding: '10px 12px', border: 'none', outline: 'none', fontSize: '14px', backgroundColor: 'transparent', color: '#0F172A', minWidth: '120px' },
-  clearSearch: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' },
-  actionButtons: { display: 'flex', gap: '8px' },
-  filterToggle: { display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 16px', backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', fontSize: '14px', fontWeight: '500', color: '#475569', cursor: 'pointer', whiteSpace: 'nowrap' },
-  refreshButton: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px', backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', color: '#64748B', cursor: 'pointer' },
-  filterPanel: { backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px 20px', marginBottom: '16px' },
-  filterRow: { display: 'flex', alignItems: 'flex-end', gap: '16px', flexWrap: 'wrap' },
-  filterGroup: { display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: '150px' },
-  filterLabel: { fontSize: '12px', fontWeight: '600', color: '#64748B', textTransform: 'uppercase' },
-  filterSelect: { padding: '8px 12px', border: '1px solid #E2E8F0', borderRadius: '8px', fontSize: '14px', backgroundColor: '#FFFFFF', color: '#0F172A', outline: 'none', cursor: 'pointer' },
-  clearFiltersButton: { padding: '8px 16px', backgroundColor: '#F1F5F9', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', color: '#475569', cursor: 'pointer', whiteSpace: 'nowrap', alignSelf: 'center' },
-  tableWrapper: { backgroundColor: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)' },
-  tableContainer: { overflowX: 'auto' },
-  table: { width: '100%', borderCollapse: 'collapse' },
-  tableHeader: { padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#64748B', textTransform: 'uppercase', borderBottom: '1px solid #E2E8F0', backgroundColor: '#F8FAFC' },
-  tableRow: { borderBottom: '1px solid #F1F5F9' },
-  dealCell: { padding: '12px 16px' },
-  dealName: { color: '#0F172A', fontWeight: '600', fontSize: '14px' },
-  companyText: { padding: '12px 16px', color: '#475569', fontSize: '13px' },
-  valueText: { padding: '12px 16px', fontWeight: '600', color: '#0F172A', fontSize: '14px' },
-  stageBadge: { display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '500' },
-  stageIcon: { marginRight: '2px' },
-  statusBadge: { display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '500' },
-  statusIcon: { marginRight: '2px' },
-  probabilityContainer: { padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '8px' },
-  probabilityBar: { flex: 1, height: '6px', backgroundColor: '#E2E8F0', borderRadius: '3px', overflow: 'hidden', minWidth: '40px' },
-  probabilityFill: { height: '100%', borderRadius: '3px', transition: 'width 0.6s ease' },
-  probabilityText: { fontSize: '12px', fontWeight: '600', color: '#0F172A', minWidth: '36px' },
-  dateText: { padding: '12px 16px', color: '#64748B', fontSize: '13px' },
-  actionButtonsGroup: { display: 'flex', gap: '4px', justifyContent: 'center' },
-  actionButtonView: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px 8px', borderRadius: '6px', border: 'none', backgroundColor: '#EFF6FF', color: '#3B82F6', cursor: 'pointer' },
-  actionButtonWon: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px 8px', borderRadius: '6px', border: 'none', backgroundColor: '#D1FAE5', color: '#10B981', cursor: 'pointer' },
-  actionButtonDelete: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px 8px', borderRadius: '6px', border: 'none', backgroundColor: '#FEF2F2', color: '#EF4444', cursor: 'pointer' },
-  paginationWrapper: { marginTop: '16px', display: 'flex', justifyContent: 'center' },
-  paginationContainer: { display: 'flex', alignItems: 'center', gap: '16px' },
-  paginationButton: { padding: '8px 16px', backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', color: '#0F172A' },
-  paginationInfo: { fontSize: '14px', color: '#64748B' },
-  emptyState: { textAlign: 'center', padding: '48px 16px' },
-  emptyContent: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' },
-  emptyText: { fontSize: '18px', fontWeight: '600', color: '#0F172A', margin: 0 },
-  emptySubtext: { fontSize: '14px', color: '#94A3B8', margin: 0 },
-  emptyButton: { display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 20px', backgroundColor: '#3B82F6', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '500', cursor: 'pointer', marginTop: '8px' },
-  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { backgroundColor: '#FFFFFF', borderRadius: '12px', padding: '24px', maxWidth: '500px', width: '90%', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.2)' },
-  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' },
-  modalTitle: { fontSize: '20px', fontWeight: '600', color: '#0F172A', margin: 0 },
-  modalCloseButton: { background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8' },
-  modalBody: { display: 'flex', flexDirection: 'column', gap: '16px' },
-  modalContent: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '8px 0' },
-  modalIconWrapper: { width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  modalText: { fontSize: '16px', fontWeight: '500', color: '#0F172A', margin: 0, textAlign: 'center' },
-  modalSubtext: { fontSize: '14px', color: '#64748B', margin: 0, textAlign: 'center' },
-  modalActions: { display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '8px', width: '100%' },
-  modalCancelButton: { padding: '8px 20px', backgroundColor: '#F1F5F9', color: '#475569', border: '1px solid #E2E8F0', borderRadius: '8px', fontSize: '14px', fontWeight: '500', cursor: 'pointer' },
-  modalDeleteButton: { padding: '8px 20px', backgroundColor: '#EF4444', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' },
-  modalPrimaryButton: { padding: '8px 20px', backgroundColor: '#3B82F6', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' },
-  viewDealGrid: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' },
-  viewDealItem: { display: 'flex', flexDirection: 'column', gap: '4px' },
-  viewDealLabel: { fontSize: '12px', fontWeight: '500', color: '#64748B' },
-  viewDealValue: { fontSize: '16px', fontWeight: '600', color: '#0F172A' },
-  viewDealText: { fontSize: '14px', color: '#475569', margin: 0 },
-  viewDealSection: { display: 'flex', flexDirection: 'column', gap: '8px' },
-  viewDealRelated: { display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '14px', color: '#475569' },
-  viewProductsList: { display: 'flex', flexDirection: 'column', gap: '6px' },
-  viewProductItem: { display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #F1F5F9', fontSize: '14px' },
-  viewProductTotal: { display: 'flex', justifyContent: 'flex-end', padding: '8px 0', fontSize: '16px', fontWeight: '700', color: '#0F172A' },
-  formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' },
-  formColumn: { display: 'flex', flexDirection: 'column', gap: '24px' },
-  card: { backgroundColor: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0', overflow: 'hidden' },
-  cardHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid #E5E7EB' },
-  cardTitle: { fontSize: '16px', fontWeight: '600', color: '#0F172A', margin: 0 },
-  cardContent: { padding: '20px 24px' },
-  formGroup: { marginBottom: '16px' },
-  formLabel: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px' },
-  formInput: { width: '100%', padding: '10px 12px', border: '1px solid #D1D5DB', borderRadius: '8px', fontSize: '14px', color: '#111827', backgroundColor: '#FFFFFF', outline: 'none', boxSizing: 'border-box' },
-  formSelect: { width: '100%', padding: '10px 12px', border: '1px solid #D1D5DB', borderRadius: '8px', fontSize: '14px', color: '#111827', backgroundColor: '#FFFFFF', outline: 'none', boxSizing: 'border-box' },
-  formTextarea: { width: '100%', padding: '10px 12px', border: '1px solid #D1D5DB', borderRadius: '8px', fontSize: '14px', color: '#111827', backgroundColor: '#FFFFFF', outline: 'none', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' },
-  smallButton: { display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', backgroundColor: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '6px', fontSize: '13px', fontWeight: '500', color: '#475569', cursor: 'pointer' },
-  productRow: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', padding: '8px', backgroundColor: '#F8FAFC', borderRadius: '8px' },
-  productField: { flex: 1 },
-  productInput: { width: '100%', padding: '8px 10px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' },
-  productInputSmall: { width: '70px', padding: '8px 10px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' },
-  productTotal: { fontSize: '14px', fontWeight: '600', color: '#0F172A', minWidth: '70px', display: 'inline-block' },
-  removeProductButton: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', backgroundColor: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer', borderRadius: '4px' },
-  productTotalRow: { display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderTop: '1px solid #E5E7EB', marginTop: '8px' },
-  productTotalLabel: { fontSize: '14px', fontWeight: '500', color: '#64748B' },
-  productTotalValue: { fontSize: '16px', fontWeight: '700', color: '#0F172A' },
-  emptyText: { color: '#94A3B8', fontSize: '14px', textAlign: 'center', padding: '16px 0' },
-};
-
-// Add global styles
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  .primary-button:hover:not(:disabled) { background-color: #2563EB !important; box-shadow: 0 4px 8px rgba(59, 130, 246, 0.35) !important; transform: translateY(-1px); }
-  .secondary-button:hover:not(:disabled) { background-color: #E2E8F0 !important; }
-  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important; }
-  .table-row:hover { background-color: #F8FAFC !important; }
-  .action-button-view:hover:not(:disabled) { background-color: #DBEAFE !important; }
-  .action-button-won:hover:not(:disabled) { background-color: #A7F3D0 !important; }
-  .action-button-delete:hover:not(:disabled) { background-color: #FEE2E2 !important; }
-  .form-input:focus, .form-select:focus, .form-textarea:focus, .product-input:focus, .product-input-small:focus { border-color: #3B82F6 !important; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important; }
-  .back-button:hover { background-color: #F1F5F9 !important; }
-  .small-button:hover { background-color: #E2E8F0 !important; }
-  .remove-product-button:hover { background-color: #FEE2E2 !important; }
-  @media (max-width: 1024px) { .form-grid { grid-template-columns: 1fr !important; } }
-  @media (max-width: 768px) { .container { padding: 16px !important; } .page-header { flex-direction: column !important; align-items: stretch !important; } .primary-button { width: 100% !important; justify-content: center !important; } .stats-grid { grid-template-columns: 1fr 1fr !important; } .search-section { flex-direction: column !important; } .search-bar { width: 100% !important; } .action-buttons { width: 100% !important; } .filter-toggle { flex: 1 !important; justify-content: center !important; } .filter-row { flex-direction: column !important; align-items: stretch !important; } .filter-group { min-width: unset !important; } .clear-filters-button { align-self: stretch !important; } .action-buttons-group { flex-wrap: wrap !important; justify-content: center !important; } .product-row { flex-wrap: wrap !important; } .product-field { min-width: 80px !important; } .header-left { flex-direction: column !important; align-items: flex-start !important; } .header-actions { width: 100% !important; flex-direction: column !important; } .header-actions button { width: 100% !important; justify-content: center !important; } }
-  @media (max-width: 480px) { .container { padding: 12px !important; } .stats-grid { grid-template-columns: 1fr !important; } .stat-card { padding: 12px 16px !important; } .stat-number { font-size: 18px !important; } .page-title { font-size: 22px !important; } .action-buttons-group { flex-direction: column !important; gap: 4px !important; } .action-button-view, .action-button-won, .action-button-delete { width: 100% !important; justify-content: center !important; } .modal-actions { flex-direction: column !important; } .modal-cancel-button, .modal-delete-button, .modal-primary-button { width: 100% !important; justify-content: center !important; } .form-grid { gap: 16px !important; } .card-header { flex-direction: column !important; gap: 8px !important; align-items: stretch !important; } .view-deal-grid { grid-template-columns: 1fr !important; } }
-`;
-document.head.appendChild(styleSheet);
 
 export default Deals;

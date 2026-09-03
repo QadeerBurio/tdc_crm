@@ -1,3 +1,4 @@
+// pages/goals/GoalDetails.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -39,7 +40,6 @@ const GoalDetails = () => {
     else setLoading(true);
 
     try {
-      // Try to fetch from API
       let goalData = null;
       let tasksData = [];
       let projectsData = [];
@@ -93,7 +93,6 @@ const GoalDetails = () => {
     } catch (error) {
       console.error('Error fetching goal details:', error);
       toast.error('Failed to load goal details');
-      // Set mock data on error
       setGoal(getMockGoal());
       setRelatedTasks(getMockTasks());
       setRelatedProjects(getMockProjects());
@@ -308,7 +307,7 @@ const GoalDetails = () => {
   if (loading) {
     return (
       <div className="gd-loading">
-        <div className="gd-spinner"></div>
+        <div className="gd-loading-spinner"></div>
         <p className="gd-loading-text">Loading goal details...</p>
       </div>
     );
@@ -316,13 +315,13 @@ const GoalDetails = () => {
 
   if (!goal) {
     return (
-      <div className="gd-not-found">
-        <div className="gd-not-found-icon-wrapper">
-          <Target className="gd-not-found-icon" />
+      <div className="gd-notfound">
+        <div className="gd-notfound-icon-wrapper">
+          <Target className="gd-notfound-icon" />
         </div>
-        <h2 className="gd-not-found-title">Goal Not Found</h2>
-        <p className="gd-not-found-text">The goal you're looking for doesn't exist</p>
-        <button onClick={() => navigate('/goals')} className="gd-not-found-btn">
+        <h2 className="gd-notfound-title">Goal Not Found</h2>
+        <p className="gd-notfound-text">The goal you're looking for doesn't exist</p>
+        <button onClick={() => navigate('/goals')} className="gd-notfound-btn">
           Back to Goals
         </button>
       </div>
@@ -330,301 +329,295 @@ const GoalDetails = () => {
   }
 
   return (
-    <div className="gd-container">
-      {/* Header */}
-      <div className="gd-header">
-        <div className="gd-header-left">
-          <button onClick={() => navigate('/goals')} className="gd-back-btn">
-            <ArrowLeft className="gd-back-icon" />
-          </button>
-          <div className="gd-header-info">
-            <div className="gd-header-title-row">
-              {getStatusIcon(goal.status)}
-              <h1 className="gd-title">
-                {editing ? (
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className="gd-title-input"
-                  />
-                ) : (
-                  goal.name
-                )}
-              </h1>
-              <span className={`gd-status-badge ${getStatusColor(goal.status)}`}>
-                {getStatusLabel(goal.status)}
+    <>
+      <div className="gd-container">
+        {/* Header */}
+        <div className="gd-header">
+          <div className="gd-header-left">
+            <button onClick={() => navigate('/goals')} className="gd-back-btn">
+              <ArrowLeft className="gd-back-icon" />
+            </button>
+            <div className="gd-header-info">
+              <div className="gd-header-title-row">
+                {getStatusIcon(goal.status)}
+                <h1 className="gd-title">
+                  {editing ? (
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      className="gd-title-input"
+                    />
+                  ) : (
+                    goal.name
+                  )}
+                </h1>
+                <span className={`gd-status-badge ${getStatusColor(goal.status)}`}>
+                  {getStatusLabel(goal.status)}
+                </span>
+                <span className={`gd-priority-badge ${getPriorityColor(goal.priority)}`}>
+                  {getPriorityLabel(goal.priority)}
+                </span>
+              </div>
+              <p className="gd-subtitle">
+                {goal.level} • Owner: {goal.ownerId?.firstName} {goal.ownerId?.lastName}
+              </p>
+            </div>
+          </div>
+          <div className="gd-header-right">
+            <button className="gd-refresh-btn" onClick={handleRefresh} disabled={refreshing}>
+              <RefreshCw className={`gd-refresh-icon ${refreshing ? 'gd-spin' : ''}`} />
+            </button>
+            <button onClick={() => setEditing(!editing)} className="gd-edit-btn">
+              {editing ? <X className="gd-btn-icon" /> : <Edit className="gd-btn-icon" />}
+              {editing ? 'Cancel' : 'Edit'}
+            </button>
+            <button onClick={handleDelete} className="gd-delete-btn">
+              <Trash2 className="gd-btn-icon" />
+              Delete
+            </button>
+          </div>
+        </div>
+
+        {/* Save Button */}
+        {editing && (
+          <div className="gd-save-bar">
+            <button onClick={handleUpdate} className="gd-save-btn" disabled={saving}>
+              {saving ? (
+                <>
+                  <div className="gd-save-spinner"></div>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="gd-btn-icon" />
+                  Save Changes
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* Progress Card */}
+        <div className="gd-progress-card">
+          <div className="gd-progress-header">
+            <div className="gd-progress-title">
+              <span className="gd-progress-label">Progress</span>
+              <span className="gd-progress-value">{goal.progress}%</span>
+            </div>
+            <div className="gd-progress-meta">
+              <span className="gd-progress-target">
+                Target: {goal.target?.value} {goal.target?.unit}
               </span>
-              <span className={`gd-priority-badge ${getPriorityColor(goal.priority)}`}>
-                {getPriorityLabel(goal.priority)}
+              <span className="gd-progress-expected-label">
+                Expected: {goal.expectedProgress}%
               </span>
             </div>
-            <p className="gd-subtitle">
-              {goal.level} • Owner: {goal.ownerId?.firstName} {goal.ownerId?.lastName}
-            </p>
           </div>
-        </div>
-        <div className="gd-header-right">
-          <button className="gd-refresh-btn" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw className={`gd-refresh-icon ${refreshing ? 'gd-spin' : ''}`} />
-          </button>
-          <button onClick={() => setEditing(!editing)} className="gd-edit-btn">
-            {editing ? <X className="gd-btn-icon" /> : <Edit className="gd-btn-icon" />}
-            {editing ? 'Cancel' : 'Edit'}
-          </button>
-          <button onClick={handleDelete} className="gd-delete-btn">
-            <Trash2 className="gd-btn-icon" />
-            Delete
-          </button>
-        </div>
-      </div>
-
-      {/* Save Button */}
-      {editing && (
-        <div className="gd-save-bar">
-          <button onClick={handleUpdate} className="gd-save-btn" disabled={saving}>
-            {saving ? (
-              <>
-                <div className="gd-save-spinner"></div>
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="gd-btn-icon" />
-                Save Changes
-              </>
-            )}
-          </button>
-        </div>
-      )}
-
-      {/* Progress Bar */}
-      <div className="gd-progress-card">
-        <div className="gd-progress-header">
-          <div className="gd-progress-title">
-            <span className="gd-progress-label">Progress</span>
-            <span className="gd-progress-value">{goal.progress}%</span>
-          </div>
-          <div className="gd-progress-meta">
-            <span className="gd-progress-target">
-              Target: {goal.target?.value} {goal.target?.unit}
-            </span>
-            <span className="gd-progress-expected-label">
-              Expected: {goal.expectedProgress}%
-            </span>
-          </div>
-        </div>
-        <div className="gd-progress-bar-wrapper">
-          <div className="gd-progress-bar-bg">
+          <div className="gd-progress-bar-wrapper">
+            <div className="gd-progress-bar-bg">
+              <div 
+                className={`gd-progress-bar-fill ${getProgressColor(goal.progress)}`}
+                style={{ width: `${goal.progress}%` }}
+              />
+            </div>
             <div 
-              className={`gd-progress-bar-fill ${getProgressColor(goal.progress)}`}
-              style={{ width: `${goal.progress}%` }}
+              className="gd-progress-expected-marker"
+              style={{ left: `${goal.expectedProgress}%` }}
             />
           </div>
-          <div 
-            className="gd-progress-expected-marker"
-            style={{ left: `${goal.expectedProgress}%` }}
-          />
+          <div className="gd-progress-labels">
+            <span>0%</span>
+            <span>Expected: {goal.expectedProgress}%</span>
+            <span>100%</span>
+          </div>
         </div>
-        <div className="gd-progress-labels">
-          <span>0%</span>
-          <span>Expected: {goal.expectedProgress}%</span>
-          <span>100%</span>
+
+        {/* Tabs */}
+        <div className="gd-tabs">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`gd-tab ${activeTab === tab.id ? 'gd-tab-active' : 'gd-tab-inactive'}`}
+              >
+                <Icon className="gd-tab-icon" />
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="gd-tabs">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`gd-tab ${activeTab === tab.id ? 'gd-tab-active' : 'gd-tab-inactive'}`}
-            >
-              <Icon className="gd-tab-icon" />
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+        {/* Tab Content */}
+        <div className="gd-content">
+          {activeTab === 'overview' && (
+            <div className="gd-overview">
+              {/* Description */}
+              <div className="gd-section">
+                <h3 className="gd-section-title">Description</h3>
+                {editing ? (
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    className="gd-textarea"
+                    rows="4"
+                  />
+                ) : (
+                  <p className="gd-description">{goal.description || 'No description provided'}</p>
+                )}
+              </div>
 
-      {/* Tab Content */}
-      <div className="gd-content">
-        {activeTab === 'overview' && (
-          <div className="gd-overview">
-            {/* Description */}
-            <div className="gd-section">
-              <h3 className="gd-section-title">Description</h3>
-              {editing ? (
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  className="gd-textarea"
-                  rows="4"
-                />
-              ) : (
-                <p className="gd-description">{goal.description || 'No description provided'}</p>
+              {/* Details Grid */}
+              <div className="gd-details-grid">
+                <div className="gd-detail-item">
+                  <p className="gd-detail-label">Level</p>
+                  <p className="gd-detail-value">{goal.level}</p>
+                </div>
+                <div className="gd-detail-item">
+                  <p className="gd-detail-label">Category</p>
+                  <p className="gd-detail-value">{goal.category || 'General'}</p>
+                </div>
+                <div className="gd-detail-item">
+                  <p className="gd-detail-label">Start Date</p>
+                  <p className="gd-detail-value">{formatDate(goal.startDate)}</p>
+                </div>
+                <div className="gd-detail-item">
+                  <p className="gd-detail-label">End Date</p>
+                  <p className="gd-detail-value">{formatDate(goal.endDate)}</p>
+                </div>
+              </div>
+
+              {/* Organization Context */}
+              {(goal.segmentId || goal.departmentId || goal.teamId) && (
+                <div className="gd-section">
+                  <h3 className="gd-section-title">Organization Context</h3>
+                  <div className="gd-context-badges">
+                    {goal.segmentId && (
+                      <span className="gd-context-badge gd-context-segment">
+                        <Layers className="gd-context-icon" />
+                        Segment: {goal.segmentId.name}
+                      </span>
+                    )}
+                    {goal.departmentId && (
+                      <span className="gd-context-badge gd-context-department">
+                        <Briefcase className="gd-context-icon" />
+                        Dept: {goal.departmentId.name}
+                      </span>
+                    )}
+                    {goal.teamId && (
+                      <span className="gd-context-badge gd-context-team">
+                        <Users className="gd-context-icon" />
+                        Team: {goal.teamId.name}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Related KPIs */}
+              {goal.relatedKPIs && goal.relatedKPIs.length > 0 && (
+                <div className="gd-section">
+                  <h3 className="gd-section-title">Related KPIs</h3>
+                  <div className="gd-kpi-badges">
+                    {goal.relatedKPIs.map((kpi, idx) => (
+                      <span key={idx} className="gd-kpi-badge">
+                        <Award className="gd-kpi-icon" />
+                        {kpi.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
+          )}
 
-            {/* Details Grid */}
-            <div className="gd-details-grid">
-              <div className="gd-detail-item">
-                <p className="gd-detail-label">Level</p>
-                <p className="gd-detail-value">{goal.level}</p>
-              </div>
-              <div className="gd-detail-item">
-                <p className="gd-detail-label">Category</p>
-                <p className="gd-detail-value">{goal.category || 'General'}</p>
-              </div>
-              <div className="gd-detail-item">
-                <p className="gd-detail-label">Start Date</p>
-                <p className="gd-detail-value">{formatDate(goal.startDate)}</p>
-              </div>
-              <div className="gd-detail-item">
-                <p className="gd-detail-label">End Date</p>
-                <p className="gd-detail-value">{formatDate(goal.endDate)}</p>
-              </div>
-            </div>
+          {activeTab === 'progress' && (
+            <GoalProgress goalId={goal._id} />
+          )}
 
-            {/* Organization Context */}
-            {(goal.segmentId || goal.departmentId || goal.teamId) && (
-              <div className="gd-section">
-                <h3 className="gd-section-title">Organization Context</h3>
-                <div className="gd-context-badges">
-                  {goal.segmentId && (
-                    <span className="gd-context-badge gd-context-segment">
-                      <Layers className="gd-context-icon" />
-                      Segment: {goal.segmentId.name}
-                    </span>
-                  )}
-                  {goal.departmentId && (
-                    <span className="gd-context-badge gd-context-department">
-                      <Briefcase className="gd-context-icon" />
-                      Dept: {goal.departmentId.name}
-                    </span>
-                  )}
-                  {goal.teamId && (
-                    <span className="gd-context-badge gd-context-team">
-                      <Users className="gd-context-icon" />
-                      Team: {goal.teamId.name}
-                    </span>
-                  )}
+          {activeTab === 'hierarchy' && (
+            <GoalHierarchy />
+          )}
+
+          {activeTab === 'tasks' && (
+            <div className="gd-tasks">
+              <div className="gd-tasks-header">
+                <h3 className="gd-section-title">Related Tasks</h3>
+                <button className="gd-add-task-btn">
+                  <Plus className="gd-btn-icon" />
+                  Add Task
+                </button>
+              </div>
+              {relatedTasks.length === 0 ? (
+                <div className="gd-empty-tasks">
+                  <CheckCircle className="gd-empty-icon" />
+                  <p>No tasks linked to this goal</p>
                 </div>
-              </div>
-            )}
-
-            {/* Related KPIs */}
-            {goal.relatedKPIs && goal.relatedKPIs.length > 0 && (
-              <div className="gd-section">
-                <h3 className="gd-section-title">Related KPIs</h3>
-                <div className="gd-kpi-badges">
-                  {goal.relatedKPIs.map((kpi, idx) => (
-                    <span key={idx} className="gd-kpi-badge">
-                      <Award className="gd-kpi-icon" />
-                      {kpi.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'progress' && (
-          <GoalProgress goalId={goal._id} />
-        )}
-
-        {activeTab === 'hierarchy' && (
-          <GoalHierarchy />
-        )}
-
-        {activeTab === 'tasks' && (
-          <div className="gd-tasks">
-            <div className="gd-tasks-header">
-              <h3 className="gd-section-title">Related Tasks</h3>
-              <button className="gd-add-task-btn">
-                <Plus className="gd-btn-icon" />
-                Add Task
-              </button>
-            </div>
-            {relatedTasks.length === 0 ? (
-              <div className="gd-empty-tasks">
-                <CheckCircle className="gd-empty-icon" />
-                <p>No tasks linked to this goal</p>
-              </div>
-            ) : (
-              <div className="gd-task-list">
-                {relatedTasks.map((task) => (
-                  <div key={task._id} className="gd-task-item">
-                    <div className="gd-task-left">
-                      <div className={`gd-task-status-dot ${task.status === 'Completed' ? 'gd-task-completed' : task.status === 'In Progress' ? 'gd-task-in-progress' : 'gd-task-pending'}`} />
-                      <span className="gd-task-title">{task.title}</span>
-                      <span className={`gd-task-status-label ${task.status === 'Completed' ? 'gd-task-label-completed' : task.status === 'In Progress' ? 'gd-task-label-in-progress' : 'gd-task-label-pending'}`}>
-                        {task.status}
+              ) : (
+                <div className="gd-task-list">
+                  {relatedTasks.map((task) => (
+                    <div key={task._id} className="gd-task-item">
+                      <div className="gd-task-left">
+                        <div className={`gd-task-status-dot ${task.status === 'Completed' ? 'gd-task-completed' : task.status === 'In Progress' ? 'gd-task-in-progress' : 'gd-task-pending'}`} />
+                        <span className="gd-task-title">{task.title}</span>
+                        <span className={`gd-task-status-label ${task.status === 'Completed' ? 'gd-task-label-completed' : task.status === 'In Progress' ? 'gd-task-label-in-progress' : 'gd-task-label-pending'}`}>
+                          {task.status}
+                        </span>
+                      </div>
+                      <span className="gd-task-assignee">
+                        <Users className="gd-task-assignee-icon" />
+                        {task.assignedTo?.firstName || 'Unassigned'}
                       </span>
                     </div>
-                    <span className="gd-task-assignee">
-                      <Users className="gd-task-assignee-icon" />
-                      {task.assignedTo?.firstName || 'Unassigned'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
-        {activeTab === 'activity' && (
-          <div className="gd-activity">
-            <h3 className="gd-section-title">Activity Log</h3>
-            {activityLog.length === 0 ? (
-              <div className="gd-empty-activity">
-                <Activity className="gd-empty-icon" />
-                <p>No activity recorded yet</p>
-              </div>
-            ) : (
-              <div className="gd-activity-list">
-                {activityLog.map((activity) => (
-                  <div key={activity._id} className="gd-activity-item">
-                    <div className="gd-activity-icon-wrapper">
-                      <Activity className="gd-activity-icon" />
-                    </div>
-                    <div className="gd-activity-content">
-                      <p className="gd-activity-text">{activity.description}</p>
-                      <div className="gd-activity-meta">
-                        <span className="gd-activity-user">
-                          {activity.userId?.firstName} {activity.userId?.lastName}
-                        </span>
-                        <span className="gd-activity-dot">•</span>
-                        <span className="gd-activity-time">{getTimeAgo(activity.createdAt)}</span>
+          {activeTab === 'activity' && (
+            <div className="gd-activity">
+              <h3 className="gd-section-title">Activity Log</h3>
+              {activityLog.length === 0 ? (
+                <div className="gd-empty-activity">
+                  <Activity className="gd-empty-icon" />
+                  <p>No activity recorded yet</p>
+                </div>
+              ) : (
+                <div className="gd-activity-list">
+                  {activityLog.map((activity) => (
+                    <div key={activity._id} className="gd-activity-item">
+                      <div className="gd-activity-icon-wrapper">
+                        <Activity className="gd-activity-icon" />
+                      </div>
+                      <div className="gd-activity-content">
+                        <p className="gd-activity-text">{activity.description}</p>
+                        <div className="gd-activity-meta">
+                          <span className="gd-activity-user">
+                            {activity.userId?.firstName} {activity.userId?.lastName}
+                          </span>
+                          <span className="gd-activity-dot">•</span>
+                          <span className="gd-activity-time">{getTimeAgo(activity.createdAt)}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Custom CSS */}
       <style>{`
         /* ============================================
            CONTAINER
            ============================================ */
         .gd-container {
-          padding: 24px 32px;
-          max-width: 1200px;
-          margin: 0 auto;
-          animation: gdFadeIn 0.4s ease;
-        }
-
-        @keyframes gdFadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+          padding: 0 0 24px 0;
+          max-width: 100%;
         }
 
         /* ============================================
@@ -635,86 +628,72 @@ const GoalDetails = () => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          min-height: 60vh;
-          gap: 16px;
+          min-height: 400px;
         }
-
-        .gd-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #3b82f6;
+        .gd-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
-          animation: gdSpin 0.8s linear infinite;
+          animation: spin 0.8s linear infinite;
         }
-
         .gd-loading-text {
-          color: #64748b;
+          margin-top: 16px;
+          color: #013E37;
+          opacity: 0.6;
           font-size: 14px;
-          font-weight: 500;
-        }
-
-        @keyframes gdSpin {
-          to { transform: rotate(360deg); }
-        }
-
-        .gd-spin {
-          animation: gdSpin 1s linear infinite;
         }
 
         /* ============================================
            NOT FOUND
            ============================================ */
-        .gd-not-found {
+        .gd-notfound {
           text-align: center;
           padding: 60px 20px;
         }
-
-        .gd-not-found-icon-wrapper {
+        .gd-notfound-icon-wrapper {
           width: 80px;
           height: 80px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           margin: 0 auto 16px;
         }
-
-        .gd-not-found-icon {
+        .gd-notfound-icon {
           width: 36px;
           height: 36px;
-          color: #94a3b8;
+          color: #013E37;
         }
-
-        .gd-not-found-title {
+        .gd-notfound-title {
           font-size: 20px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
-
-        .gd-not-found-text {
-          color: #64748b;
+        .gd-notfound-text {
+          color: #013E37;
+          opacity: 0.6;
           margin: 4px 0 16px 0;
         }
-
-        .gd-not-found-btn {
+        .gd-notfound-btn {
           padding: 8px 24px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
-
-        .gd-not-found-btn:hover {
+        .gd-notfound-btn:hover {
+          background: #0A5C54;
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
 
         /* ============================================
@@ -727,87 +706,78 @@ const GoalDetails = () => {
           margin-bottom: 20px;
           flex-wrap: wrap;
           gap: 16px;
+          animation: fadeInDown 0.6s ease;
         }
-
         .gd-header-left {
           display: flex;
           align-items: flex-start;
           gap: 12px;
         }
-
         .gd-back-btn {
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 8px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s ease;
+          color: #013E37;
           margin-top: 2px;
         }
-
         .gd-back-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
-
         .gd-back-icon {
           width: 20px;
           height: 20px;
         }
-
         .gd-header-info {
           flex: 1;
         }
-
         .gd-header-title-row {
           display: flex;
           align-items: center;
           gap: 10px;
           flex-wrap: wrap;
         }
-
         .gd-title {
           font-size: 24px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
-
         .gd-title-input {
           padding: 4px 12px;
-          border: 1.5px solid #e2e8f0;
+          border: 1.5px solid #FFEFB3;
           border-radius: 8px;
           font-size: 24px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           outline: none;
           width: 100%;
           min-width: 200px;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
-
         .gd-title-input:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
-
         .gd-status-badge {
           font-size: 13px;
           font-weight: 500;
           padding: 4px 14px;
           border-radius: 12px;
         }
-
-        .gd-status-not-started { background: #f1f5f9; color: #64748b; }
-        .gd-status-in-progress { background: #dbeafe; color: #3b82f6; }
-        .gd-status-on-track { background: #d1fae5; color: #22c55e; }
-        .gd-status-at-risk { background: #fef3c7; color: #f59e0b; }
-        .gd-status-behind { background: #fee2e2; color: #ef4444; }
-        .gd-status-completed { background: #d1fae5; color: #10b981; }
-        .gd-status-cancelled { background: #f1f5f9; color: #94a3b8; }
+        .gd-status-not-started { background: #FFEFB3; color: #013E37; }
+        .gd-status-in-progress { background: #013E37; color: #FFEFB3; }
+        .gd-status-on-track { background: #0A5C54; color: #FFEFB3; }
+        .gd-status-at-risk { background: #FFEFB3; color: #013E37; }
+        .gd-status-behind { background: #FEE2E2; color: #991B1B; }
+        .gd-status-completed { background: #013E37; color: #FFEFB3; }
+        .gd-status-cancelled { background: #FFEFB3; color: #013E37; }
 
         .gd-priority-badge {
           font-size: 13px;
@@ -815,104 +785,97 @@ const GoalDetails = () => {
           padding: 4px 14px;
           border-radius: 12px;
         }
-
-        .gd-priority-critical { background: #fef2f2; color: #dc2626; }
-        .gd-priority-high { background: #fffbeb; color: #d97706; }
-        .gd-priority-medium { background: #eff6ff; color: #3b82f6; }
-        .gd-priority-low { background: #ecfdf5; color: #22c55e; }
+        .gd-priority-critical { background: #FEE2E2; color: #991B1B; }
+        .gd-priority-high { background: #FFEFB3; color: #013E37; }
+        .gd-priority-medium { background: #013E37; color: #FFEFB3; }
+        .gd-priority-low { background: #0A5C54; color: #FFEFB3; }
 
         .gd-subtitle {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 4px 0 0 0;
         }
-
         .gd-header-right {
           display: flex;
           align-items: center;
           gap: 8px;
           flex-wrap: wrap;
         }
-
         .gd-refresh-btn {
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 8px 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s ease;
+          color: #013E37;
         }
-
         .gd-refresh-btn:hover:not(:disabled) {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
-
         .gd-refresh-btn:disabled {
           opacity: 0.5;
           cursor: not-allowed;
         }
-
         .gd-refresh-icon {
           width: 16px;
           height: 16px;
         }
-
+        .gd-spin {
+          animation: spin 1s linear infinite;
+        }
         .gd-edit-btn {
           display: flex;
           align-items: center;
           gap: 6px;
           padding: 8px 16px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
-          color: #475569;
+          color: #013E37;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
-
         .gd-edit-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
-
         .gd-delete-btn {
           display: flex;
           align-items: center;
           gap: 6px;
           padding: 8px 16px;
-          border: 1px solid #fecaca;
+          border: 1px solid #FEE2E2;
           border-radius: 8px;
           background: #ffffff;
-          color: #ef4444;
+          color: #EF4444;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
-
         .gd-delete-btn:hover {
-          background: #fef2f2;
+          background: #FEF2F2;
         }
-
         .gd-btn-icon {
           width: 16px;
           height: 16px;
         }
-
         .gd-icon {
           width: 20px;
           height: 20px;
         }
-
-        .gd-icon-green { color: #22c55e; }
-        .gd-icon-red { color: #ef4444; }
-        .gd-icon-blue { color: #3b82f6; }
-        .gd-icon-gray { color: #94a3b8; }
+        .gd-icon-green { color: #0A5C54; }
+        .gd-icon-red { color: #EF4444; }
+        .gd-icon-blue { color: #013E37; }
+        .gd-icon-gray { color: #013E37; opacity: 0.4; }
 
         /* ============================================
            SAVE BAR
@@ -922,40 +885,37 @@ const GoalDetails = () => {
           justify-content: flex-end;
           margin-bottom: 20px;
         }
-
         .gd-save-btn {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 10px 28px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
-
         .gd-save-btn:hover:not(:disabled) {
+          background: #0A5C54;
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
-
         .gd-save-btn:disabled {
           opacity: 0.6;
           cursor: not-allowed;
         }
-
         .gd-save-spinner {
           width: 18px;
           height: 18px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-top-color: #ffffff;
+          border: 2px solid rgba(255, 239, 179, 0.3);
+          border-top-color: #FFEFB3;
           border-radius: 50%;
-          animation: gdSpin 0.8s linear infinite;
+          animation: spin 0.8s linear infinite;
         }
 
         /* ============================================
@@ -964,12 +924,18 @@ const GoalDetails = () => {
         .gd-progress-card {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           padding: 20px;
           margin-bottom: 20px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+          transition: all 0.3s ease;
+          animation: fadeInUp 0.5s ease forwards;
+          opacity: 0;
         }
-
+        .gd-progress-card:hover {
+          border-color: #013E37;
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
+        }
         .gd-progress-header {
           display: flex;
           align-items: center;
@@ -978,81 +944,72 @@ const GoalDetails = () => {
           flex-wrap: wrap;
           gap: 8px;
         }
-
         .gd-progress-title {
           display: flex;
           align-items: center;
           gap: 8px;
         }
-
         .gd-progress-label {
           font-size: 14px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
         }
-
         .gd-progress-value {
           font-size: 14px;
           font-weight: 700;
-          color: #3b82f6;
+          color: #013E37;
         }
-
         .gd-progress-meta {
           display: flex;
           align-items: center;
           gap: 16px;
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
         }
-
         .gd-progress-target {
           font-weight: 500;
         }
-
         .gd-progress-expected-label {
           font-weight: 500;
-          color: #94a3b8;
+          opacity: 0.5;
         }
-
         .gd-progress-bar-wrapper {
           position: relative;
           margin-top: 4px;
         }
-
         .gd-progress-bar-bg {
           width: 100%;
           height: 8px;
-          background: #e2e8f0;
+          background: #FFEFB3;
           border-radius: 6px;
           overflow: visible;
         }
-
         .gd-progress-bar-fill {
           height: 100%;
           border-radius: 6px;
           transition: width 0.8s ease;
         }
-
-        .gd-progress-green { background: #22c55e; }
-        .gd-progress-blue { background: #3b82f6; }
-        .gd-progress-yellow { background: #f59e0b; }
-        .gd-progress-red { background: #ef4444; }
+        .gd-progress-green { background: #013E37; }
+        .gd-progress-blue { background: #0A5C54; }
+        .gd-progress-yellow { background: #FFEFB3; }
+        .gd-progress-red { background: #EF4444; }
 
         .gd-progress-expected-marker {
           position: absolute;
           top: 0;
           width: 2px;
           height: 8px;
-          background: #ef4444;
+          background: #EF4444;
           border-radius: 2px;
         }
-
         .gd-progress-labels {
           display: flex;
           justify-content: space-between;
           margin-top: 4px;
           font-size: 11px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         /* ============================================
@@ -1061,11 +1018,13 @@ const GoalDetails = () => {
         .gd-tabs {
           display: flex;
           gap: 4px;
-          border-bottom: 1px solid #e2e8f0;
+          border-bottom: 2px solid #FFEFB3;
           margin-bottom: 20px;
           overflow-x: auto;
+          animation: fadeInUp 0.5s ease forwards;
+          opacity: 0;
+          animation-delay: 0.1s;
         }
-
         .gd-tab {
           display: flex;
           align-items: center;
@@ -1076,25 +1035,24 @@ const GoalDetails = () => {
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           border-bottom: 2px solid transparent;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.5;
           white-space: nowrap;
         }
-
         .gd-tab:hover {
-          color: #0f172a;
+          opacity: 0.8;
         }
-
         .gd-tab-active {
-          color: #3b82f6;
-          border-bottom-color: #3b82f6;
+          color: #013E37;
+          opacity: 1;
+          border-bottom-color: #013E37;
         }
-
         .gd-tab-inactive {
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.5;
         }
-
         .gd-tab-icon {
           width: 16px;
           height: 16px;
@@ -1106,89 +1064,86 @@ const GoalDetails = () => {
         .gd-content {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           padding: 24px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-          animation: gdSlideUp 0.3s ease;
+          animation: slideUp 0.3s ease;
+          transition: all 0.3s ease;
         }
-
-        @keyframes gdSlideUp {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
+        .gd-content:hover {
+          border-color: #013E37;
         }
 
         .gd-section {
           margin-bottom: 24px;
+          animation: fadeInUp 0.4s ease forwards;
+          opacity: 0;
         }
-
+        .gd-section:nth-child(1) { animation-delay: 0.05s; }
+        .gd-section:nth-child(2) { animation-delay: 0.1s; }
+        .gd-section:nth-child(3) { animation-delay: 0.15s; }
+        .gd-section:nth-child(4) { animation-delay: 0.2s; }
         .gd-section:last-child {
           margin-bottom: 0;
         }
-
         .gd-section-title {
           font-size: 14px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0 0 12px 0;
         }
-
         .gd-description {
           font-size: 14px;
-          color: #475569;
+          color: #013E37;
+          opacity: 0.7;
           line-height: 1.6;
           margin: 0;
         }
-
         .gd-textarea {
           width: 100%;
           padding: 10px 14px;
-          border: 1.5px solid #e2e8f0;
+          border: 1.5px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           outline: none;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           font-family: inherit;
           resize: vertical;
+          color: #013E37;
         }
-
         .gd-textarea:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
-
         .gd-details-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
           gap: 16px;
           margin-bottom: 24px;
         }
-
         .gd-detail-item {
           padding: 8px 0;
         }
-
         .gd-detail-label {
           font-size: 11px;
           font-weight: 500;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
           text-transform: uppercase;
           letter-spacing: 0.3px;
           margin: 0;
         }
-
         .gd-detail-value {
           font-size: 14px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
           margin: 2px 0 0 0;
         }
-
         .gd-context-badges {
           display: flex;
           flex-wrap: wrap;
           gap: 8px;
         }
-
         .gd-context-badge {
           display: flex;
           align-items: center;
@@ -1197,38 +1152,41 @@ const GoalDetails = () => {
           border-radius: 8px;
           font-size: 13px;
           font-weight: 500;
+          transition: all 0.3s ease;
         }
-
-        .gd-context-segment { background: #eff6ff; color: #3b82f6; }
-        .gd-context-department { background: #f5f3ff; color: #7c3aed; }
-        .gd-context-team { background: #fffbeb; color: #d97706; }
-
+        .gd-context-badge:hover {
+          transform: scale(1.05);
+        }
+        .gd-context-segment { background: #FFEFB3; color: #013E37; }
+        .gd-context-department { background: #FFEFB3; color: #013E37; }
+        .gd-context-team { background: #FFEFB3; color: #013E37; }
         .gd-context-icon {
           width: 14px;
           height: 14px;
         }
-
         .gd-kpi-badges {
           display: flex;
           flex-wrap: wrap;
           gap: 8px;
         }
-
         .gd-kpi-badge {
           display: flex;
           align-items: center;
           gap: 6px;
           padding: 6px 14px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 8px;
           font-size: 13px;
-          color: #475569;
+          color: #013E37;
+          transition: all 0.3s ease;
         }
-
+        .gd-kpi-badge:hover {
+          transform: scale(1.05);
+        }
         .gd-kpi-icon {
           width: 14px;
           height: 14px;
-          color: #8b5cf6;
+          color: #013E37;
         }
 
         /* ============================================
@@ -1240,100 +1198,93 @@ const GoalDetails = () => {
           justify-content: space-between;
           margin-bottom: 16px;
         }
-
         .gd-add-task-btn {
           display: flex;
           align-items: center;
           gap: 6px;
           padding: 6px 16px;
-          background: #3b82f6;
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 13px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
-
         .gd-add-task-btn:hover {
-          background: #2563eb;
+          background: #0A5C54;
+          transform: translateY(-1px);
         }
-
         .gd-task-list {
           display: flex;
           flex-direction: column;
           gap: 8px;
         }
-
         .gd-task-item {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 10px 14px;
-          background: #f8fafc;
+          background: #FFF9E6;
           border-radius: 8px;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           flex-wrap: wrap;
           gap: 8px;
+          animation: fadeInRight 0.4s ease forwards;
+          opacity: 0;
         }
-
+        .gd-task-item:nth-child(1) { animation-delay: 0.05s; }
+        .gd-task-item:nth-child(2) { animation-delay: 0.1s; }
+        .gd-task-item:nth-child(3) { animation-delay: 0.15s; }
         .gd-task-item:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
         }
-
         .gd-task-left {
           display: flex;
           align-items: center;
           gap: 10px;
         }
-
         .gd-task-status-dot {
           width: 8px;
           height: 8px;
           border-radius: 50%;
           flex-shrink: 0;
         }
-
-        .gd-task-completed { background: #22c55e; }
-        .gd-task-in-progress { background: #3b82f6; }
-        .gd-task-pending { background: #94a3b8; }
-
+        .gd-task-completed { background: #013E37; }
+        .gd-task-in-progress { background: #0A5C54; }
+        .gd-task-pending { background: #013E37; opacity: 0.3; }
         .gd-task-title {
           font-size: 14px;
-          color: #0f172a;
+          color: #013E37;
         }
-
         .gd-task-status-label {
           font-size: 11px;
           font-weight: 500;
           padding: 2px 10px;
           border-radius: 12px;
         }
-
-        .gd-task-label-completed { background: #d1fae5; color: #22c55e; }
-        .gd-task-label-in-progress { background: #dbeafe; color: #3b82f6; }
-        .gd-task-label-pending { background: #f1f5f9; color: #64748b; }
-
+        .gd-task-label-completed { background: #013E37; color: #FFEFB3; }
+        .gd-task-label-in-progress { background: #0A5C54; color: #FFEFB3; }
+        .gd-task-label-pending { background: #FFEFB3; color: #013E37; }
         .gd-task-assignee {
           display: flex;
           align-items: center;
           gap: 4px;
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
         }
-
         .gd-task-assignee-icon {
           width: 14px;
           height: 14px;
         }
-
         .gd-empty-tasks {
           text-align: center;
           padding: 40px 0;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
-
         .gd-empty-tasks .gd-empty-icon {
           width: 32px;
           height: 32px;
@@ -1349,72 +1300,70 @@ const GoalDetails = () => {
           flex-direction: column;
           gap: 12px;
         }
-
         .gd-activity-item {
           display: flex;
           align-items: flex-start;
           gap: 12px;
           padding: 12px 14px;
-          background: #f8fafc;
+          background: #FFF9E6;
           border-radius: 8px;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
+          animation: fadeInUp 0.4s ease forwards;
+          opacity: 0;
         }
-
+        .gd-activity-item:nth-child(1) { animation-delay: 0.05s; }
+        .gd-activity-item:nth-child(2) { animation-delay: 0.1s; }
+        .gd-activity-item:nth-child(3) { animation-delay: 0.15s; }
         .gd-activity-item:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
         }
-
         .gd-activity-icon-wrapper {
           width: 32px;
           height: 32px;
-          background: #e2e8f0;
+          background: #FFEFB3;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
         }
-
         .gd-activity-icon {
           width: 14px;
           height: 14px;
-          color: #64748b;
+          color: #013E37;
         }
-
         .gd-activity-content {
           flex: 1;
         }
-
         .gd-activity-text {
           font-size: 14px;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
-
         .gd-activity-meta {
           display: flex;
           align-items: center;
           gap: 6px;
           font-size: 12px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
           margin-top: 2px;
         }
-
         .gd-activity-user {
           font-weight: 500;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.7;
         }
-
         .gd-activity-dot {
-          color: #d1d5db;
+          color: #013E37;
+          opacity: 0.3;
         }
-
         .gd-empty-activity {
           text-align: center;
           padding: 40px 0;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
-
         .gd-empty-activity .gd-empty-icon {
           width: 32px;
           height: 32px;
@@ -1423,64 +1372,99 @@ const GoalDetails = () => {
         }
 
         /* ============================================
+           ANIMATIONS
+           ============================================ */
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeInRight {
+          from {
+            opacity: 0;
+            transform: translateX(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        /* ============================================
            RESPONSIVE
            ============================================ */
         @media (max-width: 768px) {
-          .gd-container {
-            padding: 16px;
-          }
-
           .gd-header {
             flex-direction: column;
             align-items: stretch;
           }
-
           .gd-header-left {
             flex-wrap: wrap;
           }
-
           .gd-header-right {
             justify-content: flex-end;
           }
-
           .gd-title {
             font-size: 20px;
           }
-
           .gd-title-input {
             font-size: 20px;
           }
-
           .gd-progress-header {
             flex-direction: column;
             align-items: flex-start;
           }
-
           .gd-progress-meta {
             flex-wrap: wrap;
           }
-
           .gd-tabs {
             gap: 0;
           }
-
           .gd-tab {
             padding: 10px 14px;
             font-size: 13px;
           }
-
           .gd-tab-icon {
             display: none;
           }
-
           .gd-content {
             padding: 16px;
           }
-
           .gd-details-grid {
             grid-template-columns: 1fr 1fr;
           }
-
           .gd-task-item {
             flex-direction: column;
             align-items: flex-start;
@@ -1488,44 +1472,34 @@ const GoalDetails = () => {
         }
 
         @media (max-width: 480px) {
-          .gd-container {
-            padding: 12px;
-          }
-
           .gd-header-right {
             flex-wrap: wrap;
           }
-
           .gd-edit-btn,
           .gd-delete-btn {
             flex: 1;
             justify-content: center;
           }
-
           .gd-details-grid {
             grid-template-columns: 1fr;
           }
-
           .gd-context-badges {
             flex-direction: column;
           }
-
           .gd-kpi-badges {
             flex-direction: column;
           }
-
           .gd-tasks-header {
             flex-direction: column;
             align-items: stretch;
             gap: 8px;
           }
-
           .gd-add-task-btn {
             justify-content: center;
           }
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

@@ -1,4 +1,4 @@
-// pages/Dashboard.jsx
+// pages/Dashboard.jsx - COMPLETE FIXED VERSION WITH NEW COLOR SCHEME
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -36,8 +36,7 @@ const Dashboard = () => {
   const [recentActivity, setRecentActivity] = useState([]);
   const [apiAvailable, setApiAvailable] = useState(true);
 
-  // API base URL
-  const API_URL =  'https://crmserver-production-4a42.up.railway.app/api';
+  const API_URL = 'https://crmserver-production-4a42.up.railway.app/api';
 
   useEffect(() => {
     if (token) {
@@ -69,7 +68,6 @@ const Dashboard = () => {
         timeout: 10000
       };
 
-      // Fetch all stats in parallel
       const [usersRes, leadsRes, projectsRes, companiesRes, activityRes] = await Promise.allSettled([
         axios.get(`${API_URL}/users?limit=1`, config),
         axios.get(`${API_URL}/crm/leads?limit=1`, config),
@@ -84,36 +82,30 @@ const Dashboard = () => {
       let totalCompanies = 0;
       let activityData = [];
 
-      // Process Users
       if (usersRes.status === 'fulfilled' && usersRes.value.data) {
         const data = usersRes.value.data;
         totalUsers = data.pagination?.total || data.data?.length || 0;
       }
 
-      // Process Leads
       if (leadsRes.status === 'fulfilled' && leadsRes.value.data) {
         const data = leadsRes.value.data;
         totalLeads = data.pagination?.total || data.data?.length || 0;
       }
 
-      // Process Projects
       if (projectsRes.status === 'fulfilled' && projectsRes.value.data) {
         const data = projectsRes.value.data;
         totalProjects = data.pagination?.total || data.data?.length || 0;
       }
 
-      // Process Companies
       if (companiesRes.status === 'fulfilled' && companiesRes.value.data) {
         const data = companiesRes.value.data;
         totalCompanies = data.pagination?.total || data.data?.length || 0;
       }
 
-      // Process Activity
       if (activityRes.status === 'fulfilled' && activityRes.value.data) {
         activityData = activityRes.value.data.data || activityRes.value.data || [];
       }
 
-      // Set mock growth data (would come from real API in production)
       const mockGrowth = {
         usersGrowth: 8,
         leadsGrowth: 12,
@@ -142,7 +134,6 @@ const Dashboard = () => {
         toast.error('Session expired. Please login again.');
         logout();
       } else {
-        // Use mock data for demo
         setStats({
           totalUsers: 24,
           totalLeads: 156,
@@ -169,32 +160,32 @@ const Dashboard = () => {
       title: 'New lead added: TechCorp Inc.',
       time: '2 minutes ago',
       icon: 'UserPlus',
-      color: '#3b82f6',
-      bg: '#eff6ff',
+      color: '#013E37',
+      bg: '#E8F5E9',
     },
     {
       id: 2,
       title: 'Project "Website Redesign" created',
       time: '1 hour ago',
       icon: 'Briefcase',
-      color: '#22c55e',
-      bg: '#f0fdf4',
+      color: '#013E37',
+      bg: '#E8F5E9',
     },
     {
       id: 3,
       title: 'New user registered: Sarah Johnson',
       time: '3 hours ago',
       icon: 'Users',
-      color: '#8b5cf6',
-      bg: '#f5f3ff',
+      color: '#013E37',
+      bg: '#FFEFB3',
     },
     {
       id: 4,
       title: 'New company added: Acme Corp',
       time: '5 hours ago',
       icon: 'Building2',
-      color: '#eab308',
-      bg: '#fefce8',
+      color: '#013E37',
+      bg: '#FFEFB3',
     },
   ];
 
@@ -216,8 +207,8 @@ const Dashboard = () => {
       value: stats.totalUsers || 0,
       change: `${stats.usersGrowth || 0}%`,
       icon: Users,
-      color: '#3b82f6',
-      bg: '#eff6ff',
+      color: '#013E37',
+      bg: '#E8F5E9',
       link: '/admin/users',
     },
     {
@@ -225,8 +216,8 @@ const Dashboard = () => {
       value: stats.totalLeads || 0,
       change: `${stats.leadsGrowth || 0}%`,
       icon: UserPlus,
-      color: '#22c55e',
-      bg: '#f0fdf4',
+      color: '#013E37',
+      bg: '#E8F5E9',
       link: '/crm/leads',
     },
     {
@@ -234,8 +225,8 @@ const Dashboard = () => {
       value: stats.totalProjects || 0,
       change: `${stats.projectsGrowth || 0}%`,
       icon: Briefcase,
-      color: '#8b5cf6',
-      bg: '#f5f3ff',
+      color: '#013E37',
+      bg: '#FFEFB3',
       link: '/projects',
     },
     {
@@ -243,8 +234,8 @@ const Dashboard = () => {
       value: stats.totalCompanies || 0,
       change: `${stats.companiesGrowth || 0}%`,
       icon: Building2,
-      color: '#eab308',
-      bg: '#fefce8',
+      color: '#013E37',
+      bg: '#FFEFB3',
       link: '/crm/companies',
     },
   ];
@@ -323,9 +314,9 @@ const Dashboard = () => {
           </Link>
         ))}
       </div>
-      <ExecutiveDashboard/>
 
-     
+      <ExecutiveDashboard />
+
       {/* CSS for animations and hover effects */}
       <style>{`
         @keyframes spin {
@@ -333,29 +324,42 @@ const Dashboard = () => {
           to { transform: rotate(360deg); }
         }
         .stat-card {
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
+          border: 1px solid #FFEFB3;
         }
         .stat-card:hover {
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
-          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(1, 62, 55, 0.12) !important;
+          transform: translateY(-3px);
+          border-color: #013E37;
         }
         .stat-card-link {
           text-decoration: none;
           display: block;
         }
         .quick-action {
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
+          border: 1px solid #FFEFB3;
         }
         .quick-action:hover {
-          background-color: #dbeafe !important;
+          background-color: #FFEFB3 !important;
           transform: translateY(-2px);
+          border-color: #013E37;
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.08);
         }
         .view-all-link:hover {
-          color: #2563eb !important;
+          color: #0A5C54 !important;
         }
         .activity-item:last-child {
           border-bottom: none !important;
           padding-bottom: 0 !important;
+        }
+        .dashboard-card {
+          border: 1px solid #FFEFB3;
+          transition: all 0.3s ease;
+        }
+        .dashboard-card:hover {
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
+          border-color: #013E37;
         }
         @media (max-width: 768px) {
           .bottom-grid {
@@ -384,30 +388,33 @@ const Dashboard = () => {
           }
         }
       `}</style>
-
-      
     </div>
   );
 };
 
 const styles = {
   container: {
-    padding: '0',
-    maxWidth: '100%',
-    width: '100%',
+    padding: '24px 32px',
+    maxWidth: '1400px',
+    margin: '0 auto',
+    background: '#FFFFFF',
+    minHeight: '100vh',
   },
   loadingContainer: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     height: '64vh',
+    background: '#FFFFFF',
   },
   welcomeSection: {
-    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+    background: 'linear-gradient(135deg, #013E37 0%, #0A5C54 100%)',
     borderRadius: '12px',
-    padding: '24px',
-    color: '#ffffff',
+    padding: '24px 32px',
+    color: '#FFFFFF',
     marginBottom: '24px',
+    border: '1px solid #013E37',
+    boxShadow: '0 4px 16px rgba(1, 62, 55, 0.15)',
   },
   welcomeHeader: {
     display: 'flex',
@@ -420,32 +427,42 @@ const styles = {
     fontSize: '24px',
     fontWeight: '700',
     margin: 0,
+    color: '#FFFFFF',
   },
   welcomeSubtitle: {
     marginTop: '4px',
-    color: '#bfdbfe',
+    color: '#FFEFB3',
     margin: '4px 0 0 0',
+    fontSize: '15px',
+    opacity: 0.9,
   },
   refreshButton: {
-    background: 'rgba(255, 255, 255, 0.2)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    color: '#ffffff',
-    padding: '8px 16px',
+    background: 'rgba(255, 255, 255, 0.15)',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
+    color: '#FFFFFF',
+    padding: '8px 20px',
     borderRadius: '8px',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
     fontSize: '14px',
-    transition: 'background 0.2s ease',
+    fontWeight: '500',
+    transition: 'all 0.3s ease',
+    backdropFilter: 'blur(10px)',
+  },
+  refreshButtonHover: {
+    background: 'rgba(255, 255, 255, 0.25)',
+    borderColor: '#FFEFB3',
   },
   demoBanner: {
     marginTop: '12px',
     padding: '8px 16px',
-    background: 'rgba(255, 255, 255, 0.15)',
+    background: 'rgba(255, 239, 179, 0.2)',
     borderRadius: '8px',
     fontSize: '14px',
-    color: '#fbbf24',
+    color: '#FFEFB3',
+    border: '1px solid rgba(255, 239, 179, 0.2)',
   },
   statsGrid: {
     display: 'grid',
@@ -458,10 +475,10 @@ const styles = {
     display: 'block',
   },
   statCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FFFFFF',
     borderRadius: '12px',
     padding: '24px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+    border: '1px solid #FFEFB3',
     transition: 'all 0.3s ease',
     cursor: 'pointer',
     height: '100%',
@@ -476,18 +493,20 @@ const styles = {
   },
   statTitle: {
     fontSize: '14px',
-    color: '#6b7280',
+    color: '#013E37',
+    opacity: 0.7,
     margin: 0,
+    fontWeight: '500',
   },
   statValue: {
-    fontSize: '24px',
+    fontSize: '28px',
     fontWeight: '700',
-    color: '#111827',
+    color: '#013E37',
     marginTop: '4px',
   },
   statIconWrapper: {
     padding: '12px',
-    borderRadius: '8px',
+    borderRadius: '10px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -504,23 +523,26 @@ const styles = {
     fontSize: '14px',
   },
   changeUp: {
-    color: '#22c55e',
+    color: '#013E37',
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
+    fontWeight: '600',
   },
   changeDown: {
-    color: '#ef4444',
+    color: '#D32F2F',
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
+    fontWeight: '600',
   },
   changeIcon: {
     width: '16px',
     height: '16px',
   },
   changeText: {
-    color: '#6b7280',
+    color: '#013E37',
+    opacity: 0.5,
   },
   bottomGrid: {
     display: 'grid',
@@ -529,14 +551,15 @@ const styles = {
     marginBottom: '24px',
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FFFFFF',
     borderRadius: '12px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+    border: '1px solid #FFEFB3',
     overflow: 'hidden',
+    transition: 'all 0.3s ease',
   },
   cardHeader: {
     padding: '20px 24px',
-    borderBottom: '1px solid #e5e7eb',
+    borderBottom: '1px solid #FFEFB3',
   },
   cardHeaderBetween: {
     display: 'flex',
@@ -546,7 +569,7 @@ const styles = {
   cardTitle: {
     fontSize: '18px',
     fontWeight: '600',
-    color: '#111827',
+    color: '#013E37',
     margin: 0,
   },
   cardContent: {
@@ -559,44 +582,47 @@ const styles = {
   },
   quickAction: {
     padding: '16px',
-    backgroundColor: '#eff6ff',
+    backgroundColor: '#FFFFFF',
+    border: '1px solid #FFEFB3',
     borderRadius: '8px',
     textAlign: 'center',
     textDecoration: 'none',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.3s ease',
     cursor: 'pointer',
     display: 'block',
   },
   quickActionIconBlue: {
     margin: '0 auto',
-    color: '#3b82f6',
+    color: '#013E37',
   },
   quickActionIconGreen: {
     margin: '0 auto',
-    color: '#22c55e',
+    color: '#013E37',
   },
   quickActionIconPurple: {
     margin: '0 auto',
-    color: '#8b5cf6',
+    color: '#013E37',
   },
   quickActionIconYellow: {
     margin: '0 auto',
-    color: '#eab308',
+    color: '#013E37',
   },
   quickActionText: {
     display: 'block',
     marginTop: '8px',
     fontSize: '14px',
     fontWeight: '500',
-    color: '#374151',
+    color: '#013E37',
   },
   viewAllLink: {
     fontSize: '14px',
-    color: '#3b82f6',
+    color: '#013E37',
     textDecoration: 'none',
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
+    fontWeight: '500',
+    transition: 'all 0.2s ease',
   },
   viewAllIcon: {
     width: '16px',
@@ -612,7 +638,7 @@ const styles = {
     alignItems: 'flex-start',
     gap: '12px',
     paddingBottom: '12px',
-    borderBottom: '1px solid #f3f4f6',
+    borderBottom: '1px solid #FFEFB3',
   },
   activityIcon: {
     width: '32px',
@@ -632,12 +658,14 @@ const styles = {
   },
   activityTitle: {
     fontSize: '14px',
-    color: '#111827',
+    color: '#013E37',
     margin: 0,
+    fontWeight: '500',
   },
   activityTime: {
     fontSize: '12px',
-    color: '#6b7280',
+    color: '#013E37',
+    opacity: 0.5,
     marginTop: '4px',
     margin: '4px 0 0 0',
   },

@@ -1,4 +1,4 @@
-// pages/activity/ActivitySearch.jsx - MODERN DESIGN FIXED VERSION
+// pages/activity/ActivitySearch.jsx - MODERN DESIGN WITH #013E37, #FFEFB3, WHITE
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -7,7 +7,8 @@ import {
   Clock, Activity, AlertCircle, CheckCircle,
   ChevronDown, ChevronRight, User, Briefcase,
   Building2, Target, MessageSquare, MoreVertical,
-  Plus, Edit, Trash2, LogIn, LogOut, XCircle
+  Plus, Edit, Trash2, LogIn, LogOut, XCircle,
+  Sparkles, Zap, Award, Crown, TrendingUp
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -29,12 +30,12 @@ const ActivitySearch = () => {
   const [selectedLog, setSelectedLog] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState(null);
 
   const API_URL = 'https://crmserver-production-4a42.up.railway.app/api';
 
   useEffect(() => {
     fetchUsers();
-    // Auto search on load
     handleSearch();
   }, []);
 
@@ -73,7 +74,6 @@ const ActivitySearch = () => {
         setLogs(result.data || []);
         setTotal(result.pagination?.total || 0);
       } else {
-        // Use mock data if API fails
         setLogs(getMockLogs());
         setTotal(getMockLogs().length);
         toast.info('Showing sample data');
@@ -233,21 +233,21 @@ const ActivitySearch = () => {
 
   const getEntityColor = (entityType) => {
     const colors = {
-      'user': '#6b7280',
-      'lead': '#3b82f6',
-      'client': '#8b5cf6',
-      'project': '#22c55e',
-      'task': '#f59e0b',
-      'goal': '#ec4899',
-      'kpi': '#8b5cf6',
-      'risk': '#ef4444',
-      'team': '#14b8a6',
-      'comment': '#f97316',
-      'activity': '#3b82f6',
-      'report': '#3b82f6',
-      'schedule': '#8b5cf6'
+      'user': '#013E37',
+      'lead': '#013E37',
+      'client': '#0A5C54',
+      'project': '#013E37',
+      'task': '#013E37',
+      'goal': '#013E37',
+      'kpi': '#013E37',
+      'risk': '#D32F2F',
+      'team': '#013E37',
+      'comment': '#013E37',
+      'activity': '#013E37',
+      'report': '#013E37',
+      'schedule': '#013E37'
     };
-    return colors[entityType] || '#6b7280';
+    return colors[entityType] || '#013E37';
   };
 
   const getActionColor = (action) => {
@@ -372,7 +372,7 @@ const ActivitySearch = () => {
       <div className="as-header">
         <div className="as-header-left">
           <h1 className="as-title">
-            <Search className="as-title-icon" />
+            <Search className="as-title-icon" color="#013E37" />
             Activity Search
           </h1>
           <p className="as-subtitle">Search and filter audit logs across the organization</p>
@@ -413,7 +413,7 @@ const ActivitySearch = () => {
           <div className="as-search-group">
             <label className="as-search-label">Search Query</label>
             <div className="as-search-input-wrapper">
-              <Search className="as-search-input-icon" />
+              <Search className="as-search-input-icon" color="#013E37" />
               <input
                 type="text"
                 placeholder="Search in logs..."
@@ -535,20 +535,27 @@ const ActivitySearch = () => {
       {/* Results */}
       {loading ? (
         <div className="as-loading-state">
-          <div className="as-spinner" />
+          <div className="as-loading-spinner"></div>
           <p className="as-loading-text">Searching...</p>
         </div>
       ) : logs.length > 0 ? (
         <div className="as-results-container">
           <div className="as-results-list">
-            {logs.map((log) => {
+            {logs.map((log, index) => {
               const isExpanded = expanded[log._id];
               const entityColor = getEntityColor(log.entityType);
               const userName = log.userName || `${log.userId?.firstName || ''} ${log.userId?.lastName || ''}`.trim() || 'System';
               const userEmail = log.userEmail || log.userId?.email || '';
+              const isHovered = hoveredItem === log._id;
               
               return (
-                <div key={log._id} className="as-log-item">
+                <div 
+                  key={log._id} 
+                  className="as-log-item"
+                  style={{ animationDelay: `${index * 0.03}s` }}
+                  onMouseEnter={() => setHoveredItem(log._id)}
+                  onMouseLeave={() => setHoveredItem(null)}
+                >
                   <div 
                     className="as-log-item-main"
                     onClick={() => toggleExpand(log._id)}
@@ -727,8 +734,8 @@ const ActivitySearch = () => {
         </div>
       ) : (
         <div className="as-empty-state">
-          <div className="as-empty-icon-wrapper">
-            <Search className="as-empty-icon" />
+          <div className="as-empty-icon-wrapper" style={{ backgroundColor: '#FFEFB3' }}>
+            <Search className="as-empty-icon" color="#013E37" />
           </div>
           <h3 className="as-empty-title">No results found</h3>
           <p className="as-empty-subtitle">
@@ -826,6 +833,12 @@ const ActivitySearch = () => {
           margin-bottom: 24px;
           flex-wrap: wrap;
           gap: 12px;
+          animation: asFadeInDown 0.6s ease;
+        }
+
+        @keyframes asFadeInDown {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .as-header-left {
@@ -835,24 +848,31 @@ const ActivitySearch = () => {
         }
 
         .as-title {
-          font-size: 24px;
+          font-size: 28px;
           font-weight: 700;
-          color: #111827;
+          color: #013E37;
           display: flex;
           align-items: center;
           gap: 10px;
           margin: 0;
+          letter-spacing: -0.5px;
         }
 
         .as-title-icon {
           width: 28px;
           height: 28px;
-          color: #3b82f6;
+          animation: asPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes asPulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
         }
 
         .as-subtitle {
-          color: #6b7280;
-          font-size: 14px;
+          color: #013E37;
+          opacity: 0.6;
+          font-size: 15px;
           margin: 0;
         }
 
@@ -873,34 +893,36 @@ const ActivitySearch = () => {
           align-items: center;
           gap: 6px;
           padding: 8px 16px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
-          color: #6b7280;
+          color: #013E37;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .as-clear-btn:hover {
-          background: #f3f4f6;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .as-refresh-btn {
           padding: 8px 10px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
         .as-refresh-btn:hover:not(:disabled) {
-          background: #f3f4f6;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .as-refresh-btn:disabled {
@@ -911,14 +933,14 @@ const ActivitySearch = () => {
         .as-refresh-icon {
           width: 16px;
           height: 16px;
-          color: #6b7280;
+          color: #013E37;
         }
 
         .as-spin {
-          animation: spin 0.8s linear infinite;
+          animation: asSpin 0.8s linear infinite;
         }
 
-        @keyframes spin {
+        @keyframes asSpin {
           to { transform: rotate(360deg); }
         }
 
@@ -927,7 +949,7 @@ const ActivitySearch = () => {
           align-items: center;
           gap: 8px;
           padding: 8px 24px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
+          background: #013E37;
           color: #ffffff;
           border: none;
           border-radius: 8px;
@@ -935,12 +957,13 @@ const ActivitySearch = () => {
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+          box-shadow: 0 2px 8px rgba(1, 62, 55, 0.25);
         }
 
         .as-search-btn:hover:not(:disabled) {
+          background: #0A5C54;
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
         }
 
         .as-search-btn:disabled {
@@ -955,7 +978,7 @@ const ActivitySearch = () => {
           border: 2px solid rgba(255,255,255,0.3);
           border-top-color: #ffffff;
           border-radius: 50%;
-          animation: spin 0.8s linear infinite;
+          animation: asSpin 0.8s linear infinite;
         }
 
         /* ============================================
@@ -963,10 +986,16 @@ const ActivitySearch = () => {
            ============================================ */
         .as-search-form {
           background: #ffffff;
-          border: 1px solid #e5e7eb;
+          border: 1px solid #FFEFB3;
           border-radius: 12px;
           padding: 20px;
           margin-bottom: 16px;
+          animation: asSlideDown 0.4s ease;
+        }
+
+        @keyframes asSlideDown {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .as-search-grid {
@@ -1008,8 +1037,9 @@ const ActivitySearch = () => {
 
         .as-search-label {
           font-size: 12px;
-          font-weight: 500;
-          color: #6b7280;
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.7;
           text-transform: uppercase;
           letter-spacing: 0.05em;
         }
@@ -1025,30 +1055,35 @@ const ActivitySearch = () => {
           transform: translateY(-50%);
           width: 16px;
           height: 16px;
-          color: #9ca3af;
+          opacity: 0.5;
         }
 
         .as-search-input,
         .as-search-select {
           width: 100%;
           padding: 8px 12px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           outline: none;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           background: #ffffff;
-          color: #111827;
+          color: #013E37;
         }
 
         .as-search-input:focus,
         .as-search-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
 
         .as-search-input {
           padding-left: 36px;
+        }
+
+        .as-search-input::placeholder {
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .as-active-filters {
@@ -1058,13 +1093,14 @@ const ActivitySearch = () => {
           gap: 8px;
           margin-top: 12px;
           padding-top: 12px;
-          border-top: 1px solid #e5e7eb;
+          border-top: 1px solid #FFEFB3;
         }
 
         .as-active-filters-label {
           font-size: 13px;
           font-weight: 500;
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.6;
         }
 
         .as-filter-tag {
@@ -1072,8 +1108,8 @@ const ActivitySearch = () => {
           align-items: center;
           gap: 4px;
           padding: 4px 8px 4px 12px;
-          background: #eff6ff;
-          color: #1d4ed8;
+          background: #FFEFB3;
+          color: #013E37;
           border-radius: 6px;
           font-size: 13px;
           font-weight: 500;
@@ -1087,10 +1123,11 @@ const ActivitySearch = () => {
           display: flex;
           align-items: center;
           border-radius: 4px;
+          color: #013E37;
         }
 
         .as-filter-tag button:hover {
-          background: rgba(0,0,0,0.05);
+          background: rgba(1, 62, 55, 0.1);
         }
 
         .as-filter-tag-icon {
@@ -1111,12 +1148,14 @@ const ActivitySearch = () => {
 
         .as-results-count {
           font-size: 14px;
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.6;
         }
 
         .as-results-count-number {
           font-weight: 600;
-          color: #111827;
+          color: #013E37;
+          opacity: 1;
         }
 
         .as-export-btn {
@@ -1124,17 +1163,18 @@ const ActivitySearch = () => {
           align-items: center;
           gap: 6px;
           padding: 6px 16px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 6px;
           background: #ffffff;
-          color: #6b7280;
+          color: #013E37;
           font-size: 13px;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .as-export-btn:hover {
-          background: #f3f4f6;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         /* ============================================
@@ -1142,9 +1182,14 @@ const ActivitySearch = () => {
            ============================================ */
         .as-results-container {
           background: #ffffff;
-          border: 1px solid #e5e7eb;
+          border: 1px solid #FFEFB3;
           border-radius: 12px;
           overflow: hidden;
+          transition: all 0.3s ease;
+        }
+
+        .as-results-container:hover {
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
         }
 
         .as-results-list {
@@ -1152,9 +1197,24 @@ const ActivitySearch = () => {
           overflow-y: auto;
         }
 
+        .as-results-list::-webkit-scrollbar {
+          width: 4px;
+        }
+
+        .as-results-list::-webkit-scrollbar-track {
+          background: #FFEFB3;
+        }
+
+        .as-results-list::-webkit-scrollbar-thumb {
+          background: #013E37;
+          border-radius: 2px;
+        }
+
         .as-log-item {
-          border-bottom: 1px solid #f3f4f6;
-          transition: all 0.2s ease;
+          border-bottom: 1px solid #FFEFB3;
+          transition: all 0.3s ease;
+          animation: asSlideInRight 0.4s ease forwards;
+          opacity: 0;
         }
 
         .as-log-item:last-child {
@@ -1162,7 +1222,12 @@ const ActivitySearch = () => {
         }
 
         .as-log-item:hover {
-          background: #f9fafb;
+          background: #FFEFB3;
+        }
+
+        @keyframes asSlideInRight {
+          from { opacity: 0; transform: translateX(10px); }
+          to { opacity: 1; transform: translateX(0); }
         }
 
         .as-log-item-main {
@@ -1186,17 +1251,18 @@ const ActivitySearch = () => {
           margin-top: 4px;
           padding: 4px;
           border-radius: 4px;
-          transition: background 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .as-log-expand:hover {
-          background: #f3f4f6;
+          background: #FFEFB3;
         }
 
         .as-log-expand-icon {
           width: 16px;
           height: 16px;
-          color: #9ca3af;
+          color: #013E37;
+          opacity: 0.3;
         }
 
         .as-log-icon {
@@ -1207,12 +1273,17 @@ const ActivitySearch = () => {
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          transition: all 0.3s ease;
+        }
+
+        .as-log-item:hover .as-log-icon {
+          transform: scale(1.05) rotate(-5deg);
         }
 
         .as-entity-icon {
           width: 18px;
           height: 18px;
-          color: #3b82f6;
+          color: #013E37;
         }
 
         .as-log-content {
@@ -1229,14 +1300,14 @@ const ActivitySearch = () => {
 
         .as-log-user {
           font-weight: 600;
-          color: #111827;
+          color: #013E37;
           font-size: 14px;
         }
 
         .as-log-action {
-          padding: 2px 10px;
+          padding: 2px 12px;
           font-size: 11px;
-          font-weight: 500;
+          font-weight: 600;
           border-radius: 9999px;
           display: inline-flex;
           align-items: center;
@@ -1248,55 +1319,57 @@ const ActivitySearch = () => {
           height: 12px;
         }
 
-        .as-action-created { background: #dcfce7; color: #16a34a; }
-        .as-action-updated { background: #dbeafe; color: #1d4ed8; }
-        .as-action-deleted { background: #fee2e2; color: #dc2626; }
-        .as-action-completed { background: #d1fae5; color: #059669; }
-        .as-action-approved { background: #dbeafe; color: #1d4ed8; }
-        .as-action-rejected { background: #fef3c7; color: #d97706; }
-        .as-action-login { background: #ede9fe; color: #7c3aed; }
-        .as-action-logout { background: #f3f4f6; color: #6b7280; }
-        .as-action-default { background: #f3f4f6; color: #6b7280; }
+        .as-action-created { background: #013E37; color: #ffffff; }
+        .as-action-updated { background: #FFEFB3; color: #013E37; }
+        .as-action-deleted { background: #FFEBEE; color: #D32F2F; }
+        .as-action-completed { background: #013E37; color: #ffffff; }
+        .as-action-approved { background: #013E37; color: #ffffff; }
+        .as-action-rejected { background: #FFEFB3; color: #013E37; }
+        .as-action-login { background: #FFEFB3; color: #013E37; }
+        .as-action-logout { background: #FFEFB3; color: #013E37; }
+        .as-action-default { background: #FFEFB3; color: #013E37; }
 
         .as-log-entity {
           font-size: 12px;
-          font-weight: 500;
+          font-weight: 600;
           text-transform: capitalize;
         }
 
         .as-log-importance {
-          padding: 2px 8px;
+          padding: 2px 10px;
           font-size: 10px;
-          font-weight: 500;
+          font-weight: 600;
           border-radius: 9999px;
         }
 
-        .as-importance-low { background: #f3f4f6; color: #6b7280; }
-        .as-importance-medium { background: #dbeafe; color: #1d4ed8; }
-        .as-importance-high { background: #fef3c7; color: #d97706; }
-        .as-importance-critical { background: #fee2e2; color: #dc2626; }
-        .as-importance-default { background: #f3f4f6; color: #6b7280; }
+        .as-importance-low { background: #FFEFB3; color: #013E37; }
+        .as-importance-medium { background: #FFEFB3; color: #013E37; }
+        .as-importance-high { background: #FFEFB3; color: #013E37; }
+        .as-importance-critical { background: #FFEBEE; color: #D32F2F; }
+        .as-importance-default { background: #FFEFB3; color: #013E37; }
 
         .as-log-status {
-          padding: 2px 8px;
+          padding: 2px 10px;
           font-size: 10px;
-          font-weight: 500;
+          font-weight: 600;
           border-radius: 9999px;
         }
 
-        .as-status-success { background: #dcfce7; color: #16a34a; }
-        .as-status-failure { background: #fee2e2; color: #dc2626; }
-        .as-status-pending { background: #fef3c7; color: #d97706; }
-        .as-status-default { background: #f3f4f6; color: #6b7280; }
+        .as-status-success { background: #013E37; color: #ffffff; }
+        .as-status-failure { background: #FFEBEE; color: #D32F2F; }
+        .as-status-pending { background: #FFEFB3; color: #013E37; }
+        .as-status-default { background: #FFEFB3; color: #013E37; }
 
         .as-log-time {
           font-size: 12px;
-          color: #9ca3af;
+          color: #013E37;
+          opacity: 0.5;
         }
 
         .as-log-description {
           font-size: 14px;
-          color: #4b5563;
+          color: #013E37;
+          opacity: 0.8;
           margin: 4px 0 0 0;
         }
 
@@ -1305,10 +1378,11 @@ const ActivitySearch = () => {
           align-items: center;
           gap: 4px;
           font-size: 12px;
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.6;
           margin-top: 4px;
-          padding: 2px 8px;
-          background: #f3f4f6;
+          padding: 2px 10px;
+          background: #FFEFB3;
           border-radius: 4px;
         }
 
@@ -1318,7 +1392,8 @@ const ActivitySearch = () => {
         }
 
         .as-log-entity-id {
-          color: #9ca3af;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .as-log-actions {
@@ -1334,20 +1409,22 @@ const ActivitySearch = () => {
           background: transparent;
           border-radius: 6px;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #9ca3af;
+          transition: all 0.3s ease;
+          color: #013E37;
+          opacity: 0.3;
           display: flex;
           align-items: center;
         }
 
         .as-log-action-btn:hover {
-          background: #f3f4f6;
-          color: #4b5563;
+          background: #FFEFB3;
+          opacity: 1;
+          transform: scale(1.1);
         }
 
         .as-log-action-view:hover {
-          background: #eff6ff;
-          color: #3b82f6;
+          background: #FFEFB3;
+          color: #013E37;
         }
 
         .as-log-action-icon {
@@ -1363,10 +1440,10 @@ const ActivitySearch = () => {
         }
 
         .as-log-details-content {
-          background: #f8fafc;
+          background: #F8FAFC;
           border-radius: 8px;
           padding: 16px;
-          border: 1px solid #e5e7eb;
+          border: 1px solid #FFEFB3;
         }
 
         .as-details-grid {
@@ -1390,7 +1467,8 @@ const ActivitySearch = () => {
         .as-details-title {
           font-size: 12px;
           font-weight: 600;
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.6;
           text-transform: uppercase;
           letter-spacing: 0.3px;
           margin: 0;
@@ -1405,19 +1483,21 @@ const ActivitySearch = () => {
         .as-details-item {
           display: flex;
           justify-content: space-between;
-          padding: 4px 8px;
+          padding: 4px 10px;
           background: #ffffff;
           border-radius: 4px;
           font-size: 13px;
+          border: 1px solid #FFEFB3;
         }
 
         .as-details-label {
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.6;
           font-weight: 500;
         }
 
         .as-details-value {
-          color: #111827;
+          color: #013E37;
           font-family: monospace;
           font-size: 12px;
           word-break: break-all;
@@ -1431,7 +1511,7 @@ const ActivitySearch = () => {
         .as-changes-section {
           margin-top: 12px;
           padding-top: 12px;
-          border-top: 1px solid #e5e7eb;
+          border-top: 1px solid #FFEFB3;
         }
 
         .as-changes-list {
@@ -1450,38 +1530,40 @@ const ActivitySearch = () => {
           border-radius: 4px;
           font-size: 13px;
           flex-wrap: wrap;
+          border: 1px solid #FFEFB3;
         }
 
         .as-change-field {
           font-weight: 600;
-          color: #111827;
+          color: #013E37;
         }
 
         .as-change-old {
-          color: #dc2626;
+          color: #D32F2F;
           text-decoration: line-through;
         }
 
         .as-change-new {
-          color: #16a34a;
+          color: #013E37;
           font-weight: 500;
         }
 
         .as-change-arrow {
-          color: #9ca3af;
+          color: #013E37;
+          opacity: 0.3;
         }
 
         .as-change-type {
-          padding: 1px 8px;
+          padding: 1px 10px;
           font-size: 10px;
-          font-weight: 500;
+          font-weight: 600;
           border-radius: 9999px;
           margin-left: auto;
         }
 
-        .as-change-create { background: #dcfce7; color: #16a34a; }
-        .as-change-update { background: #dbeafe; color: #1d4ed8; }
-        .as-change-delete { background: #fee2e2; color: #dc2626; }
+        .as-change-create { background: #013E37; color: #ffffff; }
+        .as-change-update { background: #FFEFB3; color: #013E37; }
+        .as-change-delete { background: #FFEBEE; color: #D32F2F; }
 
         /* ============================================
            ROLLBACK
@@ -1492,18 +1574,18 @@ const ActivitySearch = () => {
           gap: 8px;
           margin-top: 12px;
           padding: 8px 12px;
-          background: #fef3c7;
+          background: #FFEFB3;
           border-radius: 4px;
-          border: 1px solid #fcd34d;
+          border: 1px solid #013E37;
           font-size: 13px;
-          color: #92400e;
+          color: #013E37;
         }
 
         .as-rollback-icon {
           width: 16px;
           height: 16px;
           flex-shrink: 0;
-          color: #d97706;
+          color: #013E37;
         }
 
         /* ============================================
@@ -1516,22 +1598,23 @@ const ActivitySearch = () => {
           justify-content: center;
           padding: 48px 24px;
           background: #ffffff;
-          border: 1px solid #e5e7eb;
+          border: 1px solid #FFEFB3;
           border-radius: 12px;
         }
 
-        .as-spinner {
+        .as-loading-spinner {
           width: 48px;
           height: 48px;
-          border: 4px solid #dbeafe;
-          border-top-color: #3b82f6;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
-          animation: spin 0.8s linear infinite;
+          animation: asSpin 0.8s linear infinite;
         }
 
         .as-loading-text {
           margin-top: 16px;
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.6;
           font-size: 14px;
         }
 
@@ -1544,7 +1627,7 @@ const ActivitySearch = () => {
           align-items: center;
           padding: 48px 24px;
           background: #ffffff;
-          border: 1px solid #e5e7eb;
+          border: 1px solid #FFEFB3;
           border-radius: 12px;
           text-align: center;
         }
@@ -1552,48 +1635,55 @@ const ActivitySearch = () => {
         .as-empty-icon-wrapper {
           width: 80px;
           height: 80px;
-          background: #f3f4f6;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           margin-bottom: 16px;
+          animation: asFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes asFloat {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
         }
 
         .as-empty-icon {
           width: 40px;
           height: 40px;
-          color: #9ca3af;
         }
 
         .as-empty-title {
-          font-size: 18px;
+          font-size: 20px;
           font-weight: 600;
-          color: #111827;
+          color: #013E37;
           margin: 0;
         }
 
         .as-empty-subtitle {
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.6;
           margin-top: 4px;
+          font-size: 15px;
         }
 
         .as-empty-btn {
           margin-top: 16px;
-          padding: 8px 24px;
-          background: #3b82f6;
+          padding: 10px 24px;
+          background: #013E37;
           border: none;
           border-radius: 8px;
           color: #ffffff;
           font-weight: 500;
           font-size: 14px;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .as-empty-btn:hover {
-          background: #2563eb;
-          transform: translateY(-1px);
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
         }
 
         /* ============================================
@@ -1602,27 +1692,34 @@ const ActivitySearch = () => {
         .as-modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.5);
+          background: rgba(1, 62, 55, 0.5);
+          backdrop-filter: blur(4px);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 1000;
           padding: 20px;
-          backdrop-filter: blur(4px);
+          animation: asFadeIn 0.3s ease;
+        }
+
+        @keyframes asFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
 
         .as-modal {
           background: #ffffff;
           border-radius: 16px;
+          border: 1px solid #FFEFB3;
           max-width: 700px;
           width: 100%;
           max-height: 90vh;
           overflow: auto;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-          animation: modalSlideIn 0.3s ease;
+          box-shadow: 0 24px 64px rgba(1, 62, 55, 0.2);
+          animation: asModalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        @keyframes modalSlideIn {
+        @keyframes asModalSlideIn {
           from { opacity: 0; transform: translateY(20px) scale(0.95); }
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
@@ -1632,13 +1729,14 @@ const ActivitySearch = () => {
           align-items: center;
           justify-content: space-between;
           padding: 20px 24px;
-          border-bottom: 1px solid #e5e7eb;
+          border-bottom: 1px solid #FFEFB3;
+          background: #F8FAFC;
         }
 
         .as-modal-title {
           font-size: 18px;
           font-weight: 600;
-          color: #111827;
+          color: #013E37;
           margin: 0;
         }
 
@@ -1648,19 +1746,22 @@ const ActivitySearch = () => {
           background: transparent;
           cursor: pointer;
           border-radius: 6px;
-          transition: background 0.2s ease;
+          transition: all 0.3s ease;
           display: flex;
           align-items: center;
+          color: #013E37;
+          opacity: 0.5;
         }
 
         .as-modal-close:hover {
-          background: #f3f4f6;
+          background: #FFEFB3;
+          opacity: 1;
+          transform: rotate(90deg);
         }
 
         .as-modal-close-icon {
           width: 20px;
           height: 20px;
-          color: #6b7280;
         }
 
         .as-modal-body {
@@ -1682,7 +1783,7 @@ const ActivitySearch = () => {
         .as-modal-section-title {
           font-size: 14px;
           font-weight: 600;
-          color: #111827;
+          color: #013E37;
           margin: 0 0 12px 0;
         }
 
@@ -1697,21 +1798,23 @@ const ActivitySearch = () => {
           flex-direction: column;
           gap: 2px;
           padding: 8px 12px;
-          background: #f9fafb;
+          background: #F8FAFC;
           border-radius: 6px;
+          border: 1px solid #FFEFB3;
         }
 
         .as-modal-label {
           font-size: 11px;
-          font-weight: 500;
-          color: #6b7280;
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.5;
           text-transform: uppercase;
           letter-spacing: 0.05em;
         }
 
         .as-modal-value {
           font-size: 14px;
-          color: #111827;
+          color: #013E37;
           word-break: break-word;
         }
 
@@ -1719,23 +1822,25 @@ const ActivitySearch = () => {
           display: flex;
           justify-content: flex-end;
           padding: 16px 24px;
-          border-top: 1px solid #e5e7eb;
+          border-top: 1px solid #FFEFB3;
+          background: #F8FAFC;
         }
 
         .as-modal-close-btn {
           padding: 8px 24px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
-          background: #ffffff;
-          color: #6b7280;
+          background: transparent;
+          color: #013E37;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .as-modal-close-btn:hover {
-          background: #f3f4f6;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         /* ============================================
@@ -1792,6 +1897,10 @@ const ActivitySearch = () => {
             text-align: left;
             max-width: 100%;
           }
+
+          .as-title {
+            font-size: 24px;
+          }
         }
 
         @media (max-width: 480px) {
@@ -1821,6 +1930,14 @@ const ActivitySearch = () => {
 
           .as-change-type {
             margin-left: 0;
+          }
+
+          .as-title {
+            font-size: 20px;
+          }
+
+          .as-log-item-main {
+            padding: 12px 14px;
           }
         }
       `}</style>

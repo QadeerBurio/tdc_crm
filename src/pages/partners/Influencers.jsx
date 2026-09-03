@@ -1,4 +1,4 @@
-// pages/partners/Influencers.jsx - COMPLETE FIXED VERSION
+// pages/partners/Influencers.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -444,198 +444,200 @@ const Influencers = () => {
   if (loading) {
     return (
       <div className="in-loading">
-        <div className="in-spinner"></div>
+        <div className="in-loading-spinner"></div>
         <p className="in-loading-text">Loading influencers...</p>
       </div>
     );
   }
 
   return (
-    <div className="in-container">
-      {/* Header */}
-      <div className="in-header">
-        <div className="in-header-left">
-          <div className="in-title-wrapper">
-            <div className="in-title-icon">
-              <Star className="in-title-svg" />
+    <>
+      <div className="in-container">
+        {/* Header */}
+        <div className="in-header">
+          <div className="in-header-left">
+            <div className="in-title-wrapper">
+              <div className="in-title-icon">
+                <Layers className="in-title-svg" />
+              </div>
+              <div>
+                <h1 className="in-title">Influencers</h1>
+                <p className="in-subtitle">Manage influencer partnerships</p>
+              </div>
             </div>
-            <div>
-              <h1 className="in-title">Influencers</h1>
-              <p className="in-subtitle">Manage influencer partnerships</p>
-            </div>
+            <span className="in-count">{influencers.length} influencers</span>
           </div>
-          <span className="in-count">{influencers.length} influencers</span>
-        </div>
-        <div className="in-header-right">
-          <button className="in-icon-btn" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw className={`in-refresh-icon ${refreshing ? 'in-spin' : ''}`} />
-          </button>
-          <button className="in-export-btn">
-            <Download className="in-btn-icon" />
-            Export
-          </button>
-          <button 
-            onClick={() => openModal()}
-            className="in-add-btn"
-          >
-            <Plus className="in-btn-icon" />
-            Add Influencer
-          </button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="in-filters">
-        <div className="in-search-wrapper">
-          <Search className="in-search-icon" />
-          <input
-            type="text"
-            placeholder="Search influencers..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="in-search-input"
-          />
-          {search && (
-            <button className="in-search-clear" onClick={() => setSearch('')}>
-              <X className="in-search-clear-icon" />
+          <div className="in-header-right">
+            <button className="in-icon-btn" onClick={handleRefresh} disabled={refreshing}>
+              <RefreshCw className={`in-refresh-icon ${refreshing ? 'in-spin' : ''}`} />
             </button>
-          )}
+            <button className="in-export-btn">
+              <Download className="in-btn-icon" />
+              Export
+            </button>
+            <button 
+              onClick={() => openModal()}
+              className="in-add-btn"
+            >
+              <Plus className="in-btn-icon" />
+              Add Influencer
+            </button>
+          </div>
         </div>
-        <select
-          value={filters.status}
-          onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-          className="in-filter-select"
-        >
-          <option value="all">All Status</option>
-          {statusOptions.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-        <select
-          value={filters.category}
-          onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-          className="in-filter-select"
-        >
-          {categoryOptions.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-      </div>
 
-      {/* Influencers Grid */}
-      <div className="in-grid">
-        {influencers.map((influencer) => (
-          <div key={influencer._id} className="in-card">
-            <div className="in-card-header">
-              <div className="in-card-left">
-                <div className="in-card-icon">
-                  <Star className="in-card-icon-svg" />
-                </div>
-                <div className="in-card-info">
-                  <h3 className="in-card-title">{influencer.name}</h3>
-                  <p className="in-card-category">{getCategoryLabel(influencer.category)}</p>
-                </div>
-              </div>
-              <span className={`in-card-status ${getStatusColor(influencer.status)}`}>
-                {getStatusLabel(influencer.status)}
-              </span>
-            </div>
-            
-            {influencer.description && (
-              <p className="in-card-desc">{influencer.description}</p>
+        {/* Filters */}
+        <div className="in-filters">
+          <div className="in-search-wrapper">
+            <Search className="in-search-icon" />
+            <input
+              type="text"
+              placeholder="Search influencers..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="in-search-input"
+            />
+            {search && (
+              <button className="in-search-clear" onClick={() => setSearch('')}>
+                <X className="in-search-clear-icon" />
+              </button>
             )}
-            
-            {/* Platforms */}
-            {influencer.platforms && influencer.platforms.length > 0 && (
-              <div className="in-card-platforms">
-                {influencer.platforms.map((platform, idx) => (
-                  <div key={idx} className={`in-platform-tag ${getPlatformColor(platform.name)}`}>
-                    {getPlatformIcon(platform.name)}
-                    <span className="in-platform-handle">{platform.handle}</span>
-                    <span className="in-platform-separator">•</span>
-                    <span className="in-platform-followers">
-                      {platform.followers?.toLocaleString()}
-                    </span>
+          </div>
+          <select
+            value={filters.status}
+            onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+            className="in-filter-select"
+          >
+            <option value="all">All Status</option>
+            {statusOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          <select
+            value={filters.category}
+            onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+            className="in-filter-select"
+          >
+            {categoryOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Influencers Grid */}
+        <div className="in-grid">
+          {influencers.map((influencer, index) => (
+            <div key={influencer._id} className="in-card" style={{ animationDelay: `${index * 0.05}s` }}>
+              <div className="in-card-header">
+                <div className="in-card-left">
+                  <div className="in-card-icon">
+                    <Star className="in-card-icon-svg" />
                   </div>
-                ))}
-              </div>
-            )}
-            
-            <div className="in-card-badges">
-              {influencer.rates && (
-                <>
-                  {influencer.rates.perPost && (
-                    <span className="in-badge in-badge-green">
-                      <DollarSign className="in-badge-icon" />
-                      Post: ${influencer.rates.perPost}
-                    </span>
-                  )}
-                  {influencer.rates.perCampaign && (
-                    <span className="in-badge in-badge-purple">
-                      <TrendingUp className="in-badge-icon" />
-                      Campaign: ${influencer.rates.perCampaign}
-                    </span>
-                  )}
-                </>
-              )}
-              {influencer.availability && (
-                <span className={`in-badge in-badge-${influencer.availability.status === 'available' ? 'green' : 'yellow'}`}>
-                  <Clock className="in-badge-icon" />
-                  {getAvailabilityStatusLabel(influencer.availability.status)}
-                </span>
-              )}
-            </div>
-            
-            <div className="in-card-footer">
-              <div className="in-card-assignee">
-                <span className="in-assignee-label">Assigned:</span>
-                <span className="in-assignee-name">
-                  {influencer.assignedTo?.firstName} {influencer.assignedTo?.lastName || 'Unassigned'}
+                  <div className="in-card-info">
+                    <h3 className="in-card-title">{influencer.name}</h3>
+                    <p className="in-card-category">{getCategoryLabel(influencer.category)}</p>
+                  </div>
+                </div>
+                <span className={`in-card-status ${getStatusColor(influencer.status)}`}>
+                  {getStatusLabel(influencer.status)}
                 </span>
               </div>
-              <div className="in-card-actions">
-                <button 
-                  className="in-action-btn in-action-view"
-                  onClick={() => {
-                    toast.info('View details coming soon');
-                  }}
-                  title="View"
-                >
-                  <Eye className="in-action-icon" />
-                </button>
-                <button 
-                  className="in-action-btn in-action-edit"
-                  onClick={() => openModal(influencer)}
-                  title="Edit"
-                >
-                  <Edit className="in-action-icon" />
-                </button>
-                <button 
-                  className="in-action-btn in-action-delete"
-                  onClick={() => handleDelete(influencer._id)}
-                  title="Delete"
-                >
-                  <Trash2 className="in-action-icon" />
-                </button>
+              
+              {influencer.description && (
+                <p className="in-card-desc">{influencer.description}</p>
+              )}
+              
+              {/* Platforms */}
+              {influencer.platforms && influencer.platforms.length > 0 && (
+                <div className="in-card-platforms">
+                  {influencer.platforms.map((platform, idx) => (
+                    <div key={idx} className={`in-platform-tag ${getPlatformColor(platform.name)}`}>
+                      {getPlatformIcon(platform.name)}
+                      <span className="in-platform-handle">{platform.handle}</span>
+                      <span className="in-platform-separator">•</span>
+                      <span className="in-platform-followers">
+                        {platform.followers?.toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <div className="in-card-badges">
+                {influencer.rates && (
+                  <>
+                    {influencer.rates.perPost && (
+                      <span className="in-badge in-badge-green">
+                        <DollarSign className="in-badge-icon" />
+                        Post: ${influencer.rates.perPost}
+                      </span>
+                    )}
+                    {influencer.rates.perCampaign && (
+                      <span className="in-badge in-badge-purple">
+                        <TrendingUp className="in-badge-icon" />
+                        Campaign: ${influencer.rates.perCampaign}
+                      </span>
+                    )}
+                  </>
+                )}
+                {influencer.availability && (
+                  <span className={`in-badge in-badge-${influencer.availability.status === 'available' ? 'green' : 'yellow'}`}>
+                    <Clock className="in-badge-icon" />
+                    {getAvailabilityStatusLabel(influencer.availability.status)}
+                  </span>
+                )}
+              </div>
+              
+              <div className="in-card-footer">
+                <div className="in-card-assignee">
+                  <span className="in-assignee-label">Assigned:</span>
+                  <span className="in-assignee-name">
+                    {influencer.assignedTo?.firstName} {influencer.assignedTo?.lastName || 'Unassigned'}
+                  </span>
+                </div>
+                <div className="in-card-actions">
+                  <button 
+                    className="in-action-btn in-action-view"
+                    onClick={() => {
+                      toast.info('View details coming soon');
+                    }}
+                    title="View"
+                  >
+                    <Eye className="in-action-icon" />
+                  </button>
+                  <button 
+                    className="in-action-btn in-action-edit"
+                    onClick={() => openModal(influencer)}
+                    title="Edit"
+                  >
+                    <Edit className="in-action-icon" />
+                  </button>
+                  <button 
+                    className="in-action-btn in-action-delete"
+                    onClick={() => handleDelete(influencer._id)}
+                    title="Delete"
+                  >
+                    <Trash2 className="in-action-icon" />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {influencers.length === 0 && (
-        <div className="in-empty">
-          <div className="in-empty-icon-wrapper">
-            <Star className="in-empty-icon" />
-          </div>
-          <h3 className="in-empty-title">No influencers found</h3>
-          <p className="in-empty-subtitle">Start by adding your first influencer</p>
-          <button className="in-empty-btn" onClick={() => openModal()}>
-            <Plus className="in-btn-icon" />
-            Add Influencer
-          </button>
+          ))}
         </div>
-      )}
+
+        {influencers.length === 0 && (
+          <div className="in-empty">
+            <div className="in-empty-icon-wrapper">
+              <Star className="in-empty-icon" />
+            </div>
+            <h3 className="in-empty-title">No influencers found</h3>
+            <p className="in-empty-subtitle">Start by adding your first influencer</p>
+            <button className="in-empty-btn" onClick={() => openModal()}>
+              <Plus className="in-btn-icon" />
+              Add Influencer
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Create/Edit Modal */}
       {showModal && (
@@ -836,23 +838,13 @@ const Influencers = () => {
         </div>
       )}
 
-      {/* Custom CSS */}
       <style>{`
         /* ============================================
            CONTAINER
            ============================================ */
         .in-container {
-          padding: 24px 32px;
-          max-width: 1400px;
-          margin: 0 auto;
-          background: #f8fafc;
-          min-height: 100vh;
-          animation: inFadeIn 0.4s ease;
-        }
-
-        @keyframes inFadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+          padding: 0 0 24px 0;
+          max-width: 100%;
         }
 
         /* ============================================
@@ -863,31 +855,21 @@ const Influencers = () => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          min-height: 60vh;
-          gap: 16px;
+          min-height: 400px;
         }
-
-        .in-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #3b82f6;
+        .in-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
-          animation: inSpin 0.8s linear infinite;
+          animation: spin 0.8s linear infinite;
         }
-
         .in-loading-text {
-          color: #64748b;
+          margin-top: 16px;
+          color: #013E37;
+          opacity: 0.6;
           font-size: 14px;
-          font-weight: 500;
-        }
-
-        @keyframes inSpin {
-          to { transform: rotate(360deg); }
-        }
-
-        .in-spin {
-          animation: inSpin 1s linear infinite;
         }
 
         /* ============================================
@@ -900,132 +882,128 @@ const Influencers = () => {
           margin-bottom: 24px;
           flex-wrap: wrap;
           gap: 16px;
+          animation: fadeInDown 0.6s ease;
         }
-
         .in-header-left {
           display: flex;
           align-items: center;
           gap: 14px;
         }
-
         .in-title-wrapper {
           display: flex;
           align-items: center;
           gap: 14px;
         }
-
         .in-title-icon {
           width: 48px;
           height: 48px;
-          background: linear-gradient(135deg, #ec4899, #db2777);
+          background: #013E37;
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(236, 72, 153, 0.25);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.25);
         }
-
         .in-title-svg {
           width: 24px;
           height: 24px;
-          color: #ffffff;
+          color: #FFEFB3;
         }
-
         .in-title {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
           letter-spacing: -0.5px;
         }
-
         .in-subtitle {
           font-size: 15px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
-
         .in-count {
           font-size: 14px;
           font-weight: 500;
-          color: #64748b;
-          background: #f1f5f9;
+          color: #013E37;
+          background: #FFEFB3;
           padding: 2px 14px;
           border-radius: 12px;
         }
-
         .in-header-right {
           display: flex;
           align-items: center;
           gap: 10px;
           flex-wrap: wrap;
         }
-
         .in-icon-btn {
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 8px 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s ease;
+          color: #013E37;
         }
-
         .in-icon-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
-
         .in-refresh-icon {
           width: 16px;
           height: 16px;
+          transition: transform 0.3s ease;
         }
-
+        .in-spin {
+          animation: spin 1s linear infinite;
+        }
         .in-btn-icon {
           width: 16px;
           height: 16px;
         }
-
         .in-export-btn {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 8px 16px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
-          color: #475569;
+          color: #013E37;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
-
         .in-export-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
-
         .in-add-btn {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 8px 20px;
-          background: linear-gradient(135deg, #ec4899, #db2777);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(236, 72, 153, 0.3);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.3);
         }
-
         .in-add-btn:hover {
+          background: #0A5C54;
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.4);
+        }
+        .in-add-btn:active {
+          transform: scale(0.95);
         }
 
         /* ============================================
@@ -1038,13 +1016,11 @@ const Influencers = () => {
           margin-bottom: 24px;
           flex-wrap: wrap;
         }
-
         .in-search-wrapper {
           position: relative;
           flex: 1;
           min-width: 200px;
         }
-
         .in-search-icon {
           position: absolute;
           left: 12px;
@@ -1052,26 +1028,28 @@ const Influencers = () => {
           transform: translateY(-50%);
           width: 16px;
           height: 16px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
-
         .in-search-input {
           width: 100%;
           padding: 8px 36px 8px 36px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           outline: none;
           background: #ffffff;
-          color: #0f172a;
-          transition: all 0.2s ease;
+          color: #013E37;
+          transition: all 0.3s ease;
         }
-
         .in-search-input:focus {
-          border-color: #ec4899;
-          box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
-
+        .in-search-input::placeholder {
+          color: #013E37;
+          opacity: 0.4;
+        }
         .in-search-clear {
           position: absolute;
           right: 8px;
@@ -1080,38 +1058,40 @@ const Influencers = () => {
           padding: 4px;
           background: none;
           border: none;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
           cursor: pointer;
           border-radius: 4px;
           display: flex;
           align-items: center;
+          transition: all 0.3s ease;
         }
-
         .in-search-clear:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          opacity: 1;
         }
-
         .in-search-clear-icon {
           width: 14px;
           height: 14px;
         }
-
         .in-filter-select {
           padding: 8px 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           background: #ffffff;
-          color: #0f172a;
+          color: #013E37;
           outline: none;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           min-width: 140px;
         }
-
         .in-filter-select:focus {
-          border-color: #ec4899;
-          box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+        .in-filter-select:hover {
+          border-color: #013E37;
         }
 
         /* ============================================
@@ -1122,31 +1102,42 @@ const Influencers = () => {
           grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
           gap: 20px;
         }
-
         .in-card {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           padding: 20px;
-          transition: all 0.3s ease;
-          animation: inSlideUp 0.4s ease both;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          animation: fadeInUp 0.5s ease both;
+          opacity: 0;
+          position: relative;
+          overflow: hidden;
         }
-
+        .in-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, #013E37, #0A5C54, #013E37);
+          transform: scaleX(0);
+          transition: transform 0.4s ease;
+          transform-origin: left;
+        }
+        .in-card:hover::before {
+          transform: scaleX(1);
+        }
+        .in-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 24px rgba(1, 62, 55, 0.1);
+          border-color: #013E37;
+        }
         .in-card:nth-child(1) { animation-delay: 0.05s; }
         .in-card:nth-child(2) { animation-delay: 0.1s; }
         .in-card:nth-child(3) { animation-delay: 0.15s; }
         .in-card:nth-child(4) { animation-delay: 0.2s; }
-
-        @keyframes inSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .in-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-          border-color: #d1d5db;
-        }
+        .in-card:nth-child(5) { animation-delay: 0.25s; }
 
         .in-card-header {
           display: flex;
@@ -1154,7 +1145,6 @@ const Influencers = () => {
           justify-content: space-between;
           margin-bottom: 12px;
         }
-
         .in-card-left {
           display: flex;
           align-items: center;
@@ -1162,59 +1152,62 @@ const Influencers = () => {
           flex: 1;
           min-width: 0;
         }
-
         .in-card-icon {
           width: 44px;
           height: 44px;
-          background: #fdf2f8;
+          background: #FFEFB3;
           border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          transition: all 0.3s ease;
         }
-
+        .in-card:hover .in-card-icon {
+          transform: scale(1.05) rotate(-5deg);
+        }
         .in-card-icon-svg {
           width: 22px;
           height: 22px;
-          color: #ec4899;
+          color: #013E37;
         }
-
         .in-card-info {
           flex: 1;
           min-width: 0;
         }
-
         .in-card-title {
           font-size: 16px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
-
         .in-card-category {
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
-
         .in-card-status {
           padding: 4px 10px;
           font-size: 11px;
           font-weight: 500;
           border-radius: 9999px;
           flex-shrink: 0;
+          transition: all 0.3s ease;
         }
-
-        .in-status-active { background: #d1fae5; color: #065f46; }
-        .in-status-onboarded { background: #dbeafe; color: #1d4ed8; }
-        .in-status-interested { background: #fef3c7; color: #92400e; }
-        .in-status-negotiating { background: #f3e8ff; color: #6d28d9; }
-        .in-status-prospect { background: #f1f5f9; color: #475569; }
+        .in-card-status:hover {
+          transform: scale(1.05);
+        }
+        .in-status-active { background: #013E37; color: #FFEFB3; }
+        .in-status-onboarded { background: #0A5C54; color: #FFEFB3; }
+        .in-status-interested { background: #FFEFB3; color: #013E37; }
+        .in-status-negotiating { background: #FFEFB3; color: #013E37; }
+        .in-status-prospect { background: #FFEFB3; color: #013E37; }
 
         .in-card-desc {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.7;
           margin: 0 0 12px 0;
           display: -webkit-box;
           -webkit-line-clamp: 2;
@@ -1231,7 +1224,6 @@ const Influencers = () => {
           gap: 6px;
           margin-bottom: 12px;
         }
-
         .in-platform-tag {
           display: flex;
           align-items: center;
@@ -1240,31 +1232,32 @@ const Influencers = () => {
           border-radius: 8px;
           font-size: 11px;
           font-weight: 500;
+          transition: all 0.3s ease;
         }
-
+        .in-platform-tag:hover {
+          transform: scale(1.05);
+        }
         .in-platform-icon {
           width: 14px;
           height: 14px;
         }
-
-        .in-platform-instagram { background: #fdf2f8; color: #db2777; }
-        .in-platform-youtube { background: #fef2f2; color: #dc2626; }
-        .in-platform-twitter { background: #eff6ff; color: #2563eb; }
-        .in-platform-facebook { background: #eff6ff; color: #1d4ed8; }
-        .in-platform-tiktok { background: #f5f3ff; color: #7c3aed; }
-        .in-platform-linkedin { background: #eff6ff; color: #0a66c2; }
-        .in-platform-default { background: #f1f5f9; color: #475569; }
-
+        .in-platform-instagram { background: #FFEFB3; color: #013E37; }
+        .in-platform-youtube { background: #FFEFB3; color: #013E37; }
+        .in-platform-twitter { background: #FFEFB3; color: #013E37; }
+        .in-platform-facebook { background: #FFEFB3; color: #013E37; }
+        .in-platform-tiktok { background: #FFEFB3; color: #013E37; }
+        .in-platform-linkedin { background: #FFEFB3; color: #013E37; }
+        .in-platform-default { background: #FFEFB3; color: #013E37; }
         .in-platform-handle {
-          color: #0f172a;
+          color: #013E37;
         }
-
         .in-platform-separator {
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.3;
         }
-
         .in-platform-followers {
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
         }
 
         /* ============================================
@@ -1276,7 +1269,6 @@ const Influencers = () => {
           gap: 6px;
           margin-bottom: 12px;
         }
-
         .in-badge {
           display: flex;
           align-items: center;
@@ -1285,12 +1277,14 @@ const Influencers = () => {
           font-size: 11px;
           font-weight: 500;
           border-radius: 9999px;
+          transition: all 0.3s ease;
         }
-
-        .in-badge-green { background: #d1fae5; color: #065f46; }
-        .in-badge-purple { background: #f3e8ff; color: #6d28d9; }
-        .in-badge-yellow { background: #fef3c7; color: #92400e; }
-
+        .in-badge:hover {
+          transform: scale(1.05);
+        }
+        .in-badge-green { background: #013E37; color: #FFEFB3; }
+        .in-badge-purple { background: #FFEFB3; color: #013E37; }
+        .in-badge-yellow { background: #FFEFB3; color: #013E37; }
         .in-badge-icon {
           width: 12px;
           height: 12px;
@@ -1304,63 +1298,60 @@ const Influencers = () => {
           align-items: center;
           justify-content: space-between;
           padding-top: 12px;
-          border-top: 1px solid #f1f5f9;
+          border-top: 1px solid #FFEFB3;
+          transition: border-color 0.3s ease;
         }
-
+        .in-card:hover .in-card-footer {
+          border-color: #013E37;
+        }
         .in-card-assignee {
           display: flex;
           align-items: center;
           gap: 4px;
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
         }
-
         .in-assignee-label {
-          color: #94a3b8;
+          opacity: 0.5;
         }
-
         .in-assignee-name {
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
         }
-
         .in-card-actions {
           display: flex;
           gap: 4px;
         }
-
         .in-action-btn {
           padding: 4px;
           border: none;
           background: transparent;
           border-radius: 6px;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #94a3b8;
+          transition: all 0.3s ease;
+          color: #013E37;
+          opacity: 0.4;
           display: flex;
           align-items: center;
         }
-
         .in-action-btn:hover {
-          background: #f1f5f9;
-          color: #475569;
+          background: #FFEFB3;
+          opacity: 1;
+          transform: scale(1.1);
         }
-
         .in-action-view:hover {
-          background: #eff6ff;
-          color: #3b82f6;
+          background: #FFEFB3;
+          color: #013E37;
         }
-
         .in-action-edit:hover {
-          background: #ecfdf5;
-          color: #22c55e;
+          background: #FFEFB3;
+          color: #013E37;
         }
-
         .in-action-delete:hover {
-          background: #fef2f2;
-          color: #ef4444;
+          background: #FEE2E2;
+          color: #EF4444;
         }
-
         .in-action-icon {
           width: 16px;
           height: 16px;
@@ -1376,59 +1367,56 @@ const Influencers = () => {
           padding: 60px 20px;
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 2px dashed #FFEFB3;
           text-align: center;
         }
-
         .in-empty-icon-wrapper {
           width: 80px;
           height: 80px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           margin-bottom: 16px;
+          animation: float 3s ease-in-out infinite;
         }
-
         .in-empty-icon {
           width: 36px;
           height: 36px;
-          color: #94a3b8;
+          color: #013E37;
         }
-
         .in-empty-title {
           font-size: 18px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
-
         .in-empty-subtitle {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 4px 0 16px 0;
         }
-
         .in-empty-btn {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 8px 24px;
-          background: linear-gradient(135deg, #ec4899, #db2777);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(236, 72, 153, 0.25);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
-
         .in-empty-btn:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(236, 72, 153, 0.35);
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
 
         /* ============================================
@@ -1437,330 +1425,356 @@ const Influencers = () => {
         .in-modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.5);
-          backdrop-filter: blur(8px);
+          background: rgba(1, 62, 55, 0.5);
+          backdrop-filter: blur(4px);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 9999;
           padding: 16px;
-          animation: inFadeIn 0.3s ease;
+          animation: fadeIn 0.3s ease;
         }
-
         .in-modal {
           background: #ffffff;
           border-radius: 16px;
+          border: 1px solid #FFEFB3;
           max-width: 600px;
           width: 100%;
           max-height: 90vh;
           overflow-y: auto;
-          box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
-          animation: inModalIn 0.3s ease;
+          box-shadow: 0 24px 64px rgba(1, 62, 55, 0.2);
+          animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-
-        @keyframes inModalIn {
-          from { opacity: 0; transform: scale(0.95) translateY(20px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
+        @keyframes modalIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
         }
-
         .in-modal-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 20px 24px;
-          border-bottom: 1px solid #f1f5f9;
+          border-bottom: 1px solid #FFEFB3;
+          background: #FFEFB3;
+          border-radius: 16px 16px 0 0;
         }
-
         .in-modal-title-wrapper {
           display: flex;
           align-items: center;
           gap: 12px;
         }
-
         .in-modal-icon {
           width: 28px;
           height: 28px;
-          color: #ec4899;
+          color: #013E37;
         }
-
         .in-modal-title {
           font-size: 20px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
-
         .in-modal-close {
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 8px;
           border: none;
-          background: #f1f5f9;
+          background: transparent;
           border-radius: 8px;
-          color: #64748b;
+          color: #013E37;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
+          opacity: 0.5;
         }
-
         .in-modal-close:hover {
-          background: #e2e8f0;
+          background: rgba(1, 62, 55, 0.1);
+          opacity: 1;
           transform: rotate(90deg);
         }
-
         .in-modal-close-icon {
           width: 18px;
           height: 18px;
         }
-
         .in-modal-form {
           padding: 24px;
           display: flex;
           flex-direction: column;
           gap: 16px;
         }
-
         .in-form-group {
           display: flex;
           flex-direction: column;
           gap: 4px;
+          animation: fadeInUp 0.4s ease forwards;
+          opacity: 0;
         }
-
+        .in-form-group:nth-child(1) { animation-delay: 0.05s; }
+        .in-form-group:nth-child(2) { animation-delay: 0.1s; }
+        .in-form-group:nth-child(3) { animation-delay: 0.15s; }
+        .in-form-group:nth-child(4) { animation-delay: 0.2s; }
+        .in-form-group:nth-child(5) { animation-delay: 0.25s; }
+        .in-form-group:nth-child(6) { animation-delay: 0.3s; }
+        .in-form-group:nth-child(7) { animation-delay: 0.35s; }
+        .in-form-group:nth-child(8) { animation-delay: 0.4s; }
+        .in-form-group:nth-child(9) { animation-delay: 0.45s; }
         .in-form-label {
           font-size: 14px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
         }
-
         .in-form-required {
-          color: #ef4444;
+          color: #EF4444;
         }
-
         .in-form-input,
         .in-form-select,
         .in-form-textarea {
           padding: 10px 14px;
-          border: 1.5px solid #e2e8f0;
+          border: 1.5px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           outline: none;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           width: 100%;
           font-family: inherit;
           background: #ffffff;
-          color: #0f172a;
+          color: #013E37;
         }
-
         .in-form-input:focus,
         .in-form-select:focus,
         .in-form-textarea:focus {
-          border-color: #ec4899;
-          box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
-
+        .in-form-input::placeholder,
+        .in-form-textarea::placeholder {
+          color: #013E37;
+          opacity: 0.4;
+        }
         .in-form-textarea {
           resize: vertical;
           min-height: 60px;
         }
-
         .in-form-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 16px;
         }
-
         .in-form-section {
-          background: #f8fafc;
+          background: #FFF9E6;
           border-radius: 8px;
           padding: 16px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
         }
-
         .in-form-section-title {
           font-size: 14px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0 0 12px 0;
         }
-
         .in-form-actions {
           display: flex;
           justify-content: flex-end;
           gap: 12px;
           padding-top: 16px;
-          border-top: 1px solid #f1f5f9;
+          border-top: 1px solid #FFEFB3;
         }
-
         .in-form-cancel {
           padding: 10px 24px;
-          background: #f1f5f9;
-          color: #475569;
-          border: 1px solid #e2e8f0;
+          background: transparent;
+          color: #013E37;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
-
         .in-form-cancel:hover:not(:disabled) {
-          background: #e2e8f0;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
-
         .in-form-cancel:disabled {
           opacity: 0.5;
           cursor: not-allowed;
         }
-
         .in-form-submit {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 10px 24px;
-          background: linear-gradient(135deg, #ec4899, #db2777);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
-          box-shadow: 0 4px 14px rgba(236, 72, 153, 0.25);
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
-
         .in-form-submit:hover:not(:disabled) {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(236, 72, 153, 0.35);
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
-
         .in-form-submit:disabled {
           opacity: 0.6;
           cursor: not-allowed;
           transform: none;
         }
-
         .in-form-spinner {
           width: 18px;
           height: 18px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-top-color: #ffffff;
+          border: 2px solid rgba(255, 239, 179, 0.3);
+          border-top-color: #FFEFB3;
           border-radius: 50%;
-          animation: inSpin 0.8s linear infinite;
+          animation: spin 0.8s linear infinite;
+        }
+
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
         }
 
         /* ============================================
            RESPONSIVE
            ============================================ */
         @media (max-width: 768px) {
-          .in-container {
-            padding: 16px;
-          }
-
           .in-header {
             flex-direction: column;
             align-items: stretch;
           }
-
           .in-header-right {
             flex-wrap: wrap;
           }
-
           .in-export-btn,
           .in-add-btn {
             flex: 1;
             justify-content: center;
           }
-
           .in-filters {
             flex-direction: column;
           }
-
           .in-search-wrapper {
             width: 100%;
           }
-
           .in-filter-select {
             width: 100%;
           }
-
           .in-grid {
             grid-template-columns: 1fr;
           }
-
           .in-title {
             font-size: 22px;
           }
-
           .in-title-icon {
             width: 40px;
             height: 40px;
           }
-
           .in-title-svg {
             width: 20px;
             height: 20px;
           }
-
           .in-form-grid {
             grid-template-columns: 1fr;
           }
-
           .in-modal {
             margin: 16px;
             max-height: 95vh;
           }
+          .in-header-left {
+            flex-wrap: wrap;
+          }
         }
 
         @media (max-width: 480px) {
-          .in-container {
-            padding: 12px;
-          }
-
           .in-header-right {
             flex-direction: column;
           }
-
           .in-export-btn,
           .in-add-btn {
             width: 100%;
           }
-
           .in-icon-btn {
             align-self: flex-end;
           }
-
           .in-title-wrapper {
             gap: 10px;
           }
-
           .in-title {
             font-size: 20px;
           }
-
           .in-subtitle {
             font-size: 13px;
           }
-
           .in-modal {
             padding: 0;
           }
-
           .in-modal-header {
             padding: 16px 18px;
           }
-
           .in-modal-form {
             padding: 18px;
           }
-
           .in-form-actions {
             flex-direction: column;
           }
-
           .in-form-cancel,
           .in-form-submit {
             width: 100%;
             justify-content: center;
+          }
+          .in-card {
+            padding: 16px;
+          }
+          .in-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+          }
+          .in-card-platforms {
+            flex-direction: column;
           }
         }
 
@@ -1768,22 +1782,19 @@ const Influencers = () => {
         .in-modal::-webkit-scrollbar {
           width: 6px;
         }
-
         .in-modal::-webkit-scrollbar-track {
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 8px;
         }
-
         .in-modal::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
+          background: #013E37;
           border-radius: 8px;
         }
-
         .in-modal::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
+          background: #0A5C54;
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

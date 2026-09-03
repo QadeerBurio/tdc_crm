@@ -1,5 +1,4 @@
-// pages/employees/Performance.jsx - COMPLETE FIXED VERSION
-
+// pages/employees/Performance.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -10,12 +9,13 @@ import {
 import { 
   TrendingUp, TrendingDown, Users, CheckCircle, Clock, Award, 
   Filter, Calendar, Download, RefreshCw, Eye, Star, Target,
-  Zap, Activity, Briefcase, UserCheck, BarChart3, PieChart as PieChartIcon
+  Zap, Activity, Briefcase, UserCheck, BarChart3, PieChart as PieChartIcon,
+  Layers
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
+const COLORS = ['#013E37', '#FFEFB3', '#0A5C54', '#F5D98A', '#1A7A6E', '#E8D4A0', '#2A9A8A'];
 
 const Performance = () => {
   const { token, user } = useAuth();
@@ -25,7 +25,7 @@ const Performance = () => {
   const [timeRange, setTimeRange] = useState('month');
   const [employees, setEmployees] = useState([]);
   const [usingDemoData, setUsingDemoData] = useState(false);
-  const [viewMode, setViewMode] = useState('chart'); // ✅ ADD THIS LINE
+  const [viewMode, setViewMode] = useState('chart');
   const [stats, setStats] = useState({
     avgProductivity: 0,
     avgTaskCompletion: 0,
@@ -37,7 +37,7 @@ const Performance = () => {
   });
   const [summary, setSummary] = useState(null);
 
-  const API_URL =  'https://crmserver-production-4a42.up.railway.app/api';
+  const API_URL = 'https://crmserver-production-4a42.up.railway.app/api';
 
   useEffect(() => {
     fetchEmployees();
@@ -92,7 +92,6 @@ const Performance = () => {
         params.employeeId = selectedEmployee;
       }
 
-      console.log('📊 Fetching real KPI data from API...');
       const response = await axios.get(`${API_URL}/employees/kpis`, {
         params,
         headers: { Authorization: `Bearer ${token}` }
@@ -109,14 +108,12 @@ const Performance = () => {
         }
       }
 
-      // ✅ Check if we got real data
+      // Check if we got real data
       if (data.length > 0 && !data[0]?._id?.startsWith?.('mock-')) {
-        console.log('✅ Using REAL KPI data from database:', data.length, 'records');
         setKpis(data);
         calculateStats(data);
         setUsingDemoData(false);
       } else if (data.length > 0) {
-        console.log('📊 Backend returned mock data, treating as no data');
         setKpis([]);
         calculateStats([]);
         setUsingDemoData(true);
@@ -125,7 +122,6 @@ const Performance = () => {
         setKpis(mockData);
         calculateStats(mockData);
       } else {
-        console.log('📊 No KPI data from API');
         setKpis([]);
         calculateStats([]);
         setUsingDemoData(true);
@@ -135,7 +131,7 @@ const Performance = () => {
         calculateStats(mockData);
       }
     } catch (err) {
-      console.error('❌ Error fetching KPIs:', err);
+      console.error('Error fetching KPIs:', err);
       setUsingDemoData(true);
       toast.error('Could not fetch real data. Showing demo data.');
       const mockData = generateMockData();
@@ -153,7 +149,6 @@ const Performance = () => {
         params.employeeId = selectedEmployee;
       }
 
-      console.log('📊 Fetching real summary data from API...');
       const response = await axios.get(`${API_URL}/employees/kpi/summary`, {
         params,
         headers: { Authorization: `Bearer ${token}` }
@@ -162,17 +157,15 @@ const Performance = () => {
       if (response.data) {
         const summaryData = response.data.data || response.data;
         if (summaryData.totalTasks > 0 || summaryData.averageProductivity > 0) {
-          console.log('✅ Using REAL summary data');
           setSummary(summaryData);
         } else {
-          console.log('📊 Using demo summary data');
           setSummary(generateMockSummary());
         }
       } else {
         setSummary(generateMockSummary());
       }
     } catch (err) {
-      console.error('❌ Error fetching summary:', err);
+      console.error('Error fetching summary:', err);
       setSummary(generateMockSummary());
     }
   };
@@ -305,8 +298,8 @@ const Performance = () => {
   ];
 
   const getScoreColor = (score) => {
-    if (score >= 80) return '#22C55E';
-    if (score >= 60) return '#F59E0B';
+    if (score >= 80) return '#013E37';
+    if (score >= 60) return '#FFEFB3';
     return '#EF4444';
   };
 
@@ -318,9 +311,9 @@ const Performance = () => {
 
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.spinner} />
-        <p style={styles.loadingText}>Loading performance data...</p>
+      <div className="performance-loading">
+        <div className="performance-loading-spinner"></div>
+        <p className="performance-loading-text">Loading performance data...</p>
       </div>
     );
   }
@@ -331,878 +324,992 @@ const Performance = () => {
     : 'All Employees';
 
   return (
-    <div style={styles.container}>
-      {/* Header Section */}
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.title}>Performance Dashboard</h1>
-          <p style={styles.subtitle}>Track team performance and KPIs</p>
-        </div>
-        <div style={styles.headerActions}>
-          <select
-            value={selectedEmployee}
-            onChange={(e) => setSelectedEmployee(e.target.value)}
-            style={styles.filterSelect}
-          >
-            {employees.map((emp) => (
-              <option key={emp._id} value={emp._id}>
-                {emp.firstName} {emp.lastName}
-              </option>
-            ))}
-          </select>
-          <select
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value)}
-            style={styles.filterSelect}
-          >
-            <option value="week">Last Week</option>
-            <option value="month">Last Month</option>
-            <option value="quarter">Last Quarter</option>
-          </select>
-          <div style={styles.viewToggle}>
-            <button
-              onClick={() => setViewMode('chart')}
-              style={{
-                ...styles.viewButton,
-                ...(viewMode === 'chart' ? styles.viewButtonActive : styles.viewButtonInactive)
-              }}
-              title="Chart View"
+    <>
+      <div className="performance-container">
+        {/* Header Section */}
+        <div className="performance-header">
+          <div className="performance-header-left">
+            <h1 className="performance-title">
+              <Layers className="performance-title-icon" />
+              Performance Dashboard
+            </h1>
+            <p className="performance-subtitle">Track team performance and KPIs in real-time</p>
+          </div>
+          <div className="performance-header-right">
+            <select
+              value={selectedEmployee}
+              onChange={(e) => setSelectedEmployee(e.target.value)}
+              className="performance-filter-select"
             >
-              <BarChart3 size={16} />
-            </button>
-            <button
-              onClick={() => setViewMode('radar')}
-              style={{
-                ...styles.viewButton,
-                ...(viewMode === 'radar' ? styles.viewButtonActive : styles.viewButtonInactive)
-              }}
-              title="Radar View"
+              {employees.map((emp) => (
+                <option key={emp._id} value={emp._id}>
+                  {emp.firstName} {emp.lastName}
+                </option>
+              ))}
+            </select>
+            <select
+              value={timeRange}
+              onChange={(e) => setTimeRange(e.target.value)}
+              className="performance-filter-select"
             >
-              <Activity size={16} />
+              <option value="week">Last Week</option>
+              <option value="month">Last Month</option>
+              <option value="quarter">Last Quarter</option>
+            </select>
+            <div className="performance-view-toggle">
+              <button
+                onClick={() => setViewMode('chart')}
+                className={`performance-view-btn ${viewMode === 'chart' ? 'performance-view-active' : ''}`}
+                title="Chart View"
+              >
+                <BarChart3 className="performance-view-icon" />
+              </button>
+              <button
+                onClick={() => setViewMode('radar')}
+                className={`performance-view-btn ${viewMode === 'radar' ? 'performance-view-active' : ''}`}
+                title="Radar View"
+              >
+                <Activity className="performance-view-icon" />
+              </button>
+            </div>
+            <button className="performance-refresh-btn" onClick={() => { fetchKPIs(); fetchSummary(); }}>
+              <RefreshCw className="performance-refresh-icon" />
             </button>
           </div>
-          <button style={styles.refreshButton} onClick={() => { fetchKPIs(); fetchSummary(); }}>
-            <RefreshCw size={16} />
-          </button>
         </div>
-      </div>
 
-      {/* Demo Data Indicator */}
-      {usingDemoData && (
-        <div style={styles.demoBanner}>
-          <span>📊</span>
-          <span>Showing demo data. Connect your backend to see real performance data.</span>
-        </div>
-      )}
+        {/* Demo Data Indicator */}
+        {usingDemoData && (
+          <div className="performance-demo-banner">
+            <span>📊</span>
+            <span>Showing demo data. Connect your backend to see real performance data.</span>
+          </div>
+        )}
 
-      {/* Employee Summary */}
-      {summary && (
-        <div style={styles.summaryCard}>
-          <div style={styles.summaryHeader}>
-            <div style={styles.summaryUser}>
-              <div style={styles.summaryAvatar}>
-                {employeeName.charAt(0)}
+        {/* Employee Summary */}
+        {summary && (
+          <div className="performance-summary-card">
+            <div className="performance-summary-header">
+              <div className="performance-summary-user">
+                <div className="performance-summary-avatar" style={{ backgroundColor: '#013E37' }}>
+                  {employeeName.charAt(0)}
+                </div>
+                <div>
+                  <h3 className="performance-summary-name">{employeeName}</h3>
+                  <p className="performance-summary-role">
+                    Performance Overview
+                    {usingDemoData && <span className="performance-demo-tag"> (Demo)</span>}
+                  </p>
+                </div>
               </div>
+              <div className="performance-summary-stats">
+                <div className="performance-summary-stat">
+                  <span className="performance-summary-stat-label">Total Tasks</span>
+                  <span className="performance-summary-stat-value">{summary.totalTasks || 0}</span>
+                </div>
+                <div className="performance-summary-stat">
+                  <span className="performance-summary-stat-label">Completed</span>
+                  <span className="performance-summary-stat-value" style={{ color: '#013E37' }}>
+                    {summary.completedTasks || 0}
+                  </span>
+                </div>
+                <div className="performance-summary-stat">
+                  <span className="performance-summary-stat-label">Overdue</span>
+                  <span className="performance-summary-stat-value" style={{ color: '#EF4444' }}>
+                    {summary.overdueTasks || 0}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Stats Grid */}
+        <div className="performance-stats-grid">
+          <div className="performance-stat-card" style={{ borderTop: '4px solid #013E37' }}>
+            <div className="performance-stat-content">
               <div>
-                <h3 style={styles.summaryName}>{employeeName}</h3>
-                <p style={styles.summaryRole}>
-                  Performance Overview
-                  {usingDemoData && <span style={styles.demoTag}> (Demo)</span>}
+                <p className="performance-stat-label">Productivity</p>
+                <p className="performance-stat-value">
+                  {stats.avgProductivity}%
+                  <span className="performance-stat-emoji">{getScoreEmoji(stats.avgProductivity)}</span>
                 </p>
               </div>
+              <Award className="performance-stat-icon" style={{ color: '#013E37' }} />
             </div>
-            <div style={styles.summaryStats}>
-              <div style={styles.summaryStat}>
-                <span style={styles.summaryStatLabel}>Total Tasks</span>
-                <span style={styles.summaryStatValue}>{summary.totalTasks || 0}</span>
+            <div className="performance-stat-progress">
+              <div className="performance-stat-progress-fill" style={{ 
+                width: `${stats.avgProductivity}%`, 
+                backgroundColor: getScoreColor(stats.avgProductivity)
+              }} />
+            </div>
+          </div>
+
+          <div className="performance-stat-card" style={{ borderTop: '4px solid #0A5C54' }}>
+            <div className="performance-stat-content">
+              <div>
+                <p className="performance-stat-label">Task Completion</p>
+                <p className="performance-stat-value">
+                  {stats.avgTaskCompletion}%
+                  <span className="performance-stat-emoji">{getScoreEmoji(stats.avgTaskCompletion)}</span>
+                </p>
               </div>
-              <div style={styles.summaryStat}>
-                <span style={styles.summaryStatLabel}>Completed</span>
-                <span style={{...styles.summaryStatValue, color: '#22C55E'}}>
-                  {summary.completedTasks || 0}
-                </span>
+              <CheckCircle className="performance-stat-icon" style={{ color: '#0A5C54' }} />
+            </div>
+            <div className="performance-stat-progress">
+              <div className="performance-stat-progress-fill" style={{ 
+                width: `${stats.avgTaskCompletion}%`, 
+                backgroundColor: getScoreColor(stats.avgTaskCompletion)
+              }} />
+            </div>
+          </div>
+
+          <div className="performance-stat-card" style={{ borderTop: '4px solid #FFEFB3' }}>
+            <div className="performance-stat-content">
+              <div>
+                <p className="performance-stat-label">Utilization</p>
+                <p className="performance-stat-value">
+                  {stats.avgUtilization}%
+                  <span className="performance-stat-emoji">{getScoreEmoji(stats.avgUtilization)}</span>
+                </p>
               </div>
-              <div style={styles.summaryStat}>
-                <span style={styles.summaryStatLabel}>Overdue</span>
-                <span style={{...styles.summaryStatValue, color: '#EF4444'}}>
-                  {summary.overdueTasks || 0}
-                </span>
+              <Clock className="performance-stat-icon" style={{ color: '#013E37' }} />
+            </div>
+            <div className="performance-stat-progress">
+              <div className="performance-stat-progress-fill" style={{ 
+                width: `${stats.avgUtilization}%`, 
+                backgroundColor: getScoreColor(stats.avgUtilization)
+              }} />
+            </div>
+          </div>
+
+          <div className="performance-stat-card" style={{ borderTop: '4px solid #1A7A6E' }}>
+            <div className="performance-stat-content">
+              <div>
+                <p className="performance-stat-label">QA Pass Rate</p>
+                <p className="performance-stat-value">
+                  {stats.avgQaPass}%
+                  <span className="performance-stat-emoji">{getScoreEmoji(stats.avgQaPass)}</span>
+                </p>
+              </div>
+              <Target className="performance-stat-icon" style={{ color: '#1A7A6E' }} />
+            </div>
+            <div className="performance-stat-progress">
+              <div className="performance-stat-progress-fill" style={{ 
+                width: `${stats.avgQaPass}%`, 
+                backgroundColor: getScoreColor(stats.avgQaPass)
+              }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Charts Section */}
+        <div className="performance-charts-grid">
+          {/* Performance Trend Chart */}
+          <div className="performance-chart-card">
+            <div className="performance-chart-header">
+              <h3 className="performance-chart-title">Performance Trend</h3>
+              <span className="performance-chart-badge">
+                {chartData.length} Weeks {usingDemoData && '📊'}
+              </span>
+            </div>
+            <div className="performance-chart-content">
+              <div className="performance-chart-container">
+                <ResponsiveContainer width="100%" height="100%">
+                  {viewMode === 'chart' ? (
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#013E37' }} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: '#013E37' }} />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: '#FFFFFF', 
+                          borderRadius: '8px', 
+                          border: '1px solid #FFEFB3',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                        }}
+                        formatter={(value) => [`${value}%`, '']}
+                        labelFormatter={(label, items) => {
+                          const item = items?.[0]?.payload;
+                          return item?.date || label;
+                        }}
+                      />
+                      <Legend />
+                      <Line type="monotone" dataKey="productivity" stroke="#013E37" strokeWidth={2} dot={{ r: 4, fill: '#013E37' }} />
+                      <Line type="monotone" dataKey="completion" stroke="#0A5C54" strokeWidth={2} dot={{ r: 4, fill: '#0A5C54' }} />
+                      <Line type="monotone" dataKey="utilization" stroke="#FFEFB3" strokeWidth={2} dot={{ r: 4, fill: '#FFEFB3' }} />
+                      <Line type="monotone" dataKey="qa" stroke="#1A7A6E" strokeWidth={2} dot={{ r: 4, fill: '#1A7A6E' }} />
+                    </LineChart>
+                  ) : (
+                    <RadarChart data={radarData}>
+                      <PolarGrid stroke="#E5E7EB" />
+                      <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12, fill: '#013E37' }} />
+                      <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#013E37' }} />
+                      <Radar name="Performance" dataKey="value" stroke="#013E37" fill="#013E37" fillOpacity={0.2} />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: '#FFFFFF', 
+                          borderRadius: '8px', 
+                          border: '1px solid #FFEFB3',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                        }}
+                        formatter={(value) => [`${value}%`, 'Score']}
+                      />
+                      <Legend />
+                    </RadarChart>
+                  )}
+                </ResponsiveContainer>
               </div>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Stats Grid */}
-      <div style={styles.statsGrid}>
-        <div style={{...styles.statCard, borderTop: '4px solid #3B82F6'}}>
-          <div style={styles.statContent}>
-            <div>
-              <p style={styles.statLabel}>Productivity</p>
-              <p style={styles.statValue}>
-                {stats.avgProductivity}%
-                <span style={styles.statEmoji}>{getScoreEmoji(stats.avgProductivity)}</span>
-              </p>
+          {/* KPI Breakdown Pie Chart */}
+          <div className="performance-chart-card">
+            <div className="performance-chart-header">
+              <h3 className="performance-chart-title">KPI Breakdown</h3>
+              <span className="performance-chart-badge">
+                Overall {usingDemoData && '📊'}
+              </span>
             </div>
-            <Award style={{...styles.statIcon, color: '#3B82F6'}} />
-          </div>
-          <div style={styles.statProgress}>
-            <div style={{...styles.statProgressFill, width: `${stats.avgProductivity}%`, backgroundColor: getScoreColor(stats.avgProductivity)}} />
-          </div>
-        </div>
-
-        <div style={{...styles.statCard, borderTop: '4px solid #22C55E'}}>
-          <div style={styles.statContent}>
-            <div>
-              <p style={styles.statLabel}>Task Completion</p>
-              <p style={styles.statValue}>
-                {stats.avgTaskCompletion}%
-                <span style={styles.statEmoji}>{getScoreEmoji(stats.avgTaskCompletion)}</span>
-              </p>
-            </div>
-            <CheckCircle style={{...styles.statIcon, color: '#22C55E'}} />
-          </div>
-          <div style={styles.statProgress}>
-            <div style={{...styles.statProgressFill, width: `${stats.avgTaskCompletion}%`, backgroundColor: getScoreColor(stats.avgTaskCompletion)}} />
-          </div>
-        </div>
-
-        <div style={{...styles.statCard, borderTop: '4px solid #F59E0B'}}>
-          <div style={styles.statContent}>
-            <div>
-              <p style={styles.statLabel}>Utilization</p>
-              <p style={styles.statValue}>
-                {stats.avgUtilization}%
-                <span style={styles.statEmoji}>{getScoreEmoji(stats.avgUtilization)}</span>
-              </p>
-            </div>
-            <Clock style={{...styles.statIcon, color: '#F59E0B'}} />
-          </div>
-          <div style={styles.statProgress}>
-            <div style={{...styles.statProgressFill, width: `${stats.avgUtilization}%`, backgroundColor: getScoreColor(stats.avgUtilization)}} />
-          </div>
-        </div>
-
-        <div style={{...styles.statCard, borderTop: '4px solid #8B5CF6'}}>
-          <div style={styles.statContent}>
-            <div>
-              <p style={styles.statLabel}>QA Pass Rate</p>
-              <p style={styles.statValue}>
-                {stats.avgQaPass}%
-                <span style={styles.statEmoji}>{getScoreEmoji(stats.avgQaPass)}</span>
-              </p>
-            </div>
-            <Target style={{...styles.statIcon, color: '#8B5CF6'}} />
-          </div>
-          <div style={styles.statProgress}>
-            <div style={{...styles.statProgressFill, width: `${stats.avgQaPass}%`, backgroundColor: getScoreColor(stats.avgQaPass)}} />
-          </div>
-        </div>
-      </div>
-
-      {/* Charts Section */}
-      <div style={styles.chartsGrid}>
-        {/* Performance Trend Chart */}
-        <div style={styles.chartCard}>
-          <div style={styles.chartHeader}>
-            <h3 style={styles.chartTitle}>Performance Trend</h3>
-            <span style={styles.chartBadge}>
-              {chartData.length} Weeks {usingDemoData && '📊'}
-            </span>
-          </div>
-          <div style={styles.chartContent}>
-            <div style={styles.chartContainer}>
-              <ResponsiveContainer width="100%" height="100%">
-                {viewMode === 'chart' ? (
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                    <XAxis dataKey="week" tick={{ fontSize: 12 }} />
-                    <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
+            <div className="performance-chart-content">
+              <div className="performance-chart-container">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={true}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
                     <Tooltip 
-                      contentStyle={{ backgroundColor: '#FFFFFF', borderRadius: '8px', border: '1px solid #E5E7EB' }}
-                      formatter={(value) => [`${value}%`, '']}
-                      labelFormatter={(label, items) => {
-                        const item = items?.[0]?.payload;
-                        return item?.date || label;
+                      contentStyle={{ 
+                        backgroundColor: '#FFFFFF', 
+                        borderRadius: '8px', 
+                        border: '1px solid #FFEFB3',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                       }}
+                      formatter={(value) => [`${value}%`, '']}
                     />
-                    <Legend />
-                    <Line type="monotone" dataKey="productivity" stroke="#3B82F6" strokeWidth={2} dot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="completion" stroke="#22C55E" strokeWidth={2} dot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="utilization" stroke="#F59E0B" strokeWidth={2} dot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="qa" stroke="#8B5CF6" strokeWidth={2} dot={{ r: 4 }} />
-                  </LineChart>
-                ) : (
-                  <RadarChart data={radarData}>
-                    <PolarGrid stroke="#E5E7EB" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12 }} />
-                    <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
-                    <Radar name="Performance" dataKey="value" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.3} />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#FFFFFF', borderRadius: '8px', border: '1px solid #E5E7EB' }}
-                      formatter={(value) => [`${value}%`, 'Score']}
-                    />
-                    <Legend />
-                  </RadarChart>
-                )}
-              </ResponsiveContainer>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* KPI Breakdown Pie Chart */}
-        <div style={styles.chartCard}>
-          <div style={styles.chartHeader}>
-            <h3 style={styles.chartTitle}>KPI Breakdown</h3>
-            <span style={styles.chartBadge}>
-              Overall {usingDemoData && '📊'}
+        {/* KPI History Table */}
+        <div className="performance-table-card">
+          <div className="performance-table-header">
+            <h3 className="performance-table-title">KPI History</h3>
+            <span className="performance-table-badge">
+              {kpis.length} Records {usingDemoData && '📊'}
             </span>
           </div>
-          <div style={styles.chartContent}>
-            <div style={styles.chartContainer}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={true}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#FFFFFF', borderRadius: '8px', border: '1px solid #E5E7EB' }}
-                    formatter={(value) => [`${value}%`, '']}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* KPI History Table */}
-      <div style={styles.tableCard}>
-        <div style={styles.tableHeader}>
-          <h3 style={styles.tableTitle}>KPI History</h3>
-          <span style={styles.tableBadge}>
-            {kpis.length} Records {usingDemoData && '📊'}
-          </span>
-        </div>
-        <div style={styles.tableContent}>
-          <div style={styles.tableWrapper}>
-            <table style={styles.table}>
-              <thead>
-                <tr style={styles.tableHeadRow}>
-                  <th style={styles.tableHeadCell}>Week</th>
-                  <th style={styles.tableHeadCell}>Employee</th>
-                  <th style={styles.tableHeadCell}>Productivity</th>
-                  <th style={styles.tableHeadCell}>Completion</th>
-                  <th style={styles.tableHeadCell}>Utilization</th>
-                  <th style={styles.tableHeadCell}>QA Pass</th>
-                  <th style={styles.tableHeadCell}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {kpis.map((kpi, index) => {
-                  const productivity = Math.round(kpi.productivityScore || 0);
-                  const completion = Math.round(kpi.taskCompletionRate || 0);
-                  const utilization = Math.round(kpi.capacityUtilization || 0);
-                  const qaPass = Math.round(kpi.qaPassRate || 0);
-                  const avg = Math.round((productivity + completion + utilization + qaPass) / 4);
-                  
-                  return (
-                    <tr key={kpi._id || index} style={styles.tableRow}>
-                      <td style={styles.tableCell}>{getWeekNumber(kpi.weekStart)}</td>
-                      <td style={styles.tableCell}>
-                        {kpi.employeeId?.firstName || 'Employee'} {kpi.employeeId?.lastName || ''}
-                      </td>
-                      <td style={{...styles.tableCell, ...styles.cellProductivity}}>
-                        {productivity}%
-                      </td>
-                      <td style={{...styles.tableCell, ...styles.cellCompletion}}>
-                        {completion}%
-                      </td>
-                      <td style={{...styles.tableCell, ...styles.cellUtilization}}>
-                        {utilization}%
-                      </td>
-                      <td style={{...styles.tableCell, ...styles.cellQaPass}}>
-                        {qaPass}%
-                      </td>
-                      <td style={styles.tableCell}>
-                        <span style={{
-                          ...styles.statusBadge,
-                          backgroundColor: avg >= 80 ? '#D1FAE5' : avg >= 60 ? '#FEF3C7' : '#FEE2E2',
-                          color: avg >= 80 ? '#065F46' : avg >= 60 ? '#92400E' : '#991B1B',
-                        }}>
-                          {avg >= 80 ? '🌟 Excellent' : avg >= 60 ? '📈 Good' : '📉 Needs Improvement'}
-                        </span>
+          <div className="performance-table-content">
+            <div className="performance-table-wrapper">
+              <table className="performance-table">
+                <thead>
+                  <tr className="performance-table-head-row">
+                    <th className="performance-table-head-cell">Week</th>
+                    <th className="performance-table-head-cell">Employee</th>
+                    <th className="performance-table-head-cell">Productivity</th>
+                    <th className="performance-table-head-cell">Completion</th>
+                    <th className="performance-table-head-cell">Utilization</th>
+                    <th className="performance-table-head-cell">QA Pass</th>
+                    <th className="performance-table-head-cell">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {kpis.map((kpi, index) => {
+                    const productivity = Math.round(kpi.productivityScore || 0);
+                    const completion = Math.round(kpi.taskCompletionRate || 0);
+                    const utilization = Math.round(kpi.capacityUtilization || 0);
+                    const qaPass = Math.round(kpi.qaPassRate || 0);
+                    const avg = Math.round((productivity + completion + utilization + qaPass) / 4);
+                    
+                    return (
+                      <tr key={kpi._id || index} className="performance-table-row" style={{ animationDelay: `${index * 0.05}s` }}>
+                        <td className="performance-table-cell">{getWeekNumber(kpi.weekStart)}</td>
+                        <td className="performance-table-cell">
+                          {kpi.employeeId?.firstName || 'Employee'} {kpi.employeeId?.lastName || ''}
+                        </td>
+                        <td className="performance-table-cell performance-cell-productivity">
+                          {productivity}%
+                        </td>
+                        <td className="performance-table-cell performance-cell-completion">
+                          {completion}%
+                        </td>
+                        <td className="performance-table-cell performance-cell-utilization">
+                          {utilization}%
+                        </td>
+                        <td className="performance-table-cell performance-cell-qa">
+                          {qaPass}%
+                        </td>
+                        <td className="performance-table-cell">
+                          <span className="performance-status-badge" style={{
+                            backgroundColor: avg >= 80 ? '#013E37' : avg >= 60 ? '#FFEFB3' : '#FEE2E2',
+                            color: avg >= 80 ? '#FFEFB3' : avg >= 60 ? '#013E37' : '#991B1B',
+                          }}>
+                            {avg >= 80 ? '🌟 Excellent' : avg >= 60 ? '📈 Good' : '📉 Needs Improvement'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {kpis.length === 0 && (
+                    <tr>
+                      <td colSpan="7" className="performance-empty-state">
+                        <div className="performance-empty-content">
+                          <Activity className="performance-empty-icon" size={48} />
+                          <p className="performance-empty-text">No KPI data available</p>
+                          <p className="performance-empty-subtext">Performance data will appear here once available</p>
+                        </div>
                       </td>
                     </tr>
-                  );
-                })}
-                {kpis.length === 0 && (
-                  <tr>
-                    <td colSpan="7" style={styles.emptyState}>
-                      <div style={styles.emptyContent}>
-                        <Activity size={48} style={styles.emptyIcon} />
-                        <p style={styles.emptyText}>No KPI data available</p>
-                        <p style={styles.emptySubtext}>Performance data will appear here once available</p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <style>{`
+        /* ============================================
+           CONTAINER
+           ============================================ */
+        .performance-container {
+          padding: 0 0 24px 0;
+          max-width: 100%;
+        }
+
+        /* ============================================
+           LOADING
+           ============================================ */
+        .performance-loading {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 400px;
+        }
+        .performance-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+        .performance-loading-text {
+          margin-top: 16px;
+          color: #013E37;
+          opacity: 0.6;
+          font-size: 14px;
+        }
+
+        /* ============================================
+           HEADER
+           ============================================ */
+        .performance-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 24px;
+          flex-wrap: wrap;
+          gap: 12px;
+          animation: fadeInDown 0.6s ease;
+        }
+        .performance-header-left {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .performance-title {
+          font-size: 28px;
+          font-weight: 700;
+          color: #013E37;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin: 0;
+          letter-spacing: -0.5px;
+        }
+        .performance-title-icon {
+          width: 28px;
+          height: 28px;
+          color: #013E37;
+          animation: pulse 2s ease-in-out infinite;
+        }
+        .performance-subtitle {
+          color: #013E37;
+          opacity: 0.6;
+          font-size: 15px;
+          margin: 0;
+        }
+        .performance-header-right {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          align-items: center;
+        }
+        .performance-filter-select {
+          padding: 8px 14px;
+          border: 1px solid #FFEFB3;
+          border-radius: 10px;
+          background: #ffffff;
+          color: #013E37;
+          font-size: 14px;
+          min-width: 150px;
+          outline: none;
+          transition: all 0.3s ease;
+          cursor: pointer;
+        }
+        .performance-filter-select:focus {
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+        .performance-filter-select:hover {
+          border-color: #013E37;
+        }
+        .performance-view-toggle {
+          display: flex;
+          border-radius: 10px;
+          overflow: hidden;
+          border: 1px solid #FFEFB3;
+          background: #ffffff;
+        }
+        .performance-view-btn {
+          padding: 8px 12px;
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.3s ease;
+          background: #ffffff;
+          color: #013E37;
+          opacity: 0.5;
+        }
+        .performance-view-btn:hover {
+          opacity: 0.8;
+        }
+        .performance-view-active {
+          background: #013E37;
+          color: #FFFFFF;
+          opacity: 1;
+        }
+        .performance-view-active:hover {
+          opacity: 1;
+        }
+        .performance-view-icon {
+          width: 16px;
+          height: 16px;
+        }
+        .performance-refresh-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 8px 12px;
+          background: #ffffff;
+          border: 1px solid #FFEFB3;
+          border-radius: 10px;
+          color: #013E37;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .performance-refresh-btn:hover {
+          background: #FFEFB3;
+          border-color: #013E37;
+        }
+        .performance-refresh-icon {
+          width: 16px;
+          height: 16px;
+          transition: transform 0.3s ease;
+        }
+        .performance-refresh-btn:hover .performance-refresh-icon {
+          transform: rotate(180deg);
+        }
+
+        /* ============================================
+           DEMO BANNER
+           ============================================ */
+        .performance-demo-banner {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 20px;
+          background: #FFEFB3;
+          border-radius: 10px;
+          border: 1px solid #013E37;
+          margin-bottom: 20px;
+          font-size: 14px;
+          color: #013E37;
+          animation: fadeIn 0.5s ease;
+        }
+        .performance-demo-tag {
+          font-size: 12px;
+          font-weight: 500;
+          color: #013E37;
+          opacity: 0.6;
+          margin-left: 4px;
+        }
+
+        /* ============================================
+           SUMMARY CARD
+           ============================================ */
+        .performance-summary-card {
+          background: #ffffff;
+          border-radius: 12px;
+          border: 1px solid #FFEFB3;
+          padding: 16px 20px;
+          margin-bottom: 20px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+          transition: all 0.3s ease;
+        }
+        .performance-summary-card:hover {
+          border-color: #013E37;
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
+        }
+        .performance-summary-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 16px;
+        }
+        .performance-summary-user {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .performance-summary-avatar {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          color: #FFEFB3;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 20px;
+          font-weight: 700;
+          flex-shrink: 0;
+          transition: all 0.3s ease;
+        }
+        .performance-summary-card:hover .performance-summary-avatar {
+          transform: scale(1.05);
+        }
+        .performance-summary-name {
+          font-size: 18px;
+          font-weight: 600;
+          color: #013E37;
+          margin: 0;
+        }
+        .performance-summary-role {
+          font-size: 14px;
+          color: #013E37;
+          opacity: 0.6;
+          margin: 0;
+        }
+        .performance-summary-stats {
+          display: flex;
+          gap: 24px;
+        }
+        .performance-summary-stat {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        .performance-summary-stat-label {
+          font-size: 12px;
+          color: #013E37;
+          opacity: 0.5;
+          font-weight: 500;
+        }
+        .performance-summary-stat-value {
+          font-size: 20px;
+          font-weight: 700;
+          color: #013E37;
+        }
+
+        /* ============================================
+           STATS GRID
+           ============================================ */
+        .performance-stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+        .performance-stat-card {
+          background: #ffffff;
+          border-radius: 12px;
+          padding: 16px 20px;
+          border: 1px solid #FFEFB3;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+          transition: all 0.3s ease;
+        }
+        .performance-stat-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 25px rgba(1, 62, 55, 0.1);
+          border-color: #013E37;
+        }
+        .performance-stat-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .performance-stat-label {
+          font-size: 13px;
+          color: #013E37;
+          opacity: 0.6;
+          margin: 0;
+          font-weight: 500;
+        }
+        .performance-stat-value {
+          font-size: 28px;
+          font-weight: 700;
+          color: #013E37;
+          margin-top: 4px;
+          margin: 4px 0 0 0;
+        }
+        .performance-stat-emoji {
+          font-size: 18px;
+          margin-left: 8px;
+        }
+        .performance-stat-icon {
+          width: 32px;
+          height: 32px;
+          opacity: 0.8;
+        }
+        .performance-stat-progress {
+          width: 100%;
+          height: 4px;
+          background: #FFEFB3;
+          border-radius: 2px;
+          margin-top: 12px;
+          overflow: hidden;
+        }
+        .performance-stat-progress-fill {
+          height: 100%;
+          border-radius: 2px;
+          transition: width 1s ease;
+        }
+
+        /* ============================================
+           CHARTS
+           ============================================ */
+        .performance-charts-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          margin-bottom: 24px;
+        }
+        .performance-chart-card {
+          background: #ffffff;
+          border-radius: 12px;
+          border: 1px solid #FFEFB3;
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+          transition: all 0.3s ease;
+        }
+        .performance-chart-card:hover {
+          border-color: #013E37;
+          box-shadow: 0 4px 20px rgba(1, 62, 55, 0.08);
+        }
+        .performance-chart-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px 20px;
+          border-bottom: 1px solid #FFEFB3;
+          background: #FFF9E6;
+        }
+        .performance-chart-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #013E37;
+          margin: 0;
+        }
+        .performance-chart-badge {
+          font-size: 12px;
+          font-weight: 500;
+          color: #013E37;
+          background: #FFEFB3;
+          padding: 2px 10px;
+          border-radius: 12px;
+        }
+        .performance-chart-content {
+          padding: 16px;
+        }
+        .performance-chart-container {
+          height: 320px;
+          width: 100%;
+        }
+
+        /* ============================================
+           TABLE
+           ============================================ */
+        .performance-table-card {
+          background: #ffffff;
+          border-radius: 12px;
+          border: 1px solid #FFEFB3;
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+          transition: all 0.3s ease;
+        }
+        .performance-table-card:hover {
+          border-color: #013E37;
+          box-shadow: 0 4px 20px rgba(1, 62, 55, 0.08);
+        }
+        .performance-table-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px 20px;
+          border-bottom: 1px solid #FFEFB3;
+          background: #FFF9E6;
+        }
+        .performance-table-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #013E37;
+          margin: 0;
+        }
+        .performance-table-badge {
+          font-size: 12px;
+          font-weight: 500;
+          color: #013E37;
+          background: #FFEFB3;
+          padding: 2px 10px;
+          border-radius: 12px;
+        }
+        .performance-table-content {
+          padding: 0;
+          overflow-x: auto;
+        }
+        .performance-table-wrapper {
+          overflow-x: auto;
+        }
+        .performance-table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        .performance-table-head-row {
+          background: #FFF9E6;
+          border-bottom: 2px solid #013E37;
+        }
+        .performance-table-head-cell {
+          text-align: left;
+          padding: 12px 16px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #013E37;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .performance-table-row {
+          border-bottom: 1px solid #FFEFB3;
+          transition: all 0.2s ease;
+          animation: fadeInUp 0.4s ease forwards;
+          opacity: 0;
+        }
+        .performance-table-row:hover {
+          background: #FFF9E6;
+        }
+        .performance-table-row:nth-child(1) { animation-delay: 0.05s; }
+        .performance-table-row:nth-child(2) { animation-delay: 0.1s; }
+        .performance-table-row:nth-child(3) { animation-delay: 0.15s; }
+        .performance-table-row:nth-child(4) { animation-delay: 0.2s; }
+        .performance-table-row:nth-child(5) { animation-delay: 0.25s; }
+        .performance-table-cell {
+          padding: 12px 16px;
+          font-size: 14px;
+          color: #013E37;
+        }
+        .performance-cell-productivity {
+          color: #013E37;
+          font-weight: 600;
+        }
+        .performance-cell-completion {
+          color: #0A5C54;
+          font-weight: 600;
+        }
+        .performance-cell-utilization {
+          color: #1A7A6E;
+          font-weight: 600;
+        }
+        .performance-cell-qa {
+          color: #2A9A8A;
+          font-weight: 600;
+        }
+        .performance-status-badge {
+          display: inline-flex;
+          padding: 3px 12px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 500;
+          transition: all 0.3s ease;
+        }
+        .performance-status-badge:hover {
+          transform: scale(1.05);
+        }
+        .performance-empty-state {
+          text-align: center;
+          padding: 40px 16px;
+        }
+        .performance-empty-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+        }
+        .performance-empty-icon {
+          color: #FFEFB3;
+        }
+        .performance-empty-text {
+          font-size: 16px;
+          font-weight: 500;
+          color: #013E37;
+          margin: 0;
+        }
+        .performance-empty-subtext {
+          font-size: 14px;
+          color: #013E37;
+          opacity: 0.5;
+          margin: 0;
+        }
+
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.5;
+            transform: scale(0.95);
+          }
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 1024px) {
+          .performance-charts-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .performance-header {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .performance-header-right {
+            flex-direction: column;
+            width: 100%;
+          }
+          .performance-filter-select {
+            width: 100%;
+          }
+          .performance-view-toggle {
+            width: 100%;
+          }
+          .performance-view-btn {
+            flex: 1;
+            justify-content: center;
+          }
+          .performance-refresh-btn {
+            width: 100%;
+            justify-content: center;
+          }
+          .performance-stats-grid {
+            grid-template-columns: 1fr 1fr;
+          }
+          .performance-summary-header {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .performance-summary-user {
+            justify-content: center;
+          }
+          .performance-summary-stats {
+            justify-content: space-around;
+          }
+          .performance-table-head-cell,
+          .performance-table-cell {
+            padding: 8px 12px;
+            font-size: 12px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .performance-stats-grid {
+            grid-template-columns: 1fr;
+          }
+          .performance-stat-value {
+            font-size: 22px;
+          }
+          .performance-title {
+            font-size: 24px;
+          }
+          .performance-summary-stats {
+            flex-direction: column;
+            gap: 8px;
+          }
+          .performance-summary-stat {
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+          }
+          .performance-summary-stat-value {
+            font-size: 16px;
+          }
+          .performance-chart-container {
+            height: 250px;
+          }
+        }
+      `}</style>
+    </>
   );
 };
-
-// Styles object - COMPLETE
-const styles = {
-  container: {
-    padding: '24px 32px',
-    maxWidth: '1400px',
-    margin: '0 auto',
-    width: '100%',
-    backgroundColor: '#F8FAFC',
-    minHeight: '100vh',
-  },
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '64vh',
-    gap: '16px',
-  },
-  loadingText: {
-    color: '#64748B',
-    fontSize: '14px',
-    fontWeight: '500',
-  },
-  spinner: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    border: '3px solid #E5E7EB',
-    borderTopColor: '#3B82F6',
-    animation: 'spin 0.8s linear infinite',
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '24px',
-    flexWrap: 'wrap',
-    gap: '16px',
-  },
-  title: {
-    fontSize: '28px',
-    fontWeight: '700',
-    color: '#0F172A',
-    margin: 0,
-    letterSpacing: '-0.5px',
-  },
-  subtitle: {
-    fontSize: '15px',
-    color: '#64748B',
-    marginTop: '4px',
-    margin: '4px 0 0 0',
-  },
-  headerActions: {
-    display: 'flex',
-    gap: '10px',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-  },
-  filterSelect: {
-    padding: '8px 14px',
-    border: '1px solid #E2E8F0',
-    borderRadius: '10px',
-    backgroundColor: '#FFFFFF',
-    color: '#0F172A',
-    fontSize: '14px',
-    minWidth: '150px',
-    outline: 'none',
-    transition: 'all 0.2s ease',
-    cursor: 'pointer',
-  },
-  viewToggle: {
-    display: 'flex',
-    borderRadius: '10px',
-    overflow: 'hidden',
-    border: '1px solid #E2E8F0',
-    backgroundColor: '#FFFFFF',
-  },
-  viewButton: {
-    padding: '8px 12px',
-    border: 'none',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.2s ease',
-  },
-  viewButtonActive: {
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
-  },
-  viewButtonInactive: {
-    backgroundColor: '#FFFFFF',
-    color: '#94A3B8',
-  },
-  refreshButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '8px 12px',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderRadius: '10px',
-    color: '#64748B',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  demoBanner: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '12px 20px',
-    backgroundColor: '#FEF3C7',
-    borderRadius: '10px',
-    border: '1px solid #FDE68A',
-    marginBottom: '20px',
-    fontSize: '14px',
-    color: '#92400E',
-  },
-  demoTag: {
-    fontSize: '12px',
-    fontWeight: '500',
-    color: '#F59E0B',
-    marginLeft: '4px',
-  },
-  summaryCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    border: '1px solid #E2E8F0',
-    padding: '16px 20px',
-    marginBottom: '20px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-  },
-  summaryHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: '16px',
-  },
-  summaryUser: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-  },
-  summaryAvatar: {
-    width: '48px',
-    height: '48px',
-    borderRadius: '50%',
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '20px',
-    fontWeight: '700',
-    flexShrink: 0,
-  },
-  summaryName: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#0F172A',
-    margin: 0,
-  },
-  summaryRole: {
-    fontSize: '14px',
-    color: '#64748B',
-    margin: 0,
-  },
-  summaryStats: {
-    display: 'flex',
-    gap: '24px',
-  },
-  summaryStat: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  summaryStatLabel: {
-    fontSize: '12px',
-    color: '#94A3B8',
-    fontWeight: '500',
-  },
-  summaryStatValue: {
-    fontSize: '20px',
-    fontWeight: '700',
-    color: '#0F172A',
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-    gap: '16px',
-    marginBottom: '24px',
-  },
-  statCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    padding: '16px 20px',
-    border: '1px solid #E2E8F0',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-    transition: 'all 0.2s ease',
-  },
-  statContent: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  statLabel: {
-    fontSize: '13px',
-    color: '#64748B',
-    margin: 0,
-    fontWeight: '500',
-  },
-  statValue: {
-    fontSize: '28px',
-    fontWeight: '700',
-    color: '#0F172A',
-    marginTop: '4px',
-    margin: '4px 0 0 0',
-  },
-  statEmoji: {
-    fontSize: '18px',
-    marginLeft: '8px',
-  },
-  statIcon: {
-    width: '32px',
-    height: '32px',
-    opacity: 0.8,
-  },
-  statProgress: {
-    width: '100%',
-    height: '4px',
-    backgroundColor: '#E2E8F0',
-    borderRadius: '2px',
-    marginTop: '12px',
-    overflow: 'hidden',
-  },
-  statProgressFill: {
-    height: '100%',
-    borderRadius: '2px',
-    transition: 'width 0.6s ease',
-  },
-  chartsGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '20px',
-    marginBottom: '24px',
-  },
-  chartCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    border: '1px solid #E2E8F0',
-    overflow: 'hidden',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-  },
-  chartHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '16px 20px',
-    borderBottom: '1px solid #E2E8F0',
-    backgroundColor: '#F8FAFC',
-  },
-  chartTitle: {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#0F172A',
-    margin: 0,
-  },
-  chartBadge: {
-    fontSize: '12px',
-    fontWeight: '500',
-    color: '#64748B',
-    backgroundColor: '#F1F5F9',
-    padding: '2px 10px',
-    borderRadius: '12px',
-  },
-  chartContent: {
-    padding: '16px',
-  },
-  chartContainer: {
-    height: '320px',
-    width: '100%',
-  },
-  tableCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    border: '1px solid #E2E8F0',
-    overflow: 'hidden',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-  },
-  tableHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '16px 20px',
-    borderBottom: '1px solid #E2E8F0',
-    backgroundColor: '#F8FAFC',
-  },
-  tableTitle: {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#0F172A',
-    margin: 0,
-  },
-  tableBadge: {
-    fontSize: '12px',
-    fontWeight: '500',
-    color: '#64748B',
-    backgroundColor: '#F1F5F9',
-    padding: '2px 10px',
-    borderRadius: '12px',
-  },
-  tableContent: {
-    padding: '0',
-    overflowX: 'auto',
-  },
-  tableWrapper: {
-    overflowX: 'auto',
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-  },
-  tableHeadRow: {
-    backgroundColor: '#F8FAFC',
-    borderBottom: '1px solid #E2E8F0',
-  },
-  tableHeadCell: {
-    textAlign: 'left',
-    padding: '12px 16px',
-    fontSize: '12px',
-    fontWeight: '600',
-    color: '#64748B',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  tableRow: {
-    borderBottom: '1px solid #F1F5F9',
-    transition: 'background-color 0.2s ease',
-  },
-  tableCell: {
-    padding: '12px 16px',
-    fontSize: '14px',
-    color: '#0F172A',
-  },
-  cellProductivity: {
-    color: '#3B82F6',
-    fontWeight: '600',
-  },
-  cellCompletion: {
-    color: '#22C55E',
-    fontWeight: '600',
-  },
-  cellUtilization: {
-    color: '#F59E0B',
-    fontWeight: '600',
-  },
-  cellQaPass: {
-    color: '#8B5CF6',
-    fontWeight: '600',
-  },
-  statusBadge: {
-    display: 'inline-flex',
-    padding: '3px 10px',
-    borderRadius: '6px',
-    fontSize: '12px',
-    fontWeight: '500',
-  },
-  emptyState: {
-    textAlign: 'center',
-    padding: '40px 16px',
-  },
-  emptyContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  emptyIcon: {
-    color: '#94A3B8',
-  },
-  emptyText: {
-    fontSize: '16px',
-    fontWeight: '500',
-    color: '#0F172A',
-    margin: 0,
-  },
-  emptySubtext: {
-    fontSize: '14px',
-    color: '#94A3B8',
-    margin: 0,
-  },
-};
-
-// Add keyframe animations
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  .filter-select:focus {
-    border-color: #3B82F6 !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-  }
-
-  .filter-select:hover {
-    border-color: #94A3B8 !important;
-  }
-
-  .refresh-button:hover {
-    background-color: #F1F5F9 !important;
-  }
-
-  .view-button-inactive:hover {
-    background-color: #F1F5F9 !important;
-  }
-
-  .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-  }
-
-  .table-row:hover {
-    background-color: #F8FAFC !important;
-  }
-
-  .stat-progress {
-    background-color: #E2E8F0;
-  }
-
-  .demo-banner {
-    animation: fadeIn 0.5s ease;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @media (max-width: 1024px) {
-    .charts-grid {
-      grid-template-columns: 1fr !important;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .container {
-      padding: 16px !important;
-    }
-
-    .header {
-      flex-direction: column !important;
-      align-items: stretch !important;
-    }
-
-    .header-actions {
-      flex-direction: column !important;
-    }
-
-    .filter-select {
-      width: 100% !important;
-    }
-
-    .refresh-button {
-      width: 100% !important;
-      justify-content: center !important;
-    }
-
-    .view-toggle {
-      width: 100% !important;
-    }
-
-    .view-button {
-      flex: 1 !important;
-      justify-content: center !important;
-    }
-
-    .stats-grid {
-      grid-template-columns: 1fr 1fr !important;
-    }
-
-    .summary-header {
-      flex-direction: column !important;
-      align-items: stretch !important;
-    }
-
-    .summary-stats {
-      justify-content: space-around !important;
-    }
-
-    .summary-user {
-      justify-content: center !important;
-    }
-
-    .table-head-cell,
-    .table-cell {
-      padding: 8px 12px !important;
-      font-size: 12px !important;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .container {
-      padding: 12px !important;
-    }
-
-    .stats-grid {
-      grid-template-columns: 1fr !important;
-    }
-
-    .stat-value {
-      font-size: 22px !important;
-    }
-
-    .title {
-      font-size: 22px !important;
-    }
-
-    .summary-stats {
-      flex-direction: column !important;
-      gap: 8px !important;
-    }
-
-    .summary-stat {
-      flex-direction: row !important;
-      justify-content: space-between !important;
-      width: 100% !important;
-    }
-
-    .summary-stat-value {
-      font-size: 16px !important;
-    }
-  }
-`;
-document.head.appendChild(styleSheet);
 
 export default Performance;

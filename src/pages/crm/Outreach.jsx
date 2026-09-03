@@ -6,7 +6,7 @@ import {
   Plus, Send, Mail, Linkedin, Phone, CheckCircle, Clock, 
   XCircle, Filter, Search, ArrowLeft, X, Eye, Edit, Trash2,
   Users, UserCheck, Calendar, TrendingUp, RefreshCw, Save,
-  MessageCircle, Zap, Target
+  MessageCircle, Zap, Target, Sparkles, Award, Activity
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -33,6 +33,7 @@ const Outreach = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [leads, setLeads] = useState([]);
   const [sequences, setSequences] = useState([]);
+  const [hoveredRow, setHoveredRow] = useState(null);
   const [formData, setFormData] = useState({
     leadId: '',
     channel: 'email',
@@ -186,23 +187,23 @@ const Outreach = () => {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'sent': return <Send size={14} color="#3B82F6" />;
-      case 'opened': return <CheckCircle size={14} color="#22C55E" />;
-      case 'replied': return <CheckCircle size={14} color="#22C55E" />;
-      case 'bounced': return <XCircle size={14} color="#EF4444" />;
-      case 'failed': return <XCircle size={14} color="#EF4444" />;
-      default: return <Clock size={14} color="#F59E0B" />;
+      case 'sent': return <Send size={14} />;
+      case 'opened': return <CheckCircle size={14} />;
+      case 'replied': return <CheckCircle size={14} />;
+      case 'bounced': return <XCircle size={14} />;
+      case 'failed': return <XCircle size={14} />;
+      default: return <Clock size={14} />;
     }
   };
 
   const getStatusStyle = (status) => {
     const styles = {
-      draft: { backgroundColor: '#f3f4f6', color: '#374151' },
-      sent: { backgroundColor: '#dbeafe', color: '#1e40af' },
-      opened: { backgroundColor: '#d1fae5', color: '#065f46' },
-      replied: { backgroundColor: '#d1fae5', color: '#065f46' },
-      bounced: { backgroundColor: '#fee2e2', color: '#991b1b' },
-      failed: { backgroundColor: '#fee2e2', color: '#991b1b' },
+      draft: { backgroundColor: '#FFEFB3', color: '#013E37', borderColor: '#013E37' },
+      sent: { backgroundColor: '#FFEFB3', color: '#013E37', borderColor: '#013E37' },
+      opened: { backgroundColor: '#013E37', color: '#FFFFFF', borderColor: '#013E37' },
+      replied: { backgroundColor: '#013E37', color: '#FFFFFF', borderColor: '#013E37' },
+      bounced: { backgroundColor: '#FFEBEE', color: '#D32F2F', borderColor: '#D32F2F' },
+      failed: { backgroundColor: '#FFEBEE', color: '#D32F2F', borderColor: '#D32F2F' },
     };
     return styles[status] || styles.draft;
   };
@@ -226,7 +227,7 @@ const Outreach = () => {
   if (loading) {
     return (
       <div className="outreach-loading">
-        <div className="outreach-spinner"></div>
+        <div className="outreach-loading-spinner"></div>
         <p className="outreach-loading-text">Loading outreach activities...</p>
       </div>
     );
@@ -239,7 +240,10 @@ const Outreach = () => {
       <div className="outreach-modal-overlay" onClick={() => { setIsViewing(false); setViewingOutreach(null); }}>
         <div className="outreach-modal" onClick={e => e.stopPropagation()}>
           <div className="outreach-modal-header">
-            <h3 className="outreach-modal-title">Outreach Details</h3>
+            <h3 className="outreach-modal-title">
+              <Eye className="outreach-modal-title-icon" />
+              Outreach Details
+            </h3>
             <button className="outreach-modal-close" onClick={() => { setIsViewing(false); setViewingOutreach(null); }}>
               <X size={20} />
             </button>
@@ -308,7 +312,10 @@ const Outreach = () => {
               <ArrowLeft size={20} />
             </button>
             <div>
-              <h1 className="outreach-title">Create New Outreach</h1>
+              <h1 className="outreach-title">
+                <Send className="outreach-title-icon" color="#013E37" />
+                Create New Outreach
+              </h1>
               <p className="outreach-subtitle">Send a new outreach to a lead</p>
             </div>
           </div>
@@ -317,14 +324,29 @@ const Outreach = () => {
               Cancel
             </button>
             <button className="outreach-primary-btn" onClick={handleCreateOutreach} disabled={actionLoading}>
-              {actionLoading ? 'Sending...' : 'Send Outreach'}
+              {actionLoading ? (
+                <>
+                  <div className="outreach-btn-spinner"></div>
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send size={18} />
+                  Send Outreach
+                </>
+              )}
             </button>
           </div>
         </div>
 
         <div className="outreach-create-form">
           <div className="outreach-card">
-            <div className="outreach-card-header"><h3 className="outreach-card-title">Outreach Details</h3></div>
+            <div className="outreach-card-header">
+              <h3 className="outreach-card-title">
+                <Sparkles className="outreach-card-title-icon" color="#013E37" />
+                Outreach Details
+              </h3>
+            </div>
             <div className="outreach-card-body">
               <div className="outreach-form-group">
                 <label className="outreach-form-label">Select Lead *</label>
@@ -341,9 +363,9 @@ const Outreach = () => {
               <div className="outreach-form-group">
                 <label className="outreach-form-label">Channel *</label>
                 <select name="channel" value={formData.channel} onChange={handleFormChange} className="outreach-form-select">
-                  <option value="email">Email</option>
-                  <option value="linkedin">LinkedIn</option>
-                  <option value="cold_call">Cold Call</option>
+                  <option value="email">📧 Email</option>
+                  <option value="linkedin">🔗 LinkedIn</option>
+                  <option value="cold_call">📞 Cold Call</option>
                 </select>
               </div>
 
@@ -378,7 +400,10 @@ const Outreach = () => {
     <div className="outreach-container">
       <div className="outreach-header">
         <div>
-          <h1 className="outreach-title">Outreach</h1>
+          <h1 className="outreach-title">
+            <Send className="outreach-title-icon" color="#013E37" />
+            Outreach
+          </h1>
           <p className="outreach-subtitle">Track and manage your outreach campaigns</p>
         </div>
         <button className="outreach-primary-btn" onClick={() => setIsCreating(true)}>
@@ -388,26 +413,46 @@ const Outreach = () => {
 
       <div className="outreach-stats">
         <div className="outreach-stat-card">
-          <div className="outreach-stat-icon outreach-stat-icon-blue"><Send size={18} color="#3B82F6" /></div>
-          <div><p className="outreach-stat-number">{outreach.length}</p><p className="outreach-stat-label">Total</p></div>
+          <div className="outreach-stat-icon" style={{ backgroundColor: '#FFEFB3' }}>
+            <Send size={20} color="#013E37" />
+          </div>
+          <div>
+            <p className="outreach-stat-number">{outreach.length}</p>
+            <p className="outreach-stat-label">Total</p>
+          </div>
         </div>
         <div className="outreach-stat-card">
-          <div className="outreach-stat-icon outreach-stat-icon-green"><CheckCircle size={18} color="#10B981" /></div>
-          <div><p className="outreach-stat-number">{outreach.filter(o => o.status === 'opened' || o.status === 'replied').length}</p><p className="outreach-stat-label">Engaged</p></div>
+          <div className="outreach-stat-icon" style={{ backgroundColor: '#FFEFB3' }}>
+            <CheckCircle size={20} color="#013E37" />
+          </div>
+          <div>
+            <p className="outreach-stat-number">{outreach.filter(o => o.status === 'opened' || o.status === 'replied').length}</p>
+            <p className="outreach-stat-label">Engaged</p>
+          </div>
         </div>
         <div className="outreach-stat-card">
-          <div className="outreach-stat-icon outreach-stat-icon-yellow"><Clock size={18} color="#F59E0B" /></div>
-          <div><p className="outreach-stat-number">{outreach.filter(o => o.status === 'sent' || o.status === 'draft').length}</p><p className="outreach-stat-label">Pending</p></div>
+          <div className="outreach-stat-icon" style={{ backgroundColor: '#FFEFB3' }}>
+            <Clock size={20} color="#013E37" />
+          </div>
+          <div>
+            <p className="outreach-stat-number">{outreach.filter(o => o.status === 'sent' || o.status === 'draft').length}</p>
+            <p className="outreach-stat-label">Pending</p>
+          </div>
         </div>
         <div className="outreach-stat-card">
-          <div className="outreach-stat-icon outreach-stat-icon-red"><XCircle size={18} color="#EF4444" /></div>
-          <div><p className="outreach-stat-number">{outreach.filter(o => o.status === 'bounced' || o.status === 'failed').length}</p><p className="outreach-stat-label">Failed</p></div>
+          <div className="outreach-stat-icon" style={{ backgroundColor: '#FFEBEE' }}>
+            <XCircle size={20} color="#D32F2F" />
+          </div>
+          <div>
+            <p className="outreach-stat-number">{outreach.filter(o => o.status === 'bounced' || o.status === 'failed').length}</p>
+            <p className="outreach-stat-label">Failed</p>
+          </div>
         </div>
       </div>
 
       <div className="outreach-filters">
         <div className="outreach-search">
-          <Search size={18} className="outreach-search-icon" />
+          <Search size={18} className="outreach-search-icon" color="#013E37" />
           <input type="text" placeholder="Search outreach..." value={searchTerm} onChange={handleSearch} className="outreach-search-input" />
           {searchTerm && <button className="outreach-search-clear" onClick={() => setSearchTerm('')}><X size={16} /></button>}
         </div>
@@ -452,21 +497,34 @@ const Outreach = () => {
                 <tr>
                   <td colSpan="7" className="outreach-empty">
                     <div className="outreach-empty-content">
-                      <Send size={48} color="#94A3B8" />
+                      <div className="outreach-empty-icon-wrapper" style={{ backgroundColor: '#FFEFB3' }}>
+                        <Send size={40} color="#013E37" />
+                      </div>
                       <p className="outreach-empty-text">No outreach activities found</p>
                       <p className="outreach-empty-subtext">Create your first outreach to start engaging leads</p>
-                      <button className="outreach-empty-btn" onClick={() => setIsCreating(true)}><Plus size={16} /> New Outreach</button>
+                      <button className="outreach-empty-btn" onClick={() => setIsCreating(true)}>
+                        <Plus size={16} /> New Outreach
+                      </button>
                     </div>
                   </td>
                 </tr>
               ) : (
-                outreach.map((item) => {
+                outreach.map((item, index) => {
                   const statusStyle = getStatusStyle(item.status);
+                  const isHovered = hoveredRow === item._id;
                   return (
-                    <tr key={item._id} className="outreach-table-row">
+                    <tr 
+                      key={item._id} 
+                      className="outreach-table-row"
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                      onMouseEnter={() => setHoveredRow(item._id)}
+                      onMouseLeave={() => setHoveredRow(null)}
+                    >
                       <td>
                         <span className="outreach-channel-cell">
-                          {getChannelIcon(item.channel)}
+                          <span className="outreach-channel-icon" style={{ backgroundColor: '#FFEFB3' }}>
+                            {getChannelIcon(item.channel)}
+                          </span>
                           <span className="outreach-channel-label">{getChannelLabel(item.channel)}</span>
                         </span>
                       </td>
@@ -482,9 +540,11 @@ const Outreach = () => {
                           <span className="outreach-status-label">{item.status || 'Draft'}</span>
                         </span>
                       </td>
-                      <td>{formatDate(item.sentAt)}</td>
+                      <td className="outreach-date-cell">{formatDate(item.sentAt)}</td>
                       <td>
-                        <span className="outreach-step-badge">{item.step || 0}/{item.totalSteps || 0}</span>
+                        <span className="outreach-step-badge">
+                          {item.step || 0}/{item.totalSteps || 0}
+                        </span>
                       </td>
                       <td className="outreach-table-actions">
                         <button className="outreach-action-view" onClick={() => viewOutreach(item._id)} title="View">
@@ -510,18 +570,21 @@ const Outreach = () => {
         </div>
       )}
 
-      {/* Styles */}
       <style>{`
-        /* Container */
+        /* ============================================
+           CONTAINER
+           ============================================ */
         .outreach-container {
           padding: 24px 32px;
           max-width: 1400px;
           margin: 0 auto;
-          background-color: #f8fafc;
+          background: #FFFFFF;
           min-height: 100vh;
         }
 
-        /* Loading */
+        /* ============================================
+           LOADING
+           ============================================ */
         .outreach-loading {
           display: flex;
           flex-direction: column;
@@ -531,22 +594,22 @@ const Outreach = () => {
           gap: 16px;
         }
 
-        .outreach-loading-text {
-          color: #64748b;
-          font-size: 14px;
-        }
-
-        .outreach-spinner {
-          width: 40px;
-          height: 40px;
+        .outreach-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
-          border: 3px solid #e5e7eb;
-          border-top-color: #3b82f6;
           animation: spin 0.8s linear infinite;
         }
 
+        .outreach-loading-text {
+          color: #013E37;
+          opacity: 0.6;
+          font-size: 14px;
+        }
+
         @keyframes spin {
-          from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
 
@@ -554,7 +617,9 @@ const Outreach = () => {
           animation: spin 1s linear infinite;
         }
 
-        /* Header */
+        /* ============================================
+           HEADER
+           ============================================ */
         .outreach-header {
           display: flex;
           align-items: center;
@@ -562,6 +627,7 @@ const Outreach = () => {
           margin-bottom: 24px;
           flex-wrap: wrap;
           gap: 16px;
+          animation: fadeInDown 0.6s ease;
         }
 
         .outreach-header-left {
@@ -576,27 +642,40 @@ const Outreach = () => {
           justify-content: center;
           padding: 8px;
           border-radius: 8px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           background: #ffffff;
           cursor: pointer;
-          color: #475569;
-          transition: all 0.2s ease;
+          color: #013E37;
+          transition: all 0.3s ease;
         }
 
         .outreach-back-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
+          transform: translateX(-4px);
         }
 
         .outreach-title {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
+          display: flex;
+          align-items: center;
+          gap: 10px;
           margin: 0;
+          letter-spacing: -0.5px;
+        }
+
+        .outreach-title-icon {
+          width: 28px;
+          height: 28px;
+          animation: pulse 2s ease-in-out infinite;
         }
 
         .outreach-subtitle {
           font-size: 15px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin-top: 4px;
         }
 
@@ -605,24 +684,29 @@ const Outreach = () => {
           gap: 8px;
         }
 
+        /* ============================================
+           BUTTONS
+           ============================================ */
         .outreach-primary-btn {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 10px 24px;
-          background: #3b82f6;
+          background: #013E37;
           color: #ffffff;
           border: none;
           border-radius: 10px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(1, 62, 55, 0.25);
         }
 
         .outreach-primary-btn:hover:not(:disabled) {
-          background: #2563eb;
-          transform: translateY(-1px);
+          background: #0A5C54;
+          transform: translateY(-2px) scale(1.02);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
         }
 
         .outreach-primary-btn:disabled {
@@ -630,79 +714,97 @@ const Outreach = () => {
           cursor: not-allowed;
         }
 
+        .outreach-btn-spinner {
+          width: 18px;
+          height: 18px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top-color: #ffffff;
+          border-radius: 50%;
+          animation: spin 0.6s linear infinite;
+        }
+
         .outreach-secondary-btn {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 10px 24px;
-          background: #f1f5f9;
-          color: #475569;
-          border: 1px solid #e2e8f0;
+          background: transparent;
+          color: #013E37;
+          border: 1px solid #FFEFB3;
           border-radius: 10px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .outreach-secondary-btn:hover {
-          background: #e2e8f0;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
-        /* Stats */
+        /* ============================================
+           STATS
+           ============================================ */
         .outreach-stats {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
           gap: 16px;
           margin-bottom: 24px;
+          animation: fadeInUp 0.8s ease;
         }
 
         .outreach-stat-card {
           display: flex;
           align-items: center;
           gap: 14px;
-          background: #ffffff;
+          background: #FFFFFF;
           border-radius: 12px;
           padding: 16px 20px;
-          border: 1px solid #e2e8f0;
-          transition: all 0.2s ease;
+          border: 1px solid #FFEFB3;
+          transition: all 0.3s ease;
         }
 
         .outreach-stat-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+          transform: translateY(-4px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
+          border-color: #013E37;
         }
 
         .outreach-stat-icon {
-          width: 40px;
-          height: 40px;
+          width: 44px;
+          height: 44px;
           border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          transition: all 0.3s ease;
         }
 
-        .outreach-stat-icon-blue { background: #eff6ff; }
-        .outreach-stat-icon-green { background: #d1fae5; }
-        .outreach-stat-icon-yellow { background: #fef3c7; }
-        .outreach-stat-icon-red { background: #fee2e2; }
+        .outreach-stat-card:hover .outreach-stat-icon {
+          transform: scale(1.05);
+        }
 
         .outreach-stat-number {
-          font-size: 22px;
+          font-size: 24px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
           line-height: 1.2;
         }
 
         .outreach-stat-label {
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 0;
+          font-weight: 500;
         }
 
-        /* Filters */
+        /* ============================================
+           FILTERS
+           ============================================ */
         .outreach-filters {
           display: flex;
           align-items: center;
@@ -716,14 +818,20 @@ const Outreach = () => {
           display: flex;
           align-items: center;
           background: #ffffff;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 10px;
           padding: 0 14px;
           min-width: 200px;
+          transition: all 0.3s ease;
+        }
+
+        .outreach-search:focus-within {
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
 
         .outreach-search-icon {
-          color: #94a3b8;
+          opacity: 0.5;
           flex-shrink: 0;
         }
 
@@ -734,8 +842,13 @@ const Outreach = () => {
           outline: none;
           font-size: 14px;
           background: transparent;
-          color: #0f172a;
+          color: #013E37;
           min-width: 120px;
+        }
+
+        .outreach-search-input::placeholder {
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .outreach-search-clear {
@@ -745,8 +858,15 @@ const Outreach = () => {
           padding: 4px;
           background: none;
           border: none;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
           cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .outreach-search-clear:hover {
+          opacity: 0.8;
+          transform: scale(1.2);
         }
 
         .outreach-filter-actions {
@@ -756,14 +876,20 @@ const Outreach = () => {
 
         .outreach-filter-select {
           padding: 8px 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           background: #ffffff;
-          color: #0f172a;
+          color: #013E37;
           outline: none;
           cursor: pointer;
           min-width: 140px;
+          transition: all 0.3s ease;
+        }
+
+        .outreach-filter-select:focus {
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
 
         .outreach-refresh-btn {
@@ -772,23 +898,31 @@ const Outreach = () => {
           justify-content: center;
           padding: 10px;
           background: #ffffff;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 10px;
-          color: #64748b;
+          color: #013E37;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
-        .outreach-refresh-btn:hover {
-          background: #f1f5f9;
+        .outreach-refresh-btn:hover:not(:disabled) {
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
-        /* Table */
+        /* ============================================
+           TABLE
+           ============================================ */
         .outreach-table-wrapper {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           overflow: hidden;
+          transition: all 0.3s ease;
+        }
+
+        .outreach-table-wrapper:hover {
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
         }
 
         .outreach-table-container {
@@ -805,10 +939,10 @@ const Outreach = () => {
           text-align: left;
           font-size: 12px;
           font-weight: 600;
-          color: #64748b;
+          color: #013E37;
           text-transform: uppercase;
-          border-bottom: 1px solid #e2e8f0;
-          background: #f8fafc;
+          border-bottom: 2px solid #013E37;
+          background: #FFEFB3;
         }
 
         .outreach-table-header-center {
@@ -816,12 +950,14 @@ const Outreach = () => {
         }
 
         .outreach-table-row {
-          border-bottom: 1px solid #f1f5f9;
-          transition: background 0.2s ease;
+          border-bottom: 1px solid #FFEFB3;
+          transition: all 0.3s ease;
+          animation: slideInRight 0.4s ease forwards;
+          opacity: 0;
         }
 
         .outreach-table-row:hover {
-          background: #f8fafc;
+          background: #FFEFB3;
         }
 
         .outreach-channel-cell {
@@ -830,20 +966,30 @@ const Outreach = () => {
           gap: 8px;
         }
 
+        .outreach-channel-icon {
+          padding: 4px;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
         .outreach-channel-label {
           text-transform: capitalize;
           font-size: 14px;
-          color: #374151;
+          color: #013E37;
+          font-weight: 500;
         }
 
         .outreach-lead-link {
-          color: #3b82f6;
+          color: #013E37;
           text-decoration: none;
-          transition: color 0.2s ease;
+          font-weight: 500;
+          transition: all 0.3s ease;
         }
 
         .outreach-lead-link:hover {
-          color: #1d4ed8;
+          color: #0A5C54;
           text-decoration: underline;
         }
 
@@ -852,16 +998,24 @@ const Outreach = () => {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+          color: #013E37;
+        }
+
+        .outreach-date-cell {
+          color: #013E37;
+          opacity: 0.7;
+          font-size: 13px;
         }
 
         .outreach-status-badge {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 4px 10px;
+          padding: 4px 12px;
           border-radius: 9999px;
           font-size: 12px;
           font-weight: 500;
+          border: 1px solid;
         }
 
         .outreach-status-icon {
@@ -876,12 +1030,12 @@ const Outreach = () => {
         .outreach-step-badge {
           display: inline-flex;
           align-items: center;
-          padding: 4px 10px;
+          padding: 4px 12px;
           border-radius: 9999px;
           font-size: 12px;
           font-weight: 500;
-          background: #f3f4f6;
-          color: #374151;
+          background: #FFEFB3;
+          color: #013E37;
         }
 
         .outreach-table-actions {
@@ -895,17 +1049,21 @@ const Outreach = () => {
           padding: 6px 8px;
           border-radius: 6px;
           border: none;
-          background: #eff6ff;
-          color: #3b82f6;
+          background: #FFEFB3;
+          color: #013E37;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .outreach-action-view:hover {
-          background: #dbeafe;
+          background: #013E37;
+          color: #FFFFFF;
+          transform: scale(1.1);
         }
 
-        /* Empty State */
+        /* ============================================
+           EMPTY STATE
+           ============================================ */
         .outreach-empty {
           text-align: center;
           padding: 48px 16px;
@@ -918,16 +1076,28 @@ const Outreach = () => {
           gap: 12px;
         }
 
+        .outreach-empty-icon-wrapper {
+          width: 80px;
+          height: 80px;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 8px;
+          animation: float 3s ease-in-out infinite;
+        }
+
         .outreach-empty-text {
-          font-size: 18px;
+          font-size: 20px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .outreach-empty-subtext {
-          font-size: 14px;
-          color: #94a3b8;
+          font-size: 15px;
+          color: #013E37;
+          opacity: 0.6;
           margin: 0;
         }
 
@@ -935,8 +1105,8 @@ const Outreach = () => {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          padding: 8px 20px;
-          background: #3b82f6;
+          padding: 10px 24px;
+          background: #013E37;
           color: #ffffff;
           border: none;
           border-radius: 8px;
@@ -944,14 +1114,18 @@ const Outreach = () => {
           font-weight: 500;
           cursor: pointer;
           margin-top: 8px;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .outreach-empty-btn:hover {
-          background: #2563eb;
+          background: #0A5C54;
+          transform: translateY(-2px) scale(1.02);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
         }
 
-        /* Pagination */
+        /* ============================================
+           PAGINATION
+           ============================================ */
         .outreach-pagination {
           margin-top: 16px;
           display: flex;
@@ -967,16 +1141,18 @@ const Outreach = () => {
         .outreach-pagination-btn {
           padding: 8px 16px;
           background: #ffffff;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           cursor: pointer;
           font-size: 14px;
-          color: #0f172a;
-          transition: all 0.2s ease;
+          color: #013E37;
+          transition: all 0.3s ease;
         }
 
         .outreach-pagination-btn:hover:not(:disabled) {
-          background: #f1f5f9;
+          background: #013E37;
+          color: #FFFFFF;
+          border-color: #013E37;
         }
 
         .outreach-pagination-btn:disabled {
@@ -986,30 +1162,48 @@ const Outreach = () => {
 
         .outreach-pagination-info {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.7;
         }
 
-        /* Modal */
+        /* ============================================
+           MODAL
+           ============================================ */
         .outreach-modal-overlay {
           position: fixed;
           top: 0;
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
+          background: rgba(1, 62, 55, 0.5);
+          backdrop-filter: blur(4px);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 1000;
+          animation: fadeIn 0.3s ease;
         }
 
         .outreach-modal {
           background: #ffffff;
-          border-radius: 12px;
+          border-radius: 16px;
+          border: 1px solid #FFEFB3;
           padding: 24px;
-          max-width: 500px;
+          max-width: 540px;
           width: 90%;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 24px 64px rgba(1, 62, 55, 0.2);
+          animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
         }
 
         .outreach-modal-header {
@@ -1017,27 +1211,40 @@ const Outreach = () => {
           justify-content: space-between;
           align-items: center;
           margin-bottom: 16px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid #FFEFB3;
         }
 
         .outreach-modal-title {
           font-size: 20px;
-          font-weight: 600;
-          color: #0f172a;
+          font-weight: 700;
+          color: #013E37;
           margin: 0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .outreach-modal-title-icon {
+          width: 20px;
+          height: 20px;
         }
 
         .outreach-modal-close {
           background: none;
           border: none;
           cursor: pointer;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
           padding: 4px;
-          border-radius: 4px;
-          transition: background 0.2s ease;
+          border-radius: 6px;
+          transition: all 0.3s ease;
         }
 
         .outreach-modal-close:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          opacity: 1;
+          transform: rotate(90deg);
         }
 
         .outreach-modal-body {
@@ -1051,25 +1258,30 @@ const Outreach = () => {
           justify-content: flex-end;
           gap: 8px;
           margin-top: 8px;
+          padding-top: 12px;
+          border-top: 1px solid #FFEFB3;
         }
 
         .outreach-modal-cancel {
-          padding: 8px 16px;
-          background: #f1f5f9;
-          color: #475569;
-          border: 1px solid #e2e8f0;
+          padding: 8px 20px;
+          background: transparent;
+          color: #013E37;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           cursor: pointer;
           font-size: 14px;
           font-weight: 500;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .outreach-modal-cancel:hover {
-          background: #e2e8f0;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
-        /* View */
+        /* ============================================
+           VIEW
+           ============================================ */
         .outreach-view-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
@@ -1083,21 +1295,30 @@ const Outreach = () => {
         }
 
         .outreach-view-label {
-          font-size: 12px;
-          font-weight: 500;
-          color: #64748b;
+          font-size: 11px;
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.5;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
         }
 
         .outreach-view-value {
           font-size: 14px;
-          color: #0f172a;
+          color: #013E37;
+          font-weight: 500;
         }
 
         .outreach-view-text {
           font-size: 14px;
-          color: #475569;
+          color: #013E37;
+          opacity: 0.8;
           margin: 0;
           white-space: pre-wrap;
+          padding: 10px 14px;
+          background: #F8FAFC;
+          border-radius: 8px;
+          border-left: 3px solid #FFEFB3;
         }
 
         .outreach-view-section {
@@ -1106,7 +1327,9 @@ const Outreach = () => {
           gap: 4px;
         }
 
-        /* Create Form */
+        /* ============================================
+           CREATE FORM
+           ============================================ */
         .outreach-create-form {
           max-width: 800px;
           margin: 0 auto;
@@ -1115,20 +1338,35 @@ const Outreach = () => {
         .outreach-card {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           overflow: hidden;
+          transition: all 0.3s ease;
+        }
+
+        .outreach-card:hover {
+          border-color: #013E37;
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
         }
 
         .outreach-card-header {
           padding: 16px 24px;
-          border-bottom: 1px solid #e5e7eb;
+          border-bottom: 1px solid #FFEFB3;
+          background: #F8FAFC;
         }
 
         .outreach-card-title {
           font-size: 16px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .outreach-card-title-icon {
+          width: 18px;
+          height: 18px;
         }
 
         .outreach-card-body {
@@ -1137,7 +1375,14 @@ const Outreach = () => {
 
         .outreach-form-group {
           margin-bottom: 16px;
+          animation: fadeInUp 0.4s ease forwards;
+          opacity: 0;
         }
+        .outreach-form-group:nth-child(1) { animation-delay: 0.05s; }
+        .outreach-form-group:nth-child(2) { animation-delay: 0.1s; }
+        .outreach-form-group:nth-child(3) { animation-delay: 0.15s; }
+        .outreach-form-group:nth-child(4) { animation-delay: 0.2s; }
+        .outreach-form-group:nth-child(5) { animation-delay: 0.25s; }
 
         .outreach-form-group:last-child {
           margin-bottom: 0;
@@ -1147,7 +1392,7 @@ const Outreach = () => {
           display: block;
           font-size: 14px;
           font-weight: 500;
-          color: #374151;
+          color: #013E37;
           margin-bottom: 6px;
         }
 
@@ -1156,29 +1401,90 @@ const Outreach = () => {
         .outreach-form-textarea {
           width: 100%;
           padding: 10px 12px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
-          color: #111827;
+          color: #013E37;
           background: #ffffff;
           outline: none;
           box-sizing: border-box;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           font-family: inherit;
         }
 
         .outreach-form-input:focus,
         .outreach-form-select:focus,
         .outreach-form-textarea:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+          transform: scale(1.01);
+        }
+
+        .outreach-form-input::placeholder,
+        .outreach-form-textarea::placeholder {
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .outreach-form-textarea {
           resize: vertical;
+          min-height: 80px;
         }
 
-        /* Responsive */
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
         @media (max-width: 768px) {
           .outreach-container {
             padding: 16px;
@@ -1189,7 +1495,22 @@ const Outreach = () => {
             align-items: stretch;
           }
 
+          .outreach-header-left {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
           .outreach-primary-btn {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .outreach-header-actions {
+            width: 100%;
+            flex-direction: column;
+          }
+
+          .outreach-header-actions button {
             width: 100%;
             justify-content: center;
           }
@@ -1216,23 +1537,12 @@ const Outreach = () => {
             min-width: 120px;
           }
 
-          .outreach-header-left {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-
-          .outreach-header-actions {
-            width: 100%;
-            flex-direction: column;
-          }
-
-          .outreach-header-actions button {
-            width: 100%;
-            justify-content: center;
-          }
-
           .outreach-view-grid {
             grid-template-columns: 1fr;
+          }
+
+          .outreach-title {
+            font-size: 24px;
           }
         }
 
@@ -1246,7 +1556,21 @@ const Outreach = () => {
           }
 
           .outreach-title {
-            font-size: 22px;
+            font-size: 20px;
+          }
+
+          .outreach-stat-number {
+            font-size: 20px;
+          }
+
+          .outreach-modal {
+            padding: 16px;
+          }
+
+          .outreach-form-input,
+          .outreach-form-select,
+          .outreach-form-textarea {
+            font-size: 13px;
           }
         }
       `}</style>

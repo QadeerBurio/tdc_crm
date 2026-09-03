@@ -1,16 +1,19 @@
-// pages/kpi/KPIs.jsx - COMPLETE FIXED VERSION
+// pages/kpi/KPIs.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { 
   Plus, Search, Edit, Trash2, BarChart2,
   Target, TrendingUp, Filter, Download,
   X, Check, RefreshCw, AlertCircle,
-  Zap, Award, Star, Activity
+  Zap, Award, Star, Activity, Layers,
+  Eye
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const KPIs = () => {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [kpis, setKpis] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -125,6 +128,10 @@ const KPIs = () => {
     fetchKPIs(true);
   };
 
+  const handleViewKPI = (kpiId) => {
+    navigate(`/kpis/${kpiId}`);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -164,7 +171,6 @@ const KPIs = () => {
       console.error('Error saving KPI:', error);
       toast.error(error.message || 'Failed to save KPI');
       
-      // If API fails, add locally
       const newKPI = {
         _id: `temp_${Date.now()}`,
         ...formData
@@ -205,7 +211,6 @@ const KPIs = () => {
       }
     } catch (error) {
       console.error('Error deleting KPI:', error);
-      // Delete locally
       setKpis(kpis.filter(k => k._id !== id));
       toast.success('KPI deleted locally');
     }
@@ -327,146 +332,160 @@ const KPIs = () => {
   if (loading) {
     return (
       <div className="kp-loading">
-        <div className="kp-spinner"></div>
+        <div className="kp-loading-spinner"></div>
         <p className="kp-loading-text">Loading KPIs...</p>
       </div>
     );
   }
 
   return (
-    <div className="kp-container">
-      {/* Header */}
-      <div className="kp-header">
-        <div className="kp-header-left">
-          <div className="kp-title-wrapper">
-            <div className="kp-title-icon">
-              <BarChart2 className="kp-title-svg" />
-            </div>
-            <div>
-              <h1 className="kp-title">KPIs</h1>
-              <p className="kp-subtitle">Define and manage Key Performance Indicators</p>
+    <>
+      <div className="kp-container">
+        {/* Header */}
+        <div className="kp-header">
+          <div className="kp-header-left">
+            <div className="kp-title-wrapper">
+              <div className="kp-title-icon">
+                <Layers className="kp-title-svg" />
+              </div>
+              <div>
+                <h1 className="kp-title">KPIs</h1>
+                <p className="kp-subtitle">Define and manage Key Performance Indicators</p>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="kp-header-right">
-          <button className="kp-icon-btn" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw className={`kp-refresh-icon ${refreshing ? 'kp-spin' : ''}`} />
-          </button>
-          <button className="kp-export-btn">
-            <Download className="kp-btn-icon" />
-            Export
-          </button>
-          <button 
-            onClick={() => openModal()}
-            className="kp-create-btn"
-          >
-            <Plus className="kp-btn-icon" />
-            New KPI
-          </button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="kp-filters">
-        <div className="kp-search-wrapper">
-          <Search className="kp-search-icon" />
-          <input
-            type="text"
-            placeholder="Search KPIs..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="kp-search-input"
-          />
-          {search && (
-            <button className="kp-search-clear" onClick={() => setSearch('')}>
-              <X className="kp-search-clear-icon" />
+          <div className="kp-header-right">
+            <button className="kp-icon-btn" onClick={handleRefresh} disabled={refreshing}>
+              <RefreshCw className={`kp-refresh-icon ${refreshing ? 'kp-spin' : ''}`} />
             </button>
-          )}
+            <button className="kp-export-btn">
+              <Download className="kp-btn-icon" />
+              Export
+            </button>
+            <button 
+              onClick={() => openModal()}
+              className="kp-create-btn"
+            >
+              <Plus className="kp-btn-icon" />
+              New KPI
+            </button>
+          </div>
         </div>
-        <select
-          value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value)}
-          className="kp-filter-select"
-        >
-          {categories.map(cat => (
-            <option key={cat.value} value={cat.value}>{cat.label}</option>
-          ))}
-        </select>
-        <button className="kp-filter-btn">
-          <Filter className="kp-btn-icon" />
-          More Filters
-        </button>
-      </div>
 
-      {/* KPI Cards */}
-      <div className="kp-grid">
-        {kpis.map((kpi, index) => (
-          <div key={kpi._id} className={`kp-card kp-card-${index}`}>
-            <div className="kp-card-header">
-              <div className="kp-card-icon-wrapper">
-                <BarChart2 className="kp-card-icon" />
-              </div>
-              <div className="kp-card-info">
-                <h3 className="kp-card-title">{kpi.name}</h3>
-                <p className="kp-card-category">{getCategoryLabel(kpi.category)}</p>
-              </div>
-              <div className="kp-card-actions">
-                <button className="kp-action-btn kp-action-edit" onClick={() => openModal(kpi)}>
-                  <Edit className="kp-action-icon" />
-                </button>
-                <button className="kp-action-btn kp-action-delete" onClick={() => handleDelete(kpi._id)}>
-                  <Trash2 className="kp-action-icon" />
-                </button>
-              </div>
-            </div>
-            
-            <p className="kp-card-desc">{kpi.description || 'No description'}</p>
-            
-            <div className="kp-card-badges">
-              <span className={`kp-badge ${getCategoryColor(kpi.category)}`}>
-                {getCategoryLabel(kpi.category)}
-              </span>
-              <span className="kp-badge kp-badge-applies">{getAppliesToLabel(kpi.appliesTo)}</span>
-              <span className={`kp-badge ${kpi.isActive ? 'kp-badge-active' : 'kp-badge-inactive'}`}>
-                {kpi.isActive ? 'Active' : 'Inactive'}
-              </span>
-            </div>
-            
-            <div className="kp-card-footer">
-              <div className="kp-card-stats">
-                <span className="kp-stat">
-                  <Target className="kp-stat-icon" />
-                  Target: {kpi.target?.value} {kpi.target?.operator}
-                </span>
-                <span className="kp-stat">
-                  <Zap className="kp-stat-icon" />
-                  Weight: {kpi.weight || 1}
-                </span>
-              </div>
-              {kpi.formula && (
-                <div className="kp-card-formula">
-                  <span className="kp-formula-label">Formula:</span>
-                  <span className="kp-formula-text">{kpi.formula}</span>
-                </div>
-              )}
-            </div>
+        {/* Filters */}
+        <div className="kp-filters">
+          <div className="kp-search-wrapper">
+            <Search className="kp-search-icon" />
+            <input
+              type="text"
+              placeholder="Search KPIs..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="kp-search-input"
+            />
+            {search && (
+              <button className="kp-search-clear" onClick={() => setSearch('')}>
+                <X className="kp-search-clear-icon" />
+              </button>
+            )}
           </div>
-        ))}
-      </div>
-
-      {kpis.length === 0 && (
-        <div className="kp-empty">
-          <div className="kp-empty-icon-wrapper">
-            <Target className="kp-empty-icon" />
-          </div>
-          <h3 className="kp-empty-title">No KPIs Found</h3>
-          <p className="kp-empty-subtitle">Create your first KPI to start tracking performance</p>
-          <button className="kp-empty-btn" onClick={() => openModal()}>
-            <Plus className="kp-btn-icon" />
-            Create KPI
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="kp-filter-select"
+          >
+            {categories.map(cat => (
+              <option key={cat.value} value={cat.value}>{cat.label}</option>
+            ))}
+          </select>
+          <button className="kp-filter-btn">
+            <Filter className="kp-btn-icon" />
+            More Filters
           </button>
         </div>
-      )}
+
+        {/* KPI Cards */}
+        <div className="kp-grid">
+          {kpis.map((kpi, index) => (
+            <div 
+              key={kpi._id} 
+              className="kp-card" 
+              style={{ animationDelay: `${index * 0.05}s` }}
+              onClick={() => handleViewKPI(kpi._id)}
+            >
+              <div className="kp-card-header">
+                <div className="kp-card-icon-wrapper">
+                  <BarChart2 className="kp-card-icon" />
+                </div>
+                <div className="kp-card-info">
+                  <h3 className="kp-card-title">{kpi.name}</h3>
+                  <p className="kp-card-category">{getCategoryLabel(kpi.category)}</p>
+                </div>
+                <div className="kp-card-actions" onClick={(e) => e.stopPropagation()}>
+                  <button 
+                    className="kp-action-btn kp-action-view" 
+                    onClick={() => handleViewKPI(kpi._id)}
+                    title="View Details"
+                  >
+                    <Eye className="kp-action-icon" />
+                  </button>
+                  <button className="kp-action-btn kp-action-edit" onClick={() => openModal(kpi)}>
+                    <Edit className="kp-action-icon" />
+                  </button>
+                  <button className="kp-action-btn kp-action-delete" onClick={() => handleDelete(kpi._id)}>
+                    <Trash2 className="kp-action-icon" />
+                  </button>
+                </div>
+              </div>
+              
+              <p className="kp-card-desc">{kpi.description || 'No description'}</p>
+              
+              <div className="kp-card-badges">
+                <span className={`kp-badge ${getCategoryColor(kpi.category)}`}>
+                  {getCategoryLabel(kpi.category)}
+                </span>
+                <span className="kp-badge kp-badge-applies">{getAppliesToLabel(kpi.appliesTo)}</span>
+                <span className={`kp-badge ${kpi.isActive ? 'kp-badge-active' : 'kp-badge-inactive'}`}>
+                  {kpi.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+              
+              <div className="kp-card-footer">
+                <div className="kp-card-stats">
+                  <span className="kp-stat">
+                    <Target className="kp-stat-icon" />
+                    Target: {kpi.target?.value} {kpi.target?.operator}
+                  </span>
+                  <span className="kp-stat">
+                    <Zap className="kp-stat-icon" />
+                    Weight: {kpi.weight || 1}
+                  </span>
+                </div>
+                {kpi.formula && (
+                  <div className="kp-card-formula">
+                    <span className="kp-formula-label">Formula:</span>
+                    <span className="kp-formula-text">{kpi.formula}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {kpis.length === 0 && (
+          <div className="kp-empty">
+            <div className="kp-empty-icon-wrapper">
+              <Target className="kp-empty-icon" />
+            </div>
+            <h3 className="kp-empty-title">No KPIs Found</h3>
+            <p className="kp-empty-subtitle">Create your first KPI to start tracking performance</p>
+            <button className="kp-empty-btn" onClick={() => openModal()}>
+              <Plus className="kp-btn-icon" />
+              Create KPI
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Modal */}
       {showModal && (
@@ -635,23 +654,13 @@ const KPIs = () => {
         </div>
       )}
 
-      {/* Custom CSS */}
       <style>{`
         /* ============================================
            CONTAINER
            ============================================ */
         .kp-container {
-          padding: 24px 32px;
-          max-width: 1400px;
-          margin: 0 auto;
-          background: #f8fafc;
-          min-height: 100vh;
-          animation: kpFadeIn 0.4s ease;
-        }
-
-        @keyframes kpFadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+          padding: 0 0 24px 0;
+          max-width: 100%;
         }
 
         /* ============================================
@@ -662,21 +671,22 @@ const KPIs = () => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          min-height: 60vh;
+          min-height: 400px;
           gap: 16px;
         }
 
-        .kp-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #3b82f6;
+        .kp-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
           animation: kpSpin 0.8s linear infinite;
         }
 
         .kp-loading-text {
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           font-size: 14px;
           font-weight: 500;
         }
@@ -699,6 +709,7 @@ const KPIs = () => {
           margin-bottom: 24px;
           flex-wrap: wrap;
           gap: 16px;
+          animation: fadeInDown 0.6s ease;
         }
 
         .kp-header-left {
@@ -715,31 +726,32 @@ const KPIs = () => {
         .kp-title-icon {
           width: 48px;
           height: 48px;
-          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+          background: #013E37;
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.25);
         }
 
         .kp-title-svg {
           width: 24px;
           height: 24px;
-          color: #ffffff;
+          color: #FFEFB3;
         }
 
         .kp-title {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
           letter-spacing: -0.5px;
         }
 
         .kp-subtitle {
           font-size: 15px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
 
@@ -755,21 +767,23 @@ const KPIs = () => {
           align-items: center;
           justify-content: center;
           padding: 8px 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
-          background: #ffffff;
+          background: #FFFFFF;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s ease;
+          color: #013E37;
         }
 
         .kp-icon-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .kp-refresh-icon {
           width: 16px;
           height: 16px;
+          transition: transform 0.3s ease;
         }
 
         .kp-export-btn {
@@ -777,18 +791,22 @@ const KPIs = () => {
           align-items: center;
           gap: 8px;
           padding: 8px 16px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #013E37;
           border-radius: 8px;
-          background: #ffffff;
-          color: #475569;
+          background: #013E37;
+          color: #FFEFB3;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(1, 62, 55, 0.2);
         }
 
         .kp-export-btn:hover {
-          background: #f1f5f9;
+          background: #0A5C54;
+          border-color: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
         }
 
         .kp-create-btn {
@@ -796,20 +814,21 @@ const KPIs = () => {
           align-items: center;
           gap: 8px;
           padding: 8px 20px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.3);
         }
 
         .kp-create-btn:hover {
+          background: #0A5C54;
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.4);
         }
 
         .kp-btn-icon {
@@ -841,24 +860,30 @@ const KPIs = () => {
           transform: translateY(-50%);
           width: 16px;
           height: 16px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .kp-search-input {
           width: 100%;
           padding: 8px 36px 8px 36px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           outline: none;
-          background: #ffffff;
-          color: #0f172a;
-          transition: all 0.2s ease;
+          background: #FFFFFF;
+          color: #013E37;
+          transition: all 0.3s ease;
         }
 
         .kp-search-input:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+
+        .kp-search-input::placeholder {
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .kp-search-clear {
@@ -869,15 +894,18 @@ const KPIs = () => {
           padding: 4px;
           background: none;
           border: none;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
           cursor: pointer;
           border-radius: 4px;
           display: flex;
           align-items: center;
+          transition: all 0.3s ease;
         }
 
         .kp-search-clear:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          opacity: 1;
         }
 
         .kp-search-clear-icon {
@@ -887,20 +915,24 @@ const KPIs = () => {
 
         .kp-filter-select {
           padding: 8px 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
-          background: #ffffff;
-          color: #0f172a;
+          background: #FFFFFF;
+          color: #013E37;
           outline: none;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           min-width: 160px;
         }
 
         .kp-filter-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+
+        .kp-filter-select:hover {
+          border-color: #013E37;
         }
 
         .kp-filter-btn {
@@ -908,22 +940,23 @@ const KPIs = () => {
           align-items: center;
           gap: 6px;
           padding: 8px 16px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
-          background: #ffffff;
-          color: #475569;
+          background: #FFFFFF;
+          color: #013E37;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .kp-filter-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         /* ============================================
-           GRID
+           GRID - Cards with cursor pointer
            ============================================ */
         .kp-grid {
           display: grid;
@@ -932,12 +965,33 @@ const KPIs = () => {
         }
 
         .kp-card {
-          background: #ffffff;
+          background: #FFFFFF;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           padding: 20px;
-          transition: all 0.3s ease;
-          animation: kpSlideUp 0.4s ease both;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          animation: slideUp 0.5s ease both;
+          opacity: 0;
+          position: relative;
+          overflow: hidden;
+          cursor: pointer;
+        }
+
+        .kp-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, #013E37, #0A5C54, #013E37);
+          transform: scaleX(0);
+          transition: transform 0.4s ease;
+          transform-origin: left;
+        }
+
+        .kp-card:hover::before {
+          transform: scaleX(1);
         }
 
         .kp-card:nth-child(1) { animation-delay: 0.05s; }
@@ -945,15 +999,10 @@ const KPIs = () => {
         .kp-card:nth-child(3) { animation-delay: 0.15s; }
         .kp-card:nth-child(4) { animation-delay: 0.2s; }
 
-        @keyframes kpSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
         .kp-card:hover {
           transform: translateY(-4px);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-          border-color: #d1d5db;
+          box-shadow: 0 8px 30px rgba(1, 62, 55, 0.12);
+          border-color: #013E37;
         }
 
         .kp-card-header {
@@ -966,18 +1015,23 @@ const KPIs = () => {
         .kp-card-icon-wrapper {
           width: 44px;
           height: 44px;
-          background: #eff6ff;
+          background: #FFEFB3;
           border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          transition: all 0.3s ease;
+        }
+
+        .kp-card:hover .kp-card-icon-wrapper {
+          transform: scale(1.05) rotate(-5deg);
         }
 
         .kp-card-icon {
           width: 22px;
           height: 22px;
-          color: #3b82f6;
+          color: #013E37;
         }
 
         .kp-card-info {
@@ -988,13 +1042,14 @@ const KPIs = () => {
         .kp-card-title {
           font-size: 16px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .kp-card-category {
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
 
@@ -1010,25 +1065,32 @@ const KPIs = () => {
           background: transparent;
           border-radius: 6px;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #94a3b8;
+          transition: all 0.3s ease;
+          color: #013E37;
+          opacity: 0.3;
           display: flex;
           align-items: center;
         }
 
         .kp-action-btn:hover {
-          background: #f1f5f9;
-          color: #475569;
+          background: #FFEFB3;
+          opacity: 1;
+          transform: scale(1.1);
+        }
+
+        .kp-action-view:hover {
+          background: #EFF6FF;
+          color: #3B82F6;
         }
 
         .kp-action-edit:hover {
-          background: #eff6ff;
-          color: #3b82f6;
+          background: #FFEFB3;
+          color: #013E37;
         }
 
         .kp-action-delete:hover {
-          background: #fef2f2;
-          color: #ef4444;
+          background: #FEE2E2;
+          color: #EF4444;
         }
 
         .kp-action-icon {
@@ -1038,7 +1100,8 @@ const KPIs = () => {
 
         .kp-card-desc {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.7;
           margin: 0 0 12px 0;
           display: -webkit-box;
           -webkit-line-clamp: 2;
@@ -1058,24 +1121,34 @@ const KPIs = () => {
           font-size: 11px;
           font-weight: 500;
           border-radius: 9999px;
+          transition: all 0.3s ease;
         }
 
-        .kp-cat-productivity { background: #dbeafe; color: #1d4ed8; }
-        .kp-cat-quality { background: #d1fae5; color: #065f46; }
-        .kp-cat-efficiency { background: #f3e8ff; color: #6d28d9; }
-        .kp-cat-satisfaction { background: #fef3c7; color: #92400e; }
-        .kp-cat-growth { background: #d1fae5; color: #065f46; }
-        .kp-cat-retention { background: #ffedd5; color: #9a3412; }
-        .kp-cat-financial { background: #fee2e2; color: #991b1b; }
-        .kp-cat-default { background: #f3f4f6; color: #374151; }
+        .kp-badge:hover {
+          transform: scale(1.05);
+        }
 
-        .kp-badge-applies { background: #f1f5f9; color: #475569; }
-        .kp-badge-active { background: #d1fae5; color: #065f46; }
-        .kp-badge-inactive { background: #f3f4f6; color: #6b7280; }
+        .kp-cat-productivity { background: #013E37; color: #FFEFB3; }
+        .kp-cat-quality { background: #0A5C54; color: #FFEFB3; }
+        .kp-cat-efficiency { background: #1A7A6E; color: #FFEFB3; }
+        .kp-cat-satisfaction { background: #FFEFB3; color: #013E37; }
+        .kp-cat-growth { background: #2A9A8A; color: #FFEFB3; }
+        .kp-cat-retention { background: #3ABAAA; color: #FFEFB3; }
+        .kp-cat-financial { background: #013E37; color: #FFEFB3; }
+        .kp-cat-default { background: #FFEFB3; color: #013E37; }
+
+        .kp-badge-applies { background: #FFEFB3; color: #013E37; }
+        .kp-badge-active { background: #013E37; color: #FFEFB3; }
+        .kp-badge-inactive { background: #FFEFB3; color: #013E37; }
 
         .kp-card-footer {
           padding-top: 12px;
-          border-top: 1px solid #f1f5f9;
+          border-top: 1px solid #FFEFB3;
+          transition: border-color 0.3s ease;
+        }
+
+        .kp-card:hover .kp-card-footer {
+          border-color: #013E37;
         }
 
         .kp-card-stats {
@@ -1083,7 +1156,8 @@ const KPIs = () => {
           align-items: center;
           gap: 16px;
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
         }
 
         .kp-stat {
@@ -1095,13 +1169,15 @@ const KPIs = () => {
         .kp-stat-icon {
           width: 14px;
           height: 14px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .kp-card-formula {
           margin-top: 6px;
           font-size: 12px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
           display: flex;
           gap: 4px;
           flex-wrap: wrap;
@@ -1109,12 +1185,13 @@ const KPIs = () => {
 
         .kp-formula-label {
           font-weight: 500;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.7;
         }
 
         .kp-formula-text {
           font-family: monospace;
-          color: #475569;
+          color: #013E37;
         }
 
         /* ============================================
@@ -1125,39 +1202,41 @@ const KPIs = () => {
           flex-direction: column;
           align-items: center;
           padding: 60px 20px;
-          background: #ffffff;
+          background: #FFFFFF;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 2px dashed #FFEFB3;
           text-align: center;
         }
 
         .kp-empty-icon-wrapper {
           width: 80px;
           height: 80px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           margin-bottom: 16px;
+          animation: float 3s ease-in-out infinite;
         }
 
         .kp-empty-icon {
           width: 36px;
           height: 36px;
-          color: #94a3b8;
+          color: #013E37;
         }
 
         .kp-empty-title {
           font-size: 18px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .kp-empty-subtitle {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 4px 0 16px 0;
         }
 
@@ -1166,20 +1245,21 @@ const KPIs = () => {
           align-items: center;
           gap: 8px;
           padding: 8px 24px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
 
         .kp-empty-btn:hover {
+          background: #0A5C54;
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
 
         /* ============================================
@@ -1188,30 +1268,37 @@ const KPIs = () => {
         .kp-modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.5);
-          backdrop-filter: blur(8px);
+          background: rgba(1, 62, 55, 0.5);
+          backdrop-filter: blur(4px);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 9999;
           padding: 16px;
-          animation: kpFadeIn 0.3s ease;
+          animation: fadeIn 0.3s ease;
         }
 
         .kp-modal {
-          background: #ffffff;
+          background: #FFFFFF;
           border-radius: 16px;
+          border: 1px solid #FFEFB3;
           max-width: 640px;
           width: 100%;
           max-height: 90vh;
           overflow-y: auto;
-          box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
-          animation: kpModalIn 0.3s ease;
+          box-shadow: 0 24px 64px rgba(1, 62, 55, 0.2);
+          animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        @keyframes kpModalIn {
-          from { opacity: 0; transform: scale(0.95) translateY(20px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
+        @keyframes modalIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
         }
 
         .kp-modal-header {
@@ -1219,7 +1306,9 @@ const KPIs = () => {
           align-items: center;
           justify-content: space-between;
           padding: 20px 24px;
-          border-bottom: 1px solid #f1f5f9;
+          border-bottom: 1px solid #FFEFB3;
+          background: #FFEFB3;
+          border-radius: 16px 16px 0 0;
         }
 
         .kp-modal-title-wrapper {
@@ -1231,13 +1320,13 @@ const KPIs = () => {
         .kp-modal-icon {
           width: 28px;
           height: 28px;
-          color: #3b82f6;
+          color: #013E37;
         }
 
         .kp-modal-title {
           font-size: 20px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
@@ -1247,15 +1336,17 @@ const KPIs = () => {
           justify-content: center;
           padding: 8px;
           border: none;
-          background: #f1f5f9;
+          background: transparent;
           border-radius: 8px;
-          color: #64748b;
+          color: #013E37;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
+          opacity: 0.5;
         }
 
         .kp-modal-close:hover {
-          background: #e2e8f0;
+          background: rgba(1, 62, 55, 0.1);
+          opacity: 1;
           transform: rotate(90deg);
         }
 
@@ -1278,38 +1369,53 @@ const KPIs = () => {
           display: flex;
           flex-direction: column;
           gap: 4px;
+          animation: fadeInUp 0.4s ease forwards;
+          opacity: 0;
         }
+
+        .kp-form-group:nth-child(1) { animation-delay: 0.05s; }
+        .kp-form-group:nth-child(2) { animation-delay: 0.1s; }
+        .kp-form-group:nth-child(3) { animation-delay: 0.15s; }
+        .kp-form-group:nth-child(4) { animation-delay: 0.2s; }
+        .kp-form-group:nth-child(5) { animation-delay: 0.25s; }
+        .kp-form-group:nth-child(6) { animation-delay: 0.3s; }
 
         .kp-form-label {
           font-size: 14px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
         }
 
         .kp-form-required {
-          color: #ef4444;
+          color: #EF4444;
         }
 
         .kp-form-input,
         .kp-form-textarea,
         .kp-form-select {
           padding: 10px 14px;
-          border: 1px solid #e2e8f0;
+          border: 1.5px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           outline: none;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           width: 100%;
           font-family: inherit;
-          background: #ffffff;
-          color: #0f172a;
+          background: #FFFFFF;
+          color: #013E37;
         }
 
         .kp-form-input:focus,
         .kp-form-textarea:focus,
         .kp-form-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+
+        .kp-form-input::placeholder,
+        .kp-form-textarea::placeholder {
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .kp-form-textarea {
@@ -1328,24 +1434,25 @@ const KPIs = () => {
           justify-content: flex-end;
           gap: 12px;
           padding-top: 16px;
-          border-top: 1px solid #f1f5f9;
+          border-top: 1px solid #FFEFB3;
           margin-top: 4px;
         }
 
         .kp-form-cancel {
           padding: 10px 24px;
-          background: #f1f5f9;
-          color: #475569;
-          border: 1px solid #e2e8f0;
+          background: transparent;
+          color: #013E37;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .kp-form-cancel:hover:not(:disabled) {
-          background: #e2e8f0;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .kp-form-submit {
@@ -1353,20 +1460,21 @@ const KPIs = () => {
           align-items: center;
           gap: 8px;
           padding: 10px 24px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
 
         .kp-form-submit:hover:not(:disabled) {
+          background: #0A5C54;
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
 
         .kp-form-submit:disabled {
@@ -1378,10 +1486,56 @@ const KPIs = () => {
         .kp-form-spinner {
           width: 18px;
           height: 18px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-top-color: #ffffff;
+          border: 2px solid rgba(255, 239, 179, 0.3);
+          border-top-color: #FFEFB3;
           border-radius: 50%;
           animation: kpSpin 0.8s linear infinite;
+        }
+
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
         }
 
         /* ============================================
@@ -1398,10 +1552,6 @@ const KPIs = () => {
         }
 
         @media (max-width: 768px) {
-          .kp-container {
-            padding: 16px;
-          }
-
           .kp-header {
             flex-direction: column;
             align-items: stretch;
@@ -1463,10 +1613,6 @@ const KPIs = () => {
         }
 
         @media (max-width: 480px) {
-          .kp-container {
-            padding: 12px;
-          }
-
           .kp-header-right {
             flex-direction: column;
           }
@@ -1521,20 +1667,20 @@ const KPIs = () => {
         }
 
         .kp-modal::-webkit-scrollbar-track {
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 8px;
         }
 
         .kp-modal::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
+          background: #013E37;
           border-radius: 8px;
         }
 
         .kp-modal::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
+          background: #0A5C54;
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

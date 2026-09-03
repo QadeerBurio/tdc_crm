@@ -1,3 +1,4 @@
+// pages/goals/GoalTracking.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -26,7 +27,7 @@ const GoalTracking = () => {
 
   const API_URL = 'https://crmserver-production-4a42.up.railway.app/api';
 
-  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F472B6'];
+  const COLORS = ['#013E37', '#0A5C54', '#1A7A6E', '#FFEFB3', '#2A9A8A', '#3ABAAA', '#4ACACA', '#5ADADA'];
 
   useEffect(() => {
     fetchGoalTrackingData();
@@ -37,7 +38,6 @@ const GoalTracking = () => {
     else setLoading(true);
 
     try {
-      // Try to fetch from API
       let goalsData = [];
       let statsData = null;
 
@@ -200,271 +200,269 @@ const GoalTracking = () => {
   if (loading) {
     return (
       <div className="gt-loading">
-        <div className="gt-spinner"></div>
+        <div className="gt-loading-spinner"></div>
         <p className="gt-loading-text">Loading tracking data...</p>
       </div>
     );
   }
 
   return (
-    <div className="gt-container">
-      {/* Header */}
-      <div className="gt-header">
-        <div className="gt-header-left">
-          <div className="gt-title-wrapper">
-            <div className="gt-title-icon">
-              <Target className="gt-title-svg" />
-            </div>
-            <div>
-              <h1 className="gt-title">Goal Tracking</h1>
-              <p className="gt-subtitle">Monitor and track goal progress across the organization</p>
-            </div>
-          </div>
-        </div>
-        <div className="gt-header-right">
-          <select
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            className="gt-period-select"
-          >
-            {periodOptions.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-          <select
-            value={view}
-            onChange={(e) => setView(e.target.value)}
-            className="gt-view-select"
-          >
-            {viewOptions.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-          <button className="gt-filter-btn">
-            <Filter className="gt-btn-icon" />
-          </button>
-          <button className="gt-refresh-btn" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw className={`gt-refresh-icon ${refreshing ? 'gt-spin' : ''}`} />
-          </button>
-          <button className="gt-export-btn">
-            <Download className="gt-btn-icon" />
-            Export
-          </button>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="gt-stats">
-        <div className="gt-stat-card gt-stat-total">
-          <div className="gt-stat-content">
-            <div className="gt-stat-left">
-              <p className="gt-stat-label">Total Goals</p>
-              <p className="gt-stat-number">{stats?.total || 0}</p>
-              <div className="gt-stat-change gt-change-up">↑ 8% from last {period}</div>
-            </div>
-            <div className="gt-stat-icon-wrapper gt-stat-icon-blue">
-              <Target className="gt-stat-icon" />
-            </div>
-          </div>
-        </div>
-
-        <div className="gt-stat-card gt-stat-track">
-          <div className="gt-stat-content">
-            <div className="gt-stat-left">
-              <p className="gt-stat-label">On Track</p>
-              <p className="gt-stat-number gt-number-green">{stats?.onTrack || 0}</p>
-              <div className="gt-stat-change gt-change-up">↑ 5% from last {period}</div>
-            </div>
-            <div className="gt-stat-icon-wrapper gt-stat-icon-green">
-              <TrendingUp className="gt-stat-icon" />
-            </div>
-          </div>
-        </div>
-
-        <div className="gt-stat-card gt-stat-risk">
-          <div className="gt-stat-content">
-            <div className="gt-stat-left">
-              <p className="gt-stat-label">At Risk</p>
-              <p className="gt-stat-number gt-number-yellow">{stats?.atRisk || 0}</p>
-              <div className="gt-stat-change gt-change-down">↑ 2% from last {period}</div>
-            </div>
-            <div className="gt-stat-icon-wrapper gt-stat-icon-yellow">
-              <AlertCircle className="gt-stat-icon" />
-            </div>
-          </div>
-        </div>
-
-        <div className="gt-stat-card gt-stat-progress">
-          <div className="gt-stat-content">
-            <div className="gt-stat-left">
-              <p className="gt-stat-label">Avg Progress</p>
-              <p className="gt-stat-number gt-number-purple">{Math.round(stats?.averageProgress || 0)}%</p>
-              <div className="gt-stat-change gt-change-up">↑ 3% from last {period}</div>
-            </div>
-            <div className="gt-stat-icon-wrapper gt-stat-icon-purple">
-              <Activity className="gt-stat-icon" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Charts */}
-      <div className="gt-charts">
-        {/* Progress Trend */}
-        <div className="gt-chart-card">
-          <div className="gt-chart-header">
-            <h3 className="gt-chart-title">Progress Trend</h3>
-            <span className="gt-chart-badge">Area Chart</span>
-          </div>
-          <div className="gt-chart-body">
-            <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={stats?.trend || []}>
-                <defs>
-                  <linearGradient id="gtGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="period" stroke="#94a3b8" fontSize={12} />
-                <YAxis stroke="#94a3b8" fontSize={12} />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="progress"
-                  name="Progress %"
-                  stroke="#3B82F6"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#gtGradient)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Status Distribution */}
-        <div className="gt-chart-card">
-          <div className="gt-chart-header">
-            <h3 className="gt-chart-title">Status Distribution</h3>
-            <span className="gt-chart-badge">Pie Chart</span>
-          </div>
-          <div className="gt-chart-body">
-            <ResponsiveContainer width="100%" height={280}>
-              <RePieChart>
-                <Pie
-                  data={stats?.byStatus || []}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={90}
-                  fill="#8884d8"
-                  dataKey="count"
-                >
-                  {(stats?.byStatus || []).map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value, name, props) => {
-                    const item = props.payload;
-                    return [`${value} goals`, item.name];
-                  }}
-                />
-              </RePieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* Goal List */}
-      <div className="gt-list">
-        <div className="gt-list-header">
-          <h3 className="gt-list-title">Goals Progress</h3>
-          <span className="gt-list-count">{goals.length} goals</span>
-        </div>
-        <div className="gt-list-body">
-          {goals.map((goal, index) => (
-            <div key={goal._id} className={`gt-list-item gt-item-${index}`}>
-              <div className="gt-list-item-left">
-                <div className="gt-list-item-icon">
-                  {getStatusIcon(goal.status)}
-                </div>
-                <div className="gt-list-item-info">
-                  <p className="gt-list-item-name">{goal.name}</p>
-                  <div className="gt-list-item-meta">
-                    <span className="gt-list-item-level">{getLevelLabel(goal.level)}</span>
-                    <span className="gt-list-item-dot">•</span>
-                    <span className="gt-list-item-owner">
-                      <Users className="gt-meta-icon" />
-                      {goal.ownerId?.firstName} {goal.ownerId?.lastName}
-                    </span>
-                    <span className="gt-list-item-dot">•</span>
-                    <span className="gt-list-item-date">
-                      <Calendar className="gt-meta-icon" />
-                      Due: {formatDate(goal.endDate)}
-                    </span>
-                  </div>
-                </div>
+    <>
+      <div className="gt-container">
+        {/* Header */}
+        <div className="gt-header">
+          <div className="gt-header-left">
+            <div className="gt-title-wrapper">
+              <div className="gt-title-icon">
+                <Layers className="gt-title-svg" />
               </div>
-              <div className="gt-list-item-right">
-                <div className="gt-list-item-progress">
-                  <div className="gt-list-progress-bar">
-                    <div 
-                      className={`gt-list-progress-fill ${getProgressColor(goal.progress)}`}
-                      style={{ width: `${goal.progress}%` }}
-                    />
+              <div>
+                <h1 className="gt-title">Goal Tracking</h1>
+                <p className="gt-subtitle">Monitor and track goal progress across the organization</p>
+              </div>
+            </div>
+          </div>
+          <div className="gt-header-right">
+            <select
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+              className="gt-period-select"
+            >
+              {periodOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            <select
+              value={view}
+              onChange={(e) => setView(e.target.value)}
+              className="gt-view-select"
+            >
+              {viewOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            <button className="gt-filter-btn">
+              <Filter className="gt-btn-icon" />
+            </button>
+            <button className="gt-refresh-btn" onClick={handleRefresh} disabled={refreshing}>
+              <RefreshCw className={`gt-refresh-icon ${refreshing ? 'gt-spin' : ''}`} />
+            </button>
+            <button className="gt-export-btn">
+              <Download className="gt-btn-icon" />
+              Export
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="gt-stats">
+          <div className="gt-stat-card gt-stat-total">
+            <div className="gt-stat-content">
+              <div className="gt-stat-left">
+                <p className="gt-stat-label">Total Goals</p>
+                <p className="gt-stat-number">{stats?.total || 0}</p>
+                <div className="gt-stat-change gt-change-up">↑ 8% from last {period}</div>
+              </div>
+              <div className="gt-stat-icon-wrapper gt-stat-icon-blue">
+                <Target className="gt-stat-icon" />
+              </div>
+            </div>
+          </div>
+
+          <div className="gt-stat-card gt-stat-track">
+            <div className="gt-stat-content">
+              <div className="gt-stat-left">
+                <p className="gt-stat-label">On Track</p>
+                <p className="gt-stat-number gt-number-green">{stats?.onTrack || 0}</p>
+                <div className="gt-stat-change gt-change-up">↑ 5% from last {period}</div>
+              </div>
+              <div className="gt-stat-icon-wrapper gt-stat-icon-green">
+                <TrendingUp className="gt-stat-icon" />
+              </div>
+            </div>
+          </div>
+
+          <div className="gt-stat-card gt-stat-risk">
+            <div className="gt-stat-content">
+              <div className="gt-stat-left">
+                <p className="gt-stat-label">At Risk</p>
+                <p className="gt-stat-number gt-number-yellow">{stats?.atRisk || 0}</p>
+                <div className="gt-stat-change gt-change-down">↑ 2% from last {period}</div>
+              </div>
+              <div className="gt-stat-icon-wrapper gt-stat-icon-yellow">
+                <AlertCircle className="gt-stat-icon" />
+              </div>
+            </div>
+          </div>
+
+          <div className="gt-stat-card gt-stat-progress">
+            <div className="gt-stat-content">
+              <div className="gt-stat-left">
+                <p className="gt-stat-label">Avg Progress</p>
+                <p className="gt-stat-number gt-number-purple">{Math.round(stats?.averageProgress || 0)}%</p>
+                <div className="gt-stat-change gt-change-up">↑ 3% from last {period}</div>
+              </div>
+              <div className="gt-stat-icon-wrapper gt-stat-icon-purple">
+                <Activity className="gt-stat-icon" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Charts */}
+        <div className="gt-charts">
+          {/* Progress Trend */}
+          <div className="gt-chart-card">
+            <div className="gt-chart-header">
+              <h3 className="gt-chart-title">Progress Trend</h3>
+              <span className="gt-chart-badge">Area Chart</span>
+            </div>
+            <div className="gt-chart-body">
+              <ResponsiveContainer width="100%" height={280}>
+                <AreaChart data={stats?.trend || []}>
+                  <defs>
+                    <linearGradient id="gtGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#013E37" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#013E37" stopOpacity={0.05}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#FFEFB3" />
+                  <XAxis dataKey="period" stroke="#013E37" opacity={0.5} fontSize={12} />
+                  <YAxis stroke="#013E37" opacity={0.5} fontSize={12} />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #FFEFB3',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 12px rgba(1,62,55,0.08)'
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="progress"
+                    name="Progress %"
+                    stroke="#013E37"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#gtGradient)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Status Distribution */}
+          <div className="gt-chart-card">
+            <div className="gt-chart-header">
+              <h3 className="gt-chart-title">Status Distribution</h3>
+              <span className="gt-chart-badge">Pie Chart</span>
+            </div>
+            <div className="gt-chart-body">
+              <ResponsiveContainer width="100%" height={280}>
+                <RePieChart>
+                  <Pie
+                    data={stats?.byStatus || []}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={90}
+                    fill="#8884d8"
+                    dataKey="count"
+                  >
+                    {(stats?.byStatus || []).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value, name, props) => {
+                      const item = props.payload;
+                      return [`${value} goals`, item.name];
+                    }}
+                    contentStyle={{
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #FFEFB3',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 12px rgba(1,62,55,0.08)'
+                    }}
+                  />
+                </RePieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        {/* Goal List */}
+        <div className="gt-list">
+          <div className="gt-list-header">
+            <h3 className="gt-list-title">Goals Progress</h3>
+            <span className="gt-list-count">{goals.length} goals</span>
+          </div>
+          <div className="gt-list-body">
+            {goals.map((goal, index) => (
+              <div key={goal._id} className="gt-list-item" style={{ animationDelay: `${index * 0.05}s` }}>
+                <div className="gt-list-item-left">
+                  <div className="gt-list-item-icon">
+                    {getStatusIcon(goal.status)}
                   </div>
-                  <span className={`gt-list-progress-text ${getProgressTextColor(goal.progress)}`}>
-                    {goal.progress}%
+                  <div className="gt-list-item-info">
+                    <p className="gt-list-item-name">{goal.name}</p>
+                    <div className="gt-list-item-meta">
+                      <span className="gt-list-item-level">{getLevelLabel(goal.level)}</span>
+                      <span className="gt-list-item-dot">•</span>
+                      <span className="gt-list-item-owner">
+                        <Users className="gt-meta-icon" />
+                        {goal.ownerId?.firstName} {goal.ownerId?.lastName}
+                      </span>
+                      <span className="gt-list-item-dot">•</span>
+                      <span className="gt-list-item-date">
+                        <Calendar className="gt-meta-icon" />
+                        Due: {formatDate(goal.endDate)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="gt-list-item-right">
+                  <div className="gt-list-item-progress">
+                    <div className="gt-list-progress-bar">
+                      <div 
+                        className={`gt-list-progress-fill ${getProgressColor(goal.progress)}`}
+                        style={{ width: `${goal.progress}%` }}
+                      />
+                    </div>
+                    <span className={`gt-list-progress-text ${getProgressTextColor(goal.progress)}`}>
+                      {goal.progress}%
+                    </span>
+                  </div>
+                  <span className={`gt-list-item-status ${getStatusColor(goal.status)}`}>
+                    {getStatusLabel(goal.status)}
                   </span>
+                  <button className="gt-list-item-arrow">
+                    <ArrowRight className="gt-arrow-icon" />
+                  </button>
                 </div>
-                <span className={`gt-list-item-status ${getStatusColor(goal.status)}`}>
-                  {getStatusLabel(goal.status)}
-                </span>
-                <button className="gt-list-item-arrow">
-                  <ArrowRight className="gt-arrow-icon" />
-                </button>
               </div>
-            </div>
-          ))}
-          {goals.length === 0 && (
-            <div className="gt-empty">
-              <div className="gt-empty-icon-wrapper">
-                <Target className="gt-empty-icon" />
+            ))}
+            {goals.length === 0 && (
+              <div className="gt-empty">
+                <div className="gt-empty-icon-wrapper">
+                  <Target className="gt-empty-icon" />
+                </div>
+                <p className="gt-empty-text">No goals found</p>
+                <p className="gt-empty-subtext">Try adjusting your filters or create a new goal</p>
               </div>
-              <p className="gt-empty-text">No goals found</p>
-              <p className="gt-empty-subtext">Try adjusting your filters or create a new goal</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Custom CSS */}
       <style>{`
         /* ============================================
            CONTAINER
            ============================================ */
         .gt-container {
-          padding: 24px 32px;
-          max-width: 1400px;
-          margin: 0 auto;
-          background: #f8fafc;
-          min-height: 100vh;
-          animation: gtFadeIn 0.4s ease;
-        }
-
-        @keyframes gtFadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+          padding: 0 0 24px 0;
+          max-width: 100%;
         }
 
         /* ============================================
@@ -475,31 +473,21 @@ const GoalTracking = () => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          min-height: 60vh;
-          gap: 16px;
+          min-height: 400px;
         }
-
-        .gt-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #3b82f6;
+        .gt-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
-          animation: gtSpin 0.8s linear infinite;
+          animation: spin 0.8s linear infinite;
         }
-
         .gt-loading-text {
-          color: #64748b;
+          margin-top: 16px;
+          color: #013E37;
+          opacity: 0.6;
           font-size: 14px;
-          font-weight: 500;
-        }
-
-        @keyframes gtSpin {
-          to { transform: rotate(360deg); }
-        }
-
-        .gt-spin {
-          animation: gtSpin 1s linear infinite;
         }
 
         /* ============================================
@@ -512,6 +500,7 @@ const GoalTracking = () => {
           margin-bottom: 24px;
           flex-wrap: wrap;
           gap: 16px;
+          animation: fadeInDown 0.6s ease;
         }
 
         .gt-header-left {
@@ -528,31 +517,32 @@ const GoalTracking = () => {
         .gt-title-icon {
           width: 48px;
           height: 48px;
-          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+          background: #013E37;
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.25);
         }
 
         .gt-title-svg {
           width: 24px;
           height: 24px;
-          color: #ffffff;
+          color: #FFEFB3;
         }
 
         .gt-title {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
           letter-spacing: -0.5px;
         }
 
         .gt-subtitle {
           font-size: 15px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
 
@@ -566,20 +556,25 @@ const GoalTracking = () => {
         .gt-period-select,
         .gt-view-select {
           padding: 8px 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           background: #ffffff;
-          color: #0f172a;
+          color: #013E37;
           outline: none;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .gt-period-select:focus,
         .gt-view-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+
+        .gt-period-select:hover,
+        .gt-view-select:hover {
+          border-color: #013E37;
         }
 
         .gt-filter-btn,
@@ -589,18 +584,19 @@ const GoalTracking = () => {
           align-items: center;
           justify-content: center;
           padding: 8px 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s ease;
+          color: #013E37;
         }
 
         .gt-filter-btn:hover,
         .gt-refresh-btn:hover,
         .gt-export-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .gt-refresh-btn:disabled {
@@ -611,6 +607,11 @@ const GoalTracking = () => {
         .gt-refresh-icon {
           width: 16px;
           height: 16px;
+          transition: transform 0.3s ease;
+        }
+
+        .gt-spin {
+          animation: spin 1s linear infinite;
         }
 
         .gt-export-btn {
@@ -639,24 +640,21 @@ const GoalTracking = () => {
           background: #ffffff;
           border-radius: 12px;
           padding: 20px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           transition: all 0.3s ease;
-          animation: gtSlideUp 0.5s ease both;
+          animation: slideUp 0.5s ease both;
+          opacity: 0;
         }
 
-        .gt-stat-card:nth-child(1) { animation-delay: 0.1s; }
-        .gt-stat-card:nth-child(2) { animation-delay: 0.2s; }
-        .gt-stat-card:nth-child(3) { animation-delay: 0.3s; }
-        .gt-stat-card:nth-child(4) { animation-delay: 0.4s; }
-
-        @keyframes gtSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
+        .gt-stat-card:nth-child(1) { animation-delay: 0.05s; }
+        .gt-stat-card:nth-child(2) { animation-delay: 0.1s; }
+        .gt-stat-card:nth-child(3) { animation-delay: 0.15s; }
+        .gt-stat-card:nth-child(4) { animation-delay: 0.2s; }
 
         .gt-stat-card:hover {
           transform: translateY(-3px);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+          box-shadow: 0 8px 24px rgba(1, 62, 55, 0.08);
+          border-color: #013E37;
         }
 
         .gt-stat-content {
@@ -671,7 +669,8 @@ const GoalTracking = () => {
 
         .gt-stat-label {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 0;
           font-weight: 500;
         }
@@ -679,14 +678,14 @@ const GoalTracking = () => {
         .gt-stat-number {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 4px 0 0 0;
           line-height: 1.2;
         }
 
-        .gt-number-green { color: #22c55e; }
-        .gt-number-yellow { color: #f59e0b; }
-        .gt-number-purple { color: #8b5cf6; }
+        .gt-number-green { color: #0A5C54; }
+        .gt-number-yellow { color: #013E37; }
+        .gt-number-purple { color: #1A7A6E; }
 
         .gt-stat-change {
           font-size: 12px;
@@ -694,8 +693,8 @@ const GoalTracking = () => {
           font-weight: 500;
         }
 
-        .gt-change-up { color: #22c55e; }
-        .gt-change-down { color: #ef4444; }
+        .gt-change-up { color: #0A5C54; }
+        .gt-change-down { color: #EF4444; }
 
         .gt-stat-icon-wrapper {
           width: 48px;
@@ -707,25 +706,25 @@ const GoalTracking = () => {
           flex-shrink: 0;
         }
 
-        .gt-stat-icon-blue { background: #eff6ff; }
-        .gt-stat-icon-green { background: #ecfdf5; }
-        .gt-stat-icon-yellow { background: #fef3c7; }
-        .gt-stat-icon-purple { background: #f5f3ff; }
+        .gt-stat-icon-blue { background: #E8F0FE; }
+        .gt-stat-icon-green { background: #E6F7EC; }
+        .gt-stat-icon-yellow { background: #FFF8E6; }
+        .gt-stat-icon-purple { background: #F0ECFA; }
 
         .gt-stat-icon {
           width: 22px;
           height: 22px;
         }
 
-        .gt-stat-icon-blue .gt-stat-icon { color: #3b82f6; }
-        .gt-stat-icon-green .gt-stat-icon { color: #22c55e; }
-        .gt-stat-icon-yellow .gt-stat-icon { color: #f59e0b; }
-        .gt-stat-icon-purple .gt-stat-icon { color: #8b5cf6; }
+        .gt-stat-icon-blue .gt-stat-icon { color: #013E37; }
+        .gt-stat-icon-green .gt-stat-icon { color: #0A5C54; }
+        .gt-stat-icon-yellow .gt-stat-icon { color: #013E37; }
+        .gt-stat-icon-purple .gt-stat-icon { color: #1A7A6E; }
 
-        .gt-stat-total { border-left: 4px solid #3b82f6; }
-        .gt-stat-track { border-left: 4px solid #22c55e; }
-        .gt-stat-risk { border-left: 4px solid #f59e0b; }
-        .gt-stat-progress { border-left: 4px solid #8b5cf6; }
+        .gt-stat-total { border-left: 4px solid #013E37; }
+        .gt-stat-track { border-left: 4px solid #0A5C54; }
+        .gt-stat-risk { border-left: 4px solid #FFEFB3; }
+        .gt-stat-progress { border-left: 4px solid #1A7A6E; }
 
         /* ============================================
            CHARTS
@@ -740,13 +739,14 @@ const GoalTracking = () => {
         .gt-chart-card {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           padding: 20px;
           transition: all 0.3s ease;
         }
 
         .gt-chart-card:hover {
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+          border-color: #013E37;
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
         }
 
         .gt-chart-header {
@@ -759,15 +759,15 @@ const GoalTracking = () => {
         .gt-chart-title {
           font-size: 16px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .gt-chart-badge {
           font-size: 11px;
           font-weight: 500;
-          color: #64748b;
-          background: #f1f5f9;
+          color: #013E37;
+          background: #FFEFB3;
           padding: 2px 10px;
           border-radius: 12px;
         }
@@ -783,13 +783,14 @@ const GoalTracking = () => {
         .gt-list {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           overflow: hidden;
           transition: all 0.3s ease;
         }
 
         .gt-list:hover {
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+          border-color: #013E37;
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
         }
 
         .gt-list-header {
@@ -797,21 +798,22 @@ const GoalTracking = () => {
           align-items: center;
           justify-content: space-between;
           padding: 16px 20px;
-          border-bottom: 1px solid #f1f5f9;
+          border-bottom: 1px solid #FFEFB3;
+          background: #FFF9E6;
         }
 
         .gt-list-title {
           font-size: 16px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .gt-list-count {
           font-size: 13px;
           font-weight: 500;
-          color: #64748b;
-          background: #f1f5f9;
+          color: #013E37;
+          background: #FFEFB3;
           padding: 2px 12px;
           border-radius: 12px;
         }
@@ -826,11 +828,11 @@ const GoalTracking = () => {
         }
 
         .gt-list-body::-webkit-scrollbar-track {
-          background: #f1f5f9;
+          background: #FFEFB3;
         }
 
         .gt-list-body::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
+          background: #013E37;
           border-radius: 4px;
         }
 
@@ -839,9 +841,10 @@ const GoalTracking = () => {
           align-items: center;
           justify-content: space-between;
           padding: 14px 20px;
-          border-bottom: 1px solid #f1f5f9;
+          border-bottom: 1px solid #FFEFB3;
           transition: all 0.2s ease;
-          animation: gtSlideIn 0.3s ease both;
+          animation: slideInRight 0.3s ease both;
+          opacity: 0;
         }
 
         .gt-list-item:nth-child(1) { animation-delay: 0.05s; }
@@ -850,13 +853,8 @@ const GoalTracking = () => {
         .gt-list-item:nth-child(4) { animation-delay: 0.2s; }
         .gt-list-item:nth-child(5) { animation-delay: 0.25s; }
 
-        @keyframes gtSlideIn {
-          from { opacity: 0; transform: translateX(-10px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-
         .gt-list-item:hover {
-          background: #f8fafc;
+          background: #FFF9E6;
         }
 
         .gt-list-item:last-child {
@@ -883,10 +881,10 @@ const GoalTracking = () => {
           height: 18px;
         }
 
-        .gt-icon-green { color: #22c55e; }
-        .gt-icon-red { color: #ef4444; }
-        .gt-icon-blue { color: #3b82f6; }
-        .gt-icon-gray { color: #94a3b8; }
+        .gt-icon-green { color: #0A5C54; }
+        .gt-icon-red { color: #EF4444; }
+        .gt-icon-blue { color: #013E37; }
+        .gt-icon-gray { color: #013E37; opacity: 0.3; }
 
         .gt-list-item-info {
           flex: 1;
@@ -896,7 +894,7 @@ const GoalTracking = () => {
         .gt-list-item-name {
           font-size: 15px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
@@ -905,7 +903,8 @@ const GoalTracking = () => {
           align-items: center;
           gap: 6px;
           font-size: 12px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin-top: 2px;
           flex-wrap: wrap;
         }
@@ -915,7 +914,8 @@ const GoalTracking = () => {
         }
 
         .gt-list-item-dot {
-          color: #d1d5db;
+          color: #013E37;
+          opacity: 0.3;
         }
 
         .gt-list-item-owner,
@@ -928,7 +928,8 @@ const GoalTracking = () => {
         .gt-meta-icon {
           width: 12px;
           height: 12px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .gt-list-item-right {
@@ -948,7 +949,7 @@ const GoalTracking = () => {
         .gt-list-progress-bar {
           flex: 1;
           height: 4px;
-          background: #e2e8f0;
+          background: #FFEFB3;
           border-radius: 4px;
           overflow: hidden;
           min-width: 60px;
@@ -960,10 +961,10 @@ const GoalTracking = () => {
           transition: width 0.6s ease;
         }
 
-        .gt-progress-green { background: #22c55e; }
-        .gt-progress-blue { background: #3b82f6; }
-        .gt-progress-yellow { background: #f59e0b; }
-        .gt-progress-red { background: #ef4444; }
+        .gt-progress-green { background: #013E37; }
+        .gt-progress-blue { background: #0A5C54; }
+        .gt-progress-yellow { background: #FFEFB3; }
+        .gt-progress-red { background: #EF4444; }
 
         .gt-list-progress-text {
           font-size: 12px;
@@ -971,10 +972,10 @@ const GoalTracking = () => {
           min-width: 36px;
         }
 
-        .gt-text-green { color: #22c55e; }
-        .gt-text-blue { color: #3b82f6; }
-        .gt-text-yellow { color: #f59e0b; }
-        .gt-text-red { color: #ef4444; }
+        .gt-text-green { color: #013E37; }
+        .gt-text-blue { color: #0A5C54; }
+        .gt-text-yellow { color: #013E37; }
+        .gt-text-red { color: #EF4444; }
 
         .gt-list-item-status {
           font-size: 11px;
@@ -982,14 +983,19 @@ const GoalTracking = () => {
           padding: 2px 12px;
           border-radius: 12px;
           white-space: nowrap;
+          transition: all 0.3s ease;
         }
 
-        .gt-status-not-started { background: #f1f5f9; color: #64748b; }
-        .gt-status-in-progress { background: #dbeafe; color: #3b82f6; }
-        .gt-status-on-track { background: #d1fae5; color: #22c55e; }
-        .gt-status-at-risk { background: #fef3c7; color: #f59e0b; }
-        .gt-status-behind { background: #fee2e2; color: #ef4444; }
-        .gt-status-completed { background: #d1fae5; color: #10b981; }
+        .gt-list-item-status:hover {
+          transform: scale(1.05);
+        }
+
+        .gt-status-not-started { background: #FFEFB3; color: #013E37; }
+        .gt-status-in-progress { background: #013E37; color: #FFEFB3; }
+        .gt-status-on-track { background: #0A5C54; color: #FFEFB3; }
+        .gt-status-at-risk { background: #FFEFB3; color: #013E37; }
+        .gt-status-behind { background: #FEE2E2; color: #991B1B; }
+        .gt-status-completed { background: #013E37; color: #FFEFB3; }
 
         .gt-list-item-arrow {
           display: flex;
@@ -1000,13 +1006,15 @@ const GoalTracking = () => {
           background: transparent;
           border-radius: 6px;
           cursor: pointer;
-          color: #94a3b8;
-          transition: all 0.2s ease;
+          color: #013E37;
+          opacity: 0.3;
+          transition: all 0.3s ease;
         }
 
         .gt-list-item-arrow:hover {
-          background: #f1f5f9;
-          color: #475569;
+          background: #FFEFB3;
+          opacity: 1;
+          transform: translateX(2px);
         }
 
         .gt-arrow-icon {
@@ -1028,7 +1036,7 @@ const GoalTracking = () => {
         .gt-empty-icon-wrapper {
           width: 72px;
           height: 72px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -1039,20 +1047,58 @@ const GoalTracking = () => {
         .gt-empty-icon {
           width: 32px;
           height: 32px;
-          color: #94a3b8;
+          color: #013E37;
         }
 
         .gt-empty-text {
           font-size: 16px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .gt-empty-subtext {
           font-size: 14px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.6;
           margin: 4px 0 0 0;
+        }
+
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
         }
 
         /* ============================================
@@ -1065,10 +1111,6 @@ const GoalTracking = () => {
         }
 
         @media (max-width: 768px) {
-          .gt-container {
-            padding: 16px;
-          }
-
           .gt-header {
             flex-direction: column;
             align-items: stretch;
@@ -1139,10 +1181,6 @@ const GoalTracking = () => {
         }
 
         @media (max-width: 480px) {
-          .gt-container {
-            padding: 12px;
-          }
-
           .gt-stats {
             grid-template-columns: 1fr;
           }
@@ -1205,7 +1243,7 @@ const GoalTracking = () => {
           }
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

@@ -1,5 +1,4 @@
-// pages/employees/EmployeeProfile.jsx - COMPLETE FIXED VERSION
-
+// pages/employees/EmployeeProfile.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -20,7 +19,10 @@ import {
   CheckCircle,
   TrendingUp,
   Loader,
-  AlertCircle
+  AlertCircle,
+  Layers,
+  Target,
+  Zap
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -37,7 +39,7 @@ const EmployeeProfile = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  const API_URL =  'https://crmserver-production-4a42.up.railway.app/api';
+  const API_URL = 'https://crmserver-production-4a42.up.railway.app/api';
 
   useEffect(() => {
     console.log('🔍 EmployeeProfile mounted with id:', id);
@@ -185,9 +187,9 @@ const EmployeeProfile = () => {
   // Loading state
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.spinner} />
-        <p style={styles.loadingText}>Loading profile...</p>
+      <div className="profile-loading">
+        <div className="profile-loading-spinner"></div>
+        <p className="profile-loading-text">Loading profile...</p>
       </div>
     );
   }
@@ -195,17 +197,13 @@ const EmployeeProfile = () => {
   // Error state
   if (error) {
     return (
-      <div style={styles.errorContainer}>
-        <AlertCircle size={48} style={styles.errorIcon} />
-        <h2 style={styles.errorTitle}>Something went wrong</h2>
-        <p style={styles.errorMessage}>{error}</p>
-        <div style={styles.errorActions}>
-          <Link to="/team" style={styles.errorButton}>
-            Back to Team
-          </Link>
-          <button onClick={fetchUserData} style={styles.retryButton}>
-            Try Again
-          </button>
+      <div className="profile-error">
+        <AlertCircle className="profile-error-icon" size={48} />
+        <h2 className="profile-error-title">Something went wrong</h2>
+        <p className="profile-error-message">{error}</p>
+        <div className="profile-error-actions">
+          <Link to="/team" className="profile-error-btn">Back to Team</Link>
+          <button onClick={fetchUserData} className="profile-retry-btn">Try Again</button>
         </div>
       </div>
     );
@@ -214,13 +212,11 @@ const EmployeeProfile = () => {
   // Not found state
   if (!profileUser) {
     return (
-      <div style={styles.notFoundContainer}>
-        <User size={64} style={styles.notFoundIcon} />
-        <h2 style={styles.notFoundTitle}>Employee Not Found</h2>
-        <p style={styles.notFoundText}>The employee you're looking for doesn't exist or you don't have permission to view them.</p>
-        <Link to="/team" style={styles.notFoundLink}>
-          Back to Team
-        </Link>
+      <div className="profile-notfound">
+        <User className="profile-notfound-icon" size={64} />
+        <h2 className="profile-notfound-title">Employee Not Found</h2>
+        <p className="profile-notfound-text">The employee you're looking for doesn't exist or you don't have permission to view them.</p>
+        <Link to="/team" className="profile-notfound-link">Back to Team</Link>
       </div>
     );
   }
@@ -233,822 +229,1025 @@ const EmployeeProfile = () => {
   const totalHours = kpis.reduce((sum, k) => sum + (k.billableHours || 0), 0);
 
   return (
-    <div style={styles.container}>
-      {/* Header Section */}
-      <div style={styles.header}>
-        <div style={styles.headerLeft}>
-          <Link to="/team" style={styles.backButton}>
-            <ArrowLeft size={20} />
-          </Link>
-          <div>
-            <h1 style={styles.title}>
-              {profileUser.firstName} {profileUser.lastName}
-            </h1>
-            <p style={styles.subtitle}>
-              {profileUser.position || 'Employee'} • {profileUser.department || 'No Department'}
-            </p>
-          </div>
-        </div>
-        <div style={styles.headerActions}>
-          {canEdit && !isEditing && (
-            <button style={styles.editButton} onClick={() => setIsEditing(true)}>
-              <Edit size={16} />
-              Edit Profile
-            </button>
-          )}
-          {canEdit && isEditing && (
-            <>
-              <button style={styles.cancelButton} onClick={() => setIsEditing(false)}>
-                <X size={16} />
-                Cancel
-              </button>
-              <button style={styles.saveButton} onClick={handleSave} disabled={saving}>
-                <Save size={16} />
-                {saving ? 'Saving...' : 'Save Changes'}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Profile Grid */}
-      <div style={styles.profileGrid}>
-        {/* Profile Card */}
-        <div style={styles.profileCard}>
-          <div style={styles.profileContent}>
-            <div style={styles.avatarContainer}>
-              <div style={styles.avatar}>
-                {profileUser.firstName?.[0]}{profileUser.lastName?.[0]}
-              </div>
-              <h2 style={styles.profileName}>
+    <>
+      <div className="profile-container">
+        {/* Header Section */}
+        <div className="profile-header">
+          <div className="profile-header-left">
+            <Link to="/team" className="profile-back-btn">
+              <ArrowLeft className="profile-back-icon" />
+            </Link>
+            <div>
+              <h1 className="profile-title">
+                <Layers className="profile-title-icon" />
                 {profileUser.firstName} {profileUser.lastName}
-              </h2>
-              <p style={styles.profilePosition}>{profileUser.position || 'Employee'}</p>
-              <p style={styles.profileDepartment}>{profileUser.department || 'No Department'}</p>
-              <span style={{
-                ...styles.statusBadge,
-                backgroundColor: profileUser.status === 'active' ? '#D1FAE5' : '#FEE2E2',
-                color: profileUser.status === 'active' ? '#065F46' : '#991B1B',
-              }}>
-                {profileUser.status || 'Active'}
-              </span>
+              </h1>
+              <p className="profile-subtitle">
+                {profileUser.position || 'Employee'} • {profileUser.department || 'No Department'}
+              </p>
             </div>
-
-            <div style={styles.contactInfo}>
-              <div style={styles.contactItem}>
-                <Mail size={16} style={styles.contactIcon} />
-                <span style={styles.contactText}>{profileUser.email}</span>
-              </div>
-              {profileUser.phone && (
-                <div style={styles.contactItem}>
-                  <Phone size={16} style={styles.contactIcon} />
-                  <span style={styles.contactText}>{profileUser.phone}</span>
-                </div>
-              )}
-              <div style={styles.contactItem}>
-                <Clock size={16} style={styles.contactIcon} />
-                <span style={styles.contactText}>{profileUser.timezone || 'America/New_York'}</span>
-              </div>
-              <div style={styles.contactItem}>
-                <Calendar size={16} style={styles.contactIcon} />
-                <span style={styles.contactText}>
-                  Joined {formatDate(profileUser.createdAt)}
-                </span>
-              </div>
-              {profileUser.role && (
-                <div style={styles.contactItem}>
-                  <Briefcase size={16} style={styles.contactIcon} />
-                  <span style={styles.contactText}>Role: {profileUser.role.replace('_', ' ').toUpperCase()}</span>
-                </div>
-              )}
-            </div>
-
-            {isEditing && (
-              <div style={styles.editForm}>
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>First Name</label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    style={styles.formInput}
-                  />
-                </div>
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Last Name</label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    style={styles.formInput}
-                  />
-                </div>
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Phone</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    style={styles.formInput}
-                  />
-                </div>
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Department</label>
-                  <input
-                    type="text"
-                    name="department"
-                    value={formData.department}
-                    onChange={handleChange}
-                    style={styles.formInput}
-                  />
-                </div>
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Position</label>
-                  <input
-                    type="text"
-                    name="position"
-                    value={formData.position}
-                    onChange={handleChange}
-                    style={styles.formInput}
-                  />
-                </div>
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Timezone</label>
-                  <select
-                    name="timezone"
-                    value={formData.timezone}
-                    onChange={handleChange}
-                    style={styles.formSelect}
-                  >
-                    <option value="America/New_York">Eastern Time (ET)</option>
-                    <option value="America/Chicago">Central Time (CT)</option>
-                    <option value="America/Denver">Mountain Time (MT)</option>
-                    <option value="America/Los_Angeles">Pacific Time (PT)</option>
-                  </select>
-                </div>
-              </div>
+          </div>
+          <div className="profile-header-actions">
+            {canEdit && !isEditing && (
+              <button className="profile-edit-btn" onClick={() => setIsEditing(true)}>
+                <Edit className="profile-btn-icon" />
+                Edit Profile
+              </button>
+            )}
+            {canEdit && isEditing && (
+              <>
+                <button className="profile-cancel-btn" onClick={() => setIsEditing(false)}>
+                  <X className="profile-btn-icon" />
+                  Cancel
+                </button>
+                <button className="profile-save-btn" onClick={handleSave} disabled={saving}>
+                  <Save className="profile-btn-icon" />
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </>
             )}
           </div>
         </div>
 
-        {/* Performance Stats */}
-        <div style={styles.performanceSection}>
-          <div style={styles.statsGrid}>
-            <div style={styles.statCard}>
-              <div style={styles.statContent}>
-                <div>
-                  <p style={styles.statLabel}>Avg Productivity</p>
-                  <p style={styles.statValue}>{Math.round(avgProductivity)}%</p>
+        {/* Profile Grid */}
+        <div className="profile-grid">
+          {/* Profile Card */}
+          <div className="profile-card">
+            <div className="profile-card-content">
+              <div className="profile-avatar-container">
+                <div className="profile-avatar" style={{ backgroundColor: '#013E37' }}>
+                  {profileUser.firstName?.[0]}{profileUser.lastName?.[0]}
                 </div>
-                <Award size={32} style={{...styles.statIcon, color: '#3B82F6'}} />
+                <h2 className="profile-card-name">
+                  {profileUser.firstName} {profileUser.lastName}
+                </h2>
+                <p className="profile-card-position">{profileUser.position || 'Employee'}</p>
+                <p className="profile-card-department">{profileUser.department || 'No Department'}</p>
+                <span className="profile-status-badge" style={{
+                  backgroundColor: profileUser.status === 'active' ? '#013E37' : '#FFEFB3',
+                  color: profileUser.status === 'active' ? '#FFEFB3' : '#013E37',
+                }}>
+                  {profileUser.status || 'Active'}
+                </span>
               </div>
-            </div>
-            <div style={styles.statCard}>
-              <div style={styles.statContent}>
-                <div>
-                  <p style={styles.statLabel}>Tasks Completed</p>
-                  <p style={{...styles.statValue, color: '#16A34A'}}>
-                    {totalTasksCompleted}
-                  </p>
+
+              <div className="profile-contact-info">
+                <div className="profile-contact-item">
+                  <Mail className="profile-contact-icon" />
+                  <span className="profile-contact-text">{profileUser.email}</span>
                 </div>
-                <CheckCircle size={32} style={{...styles.statIcon, color: '#22C55E'}} />
-              </div>
-            </div>
-            <div style={styles.statCard}>
-              <div style={styles.statContent}>
-                <div>
-                  <p style={styles.statLabel}>Total Hours</p>
-                  <p style={{...styles.statValue, color: '#D97706'}}>
-                    {formatDuration(totalHours)}
-                  </p>
+                {profileUser.phone && (
+                  <div className="profile-contact-item">
+                    <Phone className="profile-contact-icon" />
+                    <span className="profile-contact-text">{profileUser.phone}</span>
+                  </div>
+                )}
+                <div className="profile-contact-item">
+                  <Clock className="profile-contact-icon" />
+                  <span className="profile-contact-text">{profileUser.timezone || 'America/New_York'}</span>
                 </div>
-                <Clock size={32} style={{...styles.statIcon, color: '#F59E0B'}} />
+                <div className="profile-contact-item">
+                  <Calendar className="profile-contact-icon" />
+                  <span className="profile-contact-text">Joined {formatDate(profileUser.createdAt)}</span>
+                </div>
+                {profileUser.role && (
+                  <div className="profile-contact-item">
+                    <Briefcase className="profile-contact-icon" />
+                    <span className="profile-contact-text">Role: {profileUser.role.replace('_', ' ').toUpperCase()}</span>
+                  </div>
+                )}
               </div>
+
+              {isEditing && (
+                <div className="profile-edit-form">
+                  <div className="profile-form-group">
+                    <label className="profile-form-label">First Name</label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      className="profile-form-input"
+                    />
+                  </div>
+                  <div className="profile-form-group">
+                    <label className="profile-form-label">Last Name</label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      className="profile-form-input"
+                    />
+                  </div>
+                  <div className="profile-form-group">
+                    <label className="profile-form-label">Phone</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="profile-form-input"
+                    />
+                  </div>
+                  <div className="profile-form-group">
+                    <label className="profile-form-label">Department</label>
+                    <input
+                      type="text"
+                      name="department"
+                      value={formData.department}
+                      onChange={handleChange}
+                      className="profile-form-input"
+                    />
+                  </div>
+                  <div className="profile-form-group">
+                    <label className="profile-form-label">Position</label>
+                    <input
+                      type="text"
+                      name="position"
+                      value={formData.position}
+                      onChange={handleChange}
+                      className="profile-form-input"
+                    />
+                  </div>
+                  <div className="profile-form-group">
+                    <label className="profile-form-label">Timezone</label>
+                    <select
+                      name="timezone"
+                      value={formData.timezone}
+                      onChange={handleChange}
+                      className="profile-form-select"
+                    >
+                      <option value="America/New_York">Eastern Time (ET)</option>
+                      <option value="America/Chicago">Central Time (CT)</option>
+                      <option value="America/Denver">Mountain Time (MT)</option>
+                      <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                    </select>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Recent KPI History */}
-          <div style={styles.kpiCard}>
-            <div style={styles.kpiHeader}>
-              <h3 style={styles.kpiTitle}>Performance History</h3>
-              {kpis.length === 0 && (
-                <span style={styles.kpiBadge}>No data yet</span>
-              )}
+          {/* Performance Section */}
+          <div className="profile-performance">
+            <div className="profile-stats-grid">
+              <div className="profile-stat-card" style={{ borderTop: '4px solid #013E37' }}>
+                <div className="profile-stat-content">
+                  <div>
+                    <p className="profile-stat-label">Avg Productivity</p>
+                    <p className="profile-stat-value">{Math.round(avgProductivity)}%</p>
+                  </div>
+                  <Award className="profile-stat-icon" style={{ color: '#013E37' }} />
+                </div>
+                <div className="profile-stat-progress">
+                  <div className="profile-stat-progress-fill" style={{ width: `${Math.round(avgProductivity)}%`, backgroundColor: '#013E37' }} />
+                </div>
+              </div>
+              <div className="profile-stat-card" style={{ borderTop: '4px solid #0A5C54' }}>
+                <div className="profile-stat-content">
+                  <div>
+                    <p className="profile-stat-label">Tasks Completed</p>
+                    <p className="profile-stat-value" style={{ color: '#0A5C54' }}>
+                      {totalTasksCompleted}
+                    </p>
+                  </div>
+                  <CheckCircle className="profile-stat-icon" style={{ color: '#0A5C54' }} />
+                </div>
+              </div>
+              <div className="profile-stat-card" style={{ borderTop: '4px solid #FFEFB3' }}>
+                <div className="profile-stat-content">
+                  <div>
+                    <p className="profile-stat-label">Total Hours</p>
+                    <p className="profile-stat-value" style={{ color: '#013E37' }}>
+                      {formatDuration(totalHours)}
+                    </p>
+                  </div>
+                  <Clock className="profile-stat-icon" style={{ color: '#013E37' }} />
+                </div>
+              </div>
             </div>
-            <div style={styles.kpiContent}>
-              <div style={styles.tableWrapper}>
-                <table style={styles.table}>
-                  <thead>
-                    <tr style={styles.tableHeader}>
-                      <th style={styles.tableHeaderCell}>Week</th>
-                      <th style={styles.tableHeaderCell}>Productivity</th>
-                      <th style={styles.tableHeaderCell}>Completion</th>
-                      <th style={styles.tableHeaderCell}>Utilization</th>
-                      <th style={styles.tableHeaderCell}>QA Pass</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {kpis.length > 0 ? (
-                      kpis.map((kpi) => (
-                        <tr key={kpi._id || `kpi-${Math.random()}`} style={styles.tableRow}>
-                          <td style={styles.tableCell}>{formatDate(kpi.weekStart)}</td>
-                          <td style={{...styles.tableCell, ...styles.cellProductivity}}>
-                            {kpi.productivityScore || 0}%
-                          </td>
-                          <td style={{...styles.tableCell, ...styles.cellCompletion}}>
-                            {kpi.taskCompletionRate || 0}%
-                          </td>
-                          <td style={{...styles.tableCell, ...styles.cellUtilization}}>
-                            {kpi.capacityUtilization || 0}%
-                          </td>
-                          <td style={{...styles.tableCell, ...styles.cellQaPass}}>
-                            {kpi.qaPassRate || 0}%
+
+            {/* KPI History */}
+            <div className="profile-kpi-card">
+              <div className="profile-kpi-header">
+                <h3 className="profile-kpi-title">
+                  <Target className="profile-kpi-icon" />
+                  Performance History
+                </h3>
+                {kpis.length === 0 && (
+                  <span className="profile-kpi-badge">No data yet</span>
+                )}
+              </div>
+              <div className="profile-kpi-content">
+                <div className="profile-table-wrapper">
+                  <table className="profile-table">
+                    <thead>
+                      <tr className="profile-table-header">
+                        <th className="profile-table-header-cell">Week</th>
+                        <th className="profile-table-header-cell">Productivity</th>
+                        <th className="profile-table-header-cell">Completion</th>
+                        <th className="profile-table-header-cell">Utilization</th>
+                        <th className="profile-table-header-cell">QA Pass</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {kpis.length > 0 ? (
+                        kpis.map((kpi, index) => (
+                          <tr key={kpi._id || `kpi-${index}`} className="profile-table-row" style={{ animationDelay: `${index * 0.05}s` }}>
+                            <td className="profile-table-cell">{formatDate(kpi.weekStart)}</td>
+                            <td className="profile-table-cell profile-cell-productivity">
+                              {kpi.productivityScore || 0}%
+                            </td>
+                            <td className="profile-table-cell profile-cell-completion">
+                              {kpi.taskCompletionRate || 0}%
+                            </td>
+                            <td className="profile-table-cell profile-cell-utilization">
+                              {kpi.capacityUtilization || 0}%
+                            </td>
+                            <td className="profile-table-cell profile-cell-qa">
+                              {kpi.qaPassRate || 0}%
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="5" className="profile-empty-state">
+                            <div className="profile-empty-content">
+                              <BarChart className="profile-empty-icon" size={32} />
+                              <p className="profile-empty-text">No performance data available</p>
+                              <p className="profile-empty-subtext">KPI data will appear here once available</p>
+                            </div>
                           </td>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="5" style={styles.emptyTableState}>
-                          <div style={styles.emptyContent}>
-                            <BarChart size={32} style={styles.emptyIcon} />
-                            <p>No performance data available</p>
-                            <p style={styles.emptySubtext}>KPI data will appear here once available</p>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <style>{`
+        /* ============================================
+           CONTAINER
+           ============================================ */
+        .profile-container {
+          padding: 0 0 24px 0;
+          max-width: 100%;
+        }
+
+        /* ============================================
+           LOADING
+           ============================================ */
+        .profile-loading {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 400px;
+        }
+        .profile-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+        .profile-loading-text {
+          margin-top: 16px;
+          color: #013E37;
+          opacity: 0.6;
+          font-size: 14px;
+        }
+
+        /* ============================================
+           ERROR
+           ============================================ */
+        .profile-error {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 400px;
+          gap: 16px;
+          padding: 20px;
+          text-align: center;
+        }
+        .profile-error-icon {
+          color: #EF4444;
+        }
+        .profile-error-title {
+          font-size: 24px;
+          font-weight: 600;
+          color: #013E37;
+          margin: 0;
+        }
+        .profile-error-message {
+          font-size: 16px;
+          color: #013E37;
+          opacity: 0.6;
+          max-width: 400px;
+          margin: 0;
+        }
+        .profile-error-actions {
+          display: flex;
+          gap: 12px;
+          margin-top: 8px;
+        }
+        .profile-error-btn {
+          padding: 10px 24px;
+          background: #FFEFB3;
+          color: #013E37;
+          border: 1px solid #013E37;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          text-decoration: none;
+          transition: all 0.3s ease;
+        }
+        .profile-error-btn:hover {
+          background: #013E37;
+          color: #FFEFB3;
+        }
+        .profile-retry-btn {
+          padding: 10px 24px;
+          background: #013E37;
+          color: #FFEFB3;
+          border: none;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .profile-retry-btn:hover {
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
+        }
+
+        /* ============================================
+           NOT FOUND
+           ============================================ */
+        .profile-notfound {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 400px;
+          gap: 16px;
+          text-align: center;
+          padding: 20px;
+        }
+        .profile-notfound-icon {
+          color: #FFEFB3;
+        }
+        .profile-notfound-title {
+          font-size: 24px;
+          font-weight: 600;
+          color: #013E37;
+          margin: 0;
+        }
+        .profile-notfound-text {
+          font-size: 16px;
+          color: #013E37;
+          opacity: 0.6;
+          max-width: 400px;
+          margin: 0;
+        }
+        .profile-notfound-link {
+          padding: 10px 24px;
+          background: #013E37;
+          color: #FFEFB3;
+          border: none;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          text-decoration: none;
+          transition: all 0.3s ease;
+        }
+        .profile-notfound-link:hover {
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
+        }
+
+        /* ============================================
+           HEADER
+           ============================================ */
+        .profile-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 24px;
+          flex-wrap: wrap;
+          gap: 16px;
+          animation: fadeInDown 0.6s ease;
+        }
+        .profile-header-left {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+        .profile-back-btn {
+          padding: 8px;
+          border-radius: 10px;
+          background: transparent;
+          border: 1px solid #FFEFB3;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.3s ease;
+          color: #013E37;
+        }
+        .profile-back-btn:hover {
+          background: #FFEFB3;
+          border-color: #013E37;
+          transform: translateX(-2px);
+        }
+        .profile-back-icon {
+          width: 20px;
+          height: 20px;
+        }
+        .profile-title {
+          font-size: 24px;
+          font-weight: 700;
+          color: #013E37;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin: 0;
+        }
+        .profile-title-icon {
+          width: 24px;
+          height: 24px;
+          color: #013E37;
+          animation: pulse 2s ease-in-out infinite;
+        }
+        .profile-subtitle {
+          font-size: 14px;
+          color: #013E37;
+          opacity: 0.6;
+          margin-top: 4px;
+          margin: 4px 0 0 0;
+        }
+        .profile-header-actions {
+          display: flex;
+          gap: 8px;
+        }
+        .profile-edit-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 16px;
+          background: transparent;
+          color: #013E37;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .profile-edit-btn:hover {
+          background: #FFEFB3;
+          border-color: #013E37;
+        }
+        .profile-cancel-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 16px;
+          background: transparent;
+          color: #013E37;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .profile-cancel-btn:hover {
+          background: #FFEFB3;
+          border-color: #013E37;
+        }
+        .profile-save-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 16px;
+          background: #013E37;
+          color: #FFEFB3;
+          border: none;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .profile-save-btn:hover:not(:disabled) {
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
+        }
+        .profile-save-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        .profile-btn-icon {
+          width: 16px;
+          height: 16px;
+        }
+
+        /* ============================================
+           PROFILE GRID
+           ============================================ */
+        .profile-grid {
+          display: grid;
+          grid-template-columns: 1fr 2fr;
+          gap: 24px;
+        }
+
+        /* ============================================
+           PROFILE CARD
+           ============================================ */
+        .profile-card {
+          background: #ffffff;
+          border: 1px solid #FFEFB3;
+          border-radius: 12px;
+          overflow: hidden;
+          transition: all 0.3s ease;
+          animation: fadeInUp 0.5s ease forwards;
+          opacity: 0;
+        }
+        .profile-card:hover {
+          border-color: #013E37;
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
+        }
+        .profile-card-content {
+          padding: 24px;
+        }
+        .profile-avatar-container {
+          text-align: center;
+        }
+        .profile-avatar {
+          width: 96px;
+          height: 96px;
+          border-radius: 50%;
+          color: #FFEFB3;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 32px;
+          font-weight: 700;
+          margin: 0 auto;
+          transition: all 0.3s ease;
+        }
+        .profile-card:hover .profile-avatar {
+          transform: scale(1.05);
+        }
+        .profile-card-name {
+          margin-top: 16px;
+          font-size: 20px;
+          font-weight: 600;
+          color: #013E37;
+          margin-bottom: 4px;
+        }
+        .profile-card-position {
+          font-size: 14px;
+          color: #013E37;
+          opacity: 0.6;
+          margin: 0;
+        }
+        .profile-card-department {
+          font-size: 14px;
+          color: #013E37;
+          opacity: 0.6;
+          margin: 0;
+        }
+        .profile-status-badge {
+          display: inline-block;
+          padding: 4px 16px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 500;
+          margin-top: 8px;
+          transition: all 0.3s ease;
+        }
+        .profile-status-badge:hover {
+          transform: scale(1.05);
+        }
+
+        .profile-contact-info {
+          margin-top: 24px;
+          padding-top: 16px;
+          border-top: 1px solid #FFEFB3;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .profile-contact-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .profile-contact-icon {
+          width: 16px;
+          height: 16px;
+          color: #013E37;
+          opacity: 0.5;
+          flex-shrink: 0;
+        }
+        .profile-contact-text {
+          font-size: 14px;
+          color: #013E37;
+        }
+
+        /* ============================================
+           EDIT FORM
+           ============================================ */
+        .profile-edit-form {
+          margin-top: 24px;
+          padding-top: 16px;
+          border-top: 1px solid #FFEFB3;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .profile-form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .profile-form-label {
+          font-size: 14px;
+          font-weight: 500;
+          color: #013E37;
+        }
+        .profile-form-input,
+        .profile-form-select {
+          padding: 8px 12px;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          font-size: 14px;
+          outline: none;
+          transition: all 0.3s ease;
+          background: #ffffff;
+          color: #013E37;
+        }
+        .profile-form-input:focus,
+        .profile-form-select:focus {
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+        .profile-form-select {
+          cursor: pointer;
+        }
+
+        /* ============================================
+           PERFORMANCE SECTION
+           ============================================ */
+        .profile-performance {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+
+        .profile-stats-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+        }
+        .profile-stat-card {
+          background: #ffffff;
+          border: 1px solid #FFEFB3;
+          border-radius: 12px;
+          padding: 16px;
+          transition: all 0.3s ease;
+          animation: fadeInUp 0.5s ease forwards;
+          opacity: 0;
+        }
+        .profile-stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .profile-stat-card:nth-child(2) { animation-delay: 0.15s; }
+        .profile-stat-card:nth-child(3) { animation-delay: 0.2s; }
+        .profile-stat-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 25px rgba(1, 62, 55, 0.08);
+          border-color: #013E37;
+        }
+        .profile-stat-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .profile-stat-label {
+          font-size: 14px;
+          color: #013E37;
+          opacity: 0.6;
+          margin: 0;
+        }
+        .profile-stat-value {
+          font-size: 24px;
+          font-weight: 700;
+          color: #013E37;
+          margin-top: 4px;
+          margin: 4px 0 0 0;
+        }
+        .profile-stat-icon {
+          width: 32px;
+          height: 32px;
+          opacity: 0.8;
+        }
+        .profile-stat-progress {
+          width: 100%;
+          height: 4px;
+          background: #FFEFB3;
+          border-radius: 2px;
+          margin-top: 12px;
+          overflow: hidden;
+        }
+        .profile-stat-progress-fill {
+          height: 100%;
+          border-radius: 2px;
+          transition: width 1s ease;
+        }
+
+        /* ============================================
+           KPI CARD
+           ============================================ */
+        .profile-kpi-card {
+          background: #ffffff;
+          border: 1px solid #FFEFB3;
+          border-radius: 12px;
+          overflow: hidden;
+          transition: all 0.3s ease;
+          animation: fadeInUp 0.5s ease forwards;
+          opacity: 0;
+          animation-delay: 0.25s;
+        }
+        .profile-kpi-card:hover {
+          border-color: #013E37;
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
+        }
+        .profile-kpi-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px 24px;
+          border-bottom: 1px solid #FFEFB3;
+          background: #FFF9E6;
+        }
+        .profile-kpi-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: #013E37;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin: 0;
+        }
+        .profile-kpi-icon {
+          width: 20px;
+          height: 20px;
+          color: #013E37;
+        }
+        .profile-kpi-badge {
+          font-size: 12px;
+          font-weight: 500;
+          color: #013E37;
+          background: #FFEFB3;
+          padding: 2px 10px;
+          border-radius: 12px;
+        }
+        .profile-kpi-content {
+          padding: 16px 24px;
+        }
+
+        /* ============================================
+           TABLE
+           ============================================ */
+        .profile-table-wrapper {
+          overflow-x: auto;
+        }
+        .profile-table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        .profile-table-header {
+          border-bottom: 2px solid #013E37;
+        }
+        .profile-table-header-cell {
+          text-align: left;
+          padding: 8px 12px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #013E37;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .profile-table-row {
+          border-bottom: 1px solid #FFEFB3;
+          transition: all 0.2s ease;
+          animation: fadeInRight 0.4s ease forwards;
+          opacity: 0;
+        }
+        .profile-table-row:hover {
+          background: #FFF9E6;
+        }
+        .profile-table-row:nth-child(1) { animation-delay: 0.3s; }
+        .profile-table-row:nth-child(2) { animation-delay: 0.35s; }
+        .profile-table-row:nth-child(3) { animation-delay: 0.4s; }
+        .profile-table-row:nth-child(4) { animation-delay: 0.45s; }
+        .profile-table-row:nth-child(5) { animation-delay: 0.5s; }
+        .profile-table-cell {
+          padding: 8px 12px;
+          font-size: 14px;
+          color: #013E37;
+        }
+        .profile-cell-productivity {
+          color: #013E37;
+          font-weight: 500;
+        }
+        .profile-cell-completion {
+          color: #0A5C54;
+          font-weight: 500;
+        }
+        .profile-cell-utilization {
+          color: #1A7A6E;
+          font-weight: 500;
+        }
+        .profile-cell-qa {
+          color: #2A9A8A;
+          font-weight: 500;
+        }
+
+        /* ============================================
+           EMPTY STATE
+           ============================================ */
+        .profile-empty-state {
+          text-align: center;
+          padding: 32px 16px;
+        }
+        .profile-empty-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+        }
+        .profile-empty-icon {
+          color: #FFEFB3;
+        }
+        .profile-empty-text {
+          font-size: 14px;
+          color: #013E37;
+          margin: 0;
+        }
+        .profile-empty-subtext {
+          font-size: 12px;
+          color: #013E37;
+          opacity: 0.5;
+          margin: 0;
+        }
+
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeInRight {
+          from {
+            opacity: 0;
+            transform: translateX(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.5;
+            transform: scale(0.95);
+          }
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 1024px) {
+          .profile-grid {
+            grid-template-columns: 1fr;
+          }
+          .profile-stats-grid {
+            grid-template-columns: repeat(3, 1fr);
+          }
+        }
+
+        @media (max-width: 768px) {
+          .profile-header {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .profile-header-left {
+            flex-wrap: wrap;
+          }
+          .profile-header-actions {
+            width: 100%;
+            flex-wrap: wrap;
+          }
+          .profile-edit-btn,
+          .profile-cancel-btn,
+          .profile-save-btn {
+            flex: 1;
+            justify-content: center;
+          }
+          .profile-stats-grid {
+            grid-template-columns: 1fr;
+          }
+          .profile-error-actions {
+            flex-direction: column;
+            width: 100%;
+          }
+          .profile-error-btn,
+          .profile-retry-btn {
+            width: 100%;
+            text-align: center;
+          }
+          .profile-kpi-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .profile-title {
+            font-size: 20px;
+          }
+          .profile-header-actions {
+            flex-direction: column;
+          }
+          .profile-edit-btn,
+          .profile-cancel-btn,
+          .profile-save-btn {
+            width: 100%;
+          }
+          .profile-card-content {
+            padding: 16px;
+          }
+          .profile-avatar {
+            width: 72px;
+            height: 72px;
+            font-size: 24px;
+          }
+          .profile-kpi-content {
+            padding: 16px;
+          }
+          .profile-table-header-cell,
+          .profile-table-cell {
+            padding: 6px 8px;
+            font-size: 12px;
+          }
+        }
+      `}</style>
+    </>
   );
 };
-
-const styles = {
-  container: {
-    padding: '24px',
-    maxWidth: '1400px',
-    margin: '0 auto',
-    width: '100%',
-    backgroundColor: '#F8FAFC',
-    minHeight: '100vh',
-  },
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '64vh',
-    gap: '16px',
-  },
-  loadingText: {
-    color: '#64748B',
-    fontSize: '14px',
-    fontWeight: '500',
-  },
-  spinner: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    border: '3px solid #E5E7EB',
-    borderTopColor: '#3B82F6',
-    animation: 'spin 0.8s linear infinite',
-  },
-  errorContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '64vh',
-    gap: '16px',
-    textAlign: 'center',
-    padding: '20px',
-  },
-  errorIcon: {
-    color: '#EF4444',
-  },
-  errorTitle: {
-    fontSize: '24px',
-    fontWeight: '600',
-    color: '#0F172A',
-    margin: '8px 0',
-  },
-  errorMessage: {
-    fontSize: '16px',
-    color: '#64748B',
-    maxWidth: '400px',
-  },
-  errorActions: {
-    display: 'flex',
-    gap: '12px',
-    marginTop: '8px',
-  },
-  errorButton: {
-    padding: '10px 24px',
-    backgroundColor: '#E2E8F0',
-    color: '#0F172A',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    textDecoration: 'none',
-  },
-  retryButton: {
-    padding: '10px 24px',
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-  },
-  notFoundContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '64vh',
-    gap: '16px',
-    textAlign: 'center',
-    padding: '20px',
-  },
-  notFoundIcon: {
-    color: '#94A3B8',
-  },
-  notFoundTitle: {
-    fontSize: '24px',
-    fontWeight: '600',
-    color: '#0F172A',
-    margin: '8px 0',
-  },
-  notFoundText: {
-    fontSize: '16px',
-    color: '#64748B',
-    maxWidth: '400px',
-  },
-  notFoundLink: {
-    padding: '10px 24px',
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    textDecoration: 'none',
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '24px',
-    flexWrap: 'wrap',
-    gap: '16px',
-  },
-  headerLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-  },
-  backButton: {
-    padding: '8px',
-    borderRadius: '8px',
-    backgroundColor: 'transparent',
-    border: 'none',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'background-color 0.2s ease',
-  },
-  title: {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#111827',
-    margin: 0,
-  },
-  subtitle: {
-    fontSize: '14px',
-    color: '#6B7280',
-    marginTop: '4px',
-    margin: '4px 0 0 0',
-  },
-  headerActions: {
-    display: 'flex',
-    gap: '8px',
-  },
-  editButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '8px 16px',
-    backgroundColor: 'transparent',
-    color: '#374151',
-    border: '1px solid #D1D5DB',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  cancelButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '8px 16px',
-    backgroundColor: 'transparent',
-    color: '#374151',
-    border: '1px solid #D1D5DB',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  saveButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '8px 16px',
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
-  },
-  profileGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 2fr',
-    gap: '24px',
-  },
-  profileCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-    overflow: 'hidden',
-  },
-  profileContent: {
-    padding: '24px',
-  },
-  avatarContainer: {
-    textAlign: 'center',
-  },
-  avatar: {
-    width: '96px',
-    height: '96px',
-    borderRadius: '50%',
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '32px',
-    fontWeight: '700',
-    margin: '0 auto',
-  },
-  profileName: {
-    marginTop: '16px',
-    fontSize: '20px',
-    fontWeight: '600',
-    color: '#111827',
-  },
-  profilePosition: {
-    fontSize: '14px',
-    color: '#6B7280',
-    margin: 0,
-  },
-  profileDepartment: {
-    fontSize: '14px',
-    color: '#6B7280',
-    margin: 0,
-  },
-  statusBadge: {
-    display: 'inline-block',
-    padding: '4px 12px',
-    borderRadius: '12px',
-    fontSize: '12px',
-    fontWeight: '500',
-    marginTop: '8px',
-  },
-  contactInfo: {
-    marginTop: '24px',
-    paddingTop: '16px',
-    borderTop: '1px solid #E5E7EB',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-  contactItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-  },
-  contactIcon: {
-    color: '#9CA3AF',
-    flexShrink: 0,
-  },
-  contactText: {
-    fontSize: '14px',
-    color: '#374151',
-  },
-  editForm: {
-    marginTop: '24px',
-    paddingTop: '16px',
-    borderTop: '1px solid #E5E7EB',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-  formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  },
-  formLabel: {
-    fontSize: '14px',
-    fontWeight: '500',
-    color: '#374151',
-  },
-  formInput: {
-    padding: '8px 12px',
-    border: '1px solid #D1D5DB',
-    borderRadius: '8px',
-    fontSize: '14px',
-    outline: 'none',
-    transition: 'border-color 0.2s ease',
-    backgroundColor: '#FFFFFF',
-    color: '#111827',
-  },
-  formSelect: {
-    padding: '8px 12px',
-    border: '1px solid #D1D5DB',
-    borderRadius: '8px',
-    fontSize: '14px',
-    outline: 'none',
-    transition: 'border-color 0.2s ease',
-    backgroundColor: '#FFFFFF',
-    color: '#111827',
-  },
-  performanceSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '16px',
-  },
-  statCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    padding: '16px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-  },
-  statContent: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  statLabel: {
-    fontSize: '14px',
-    color: '#6B7280',
-    margin: 0,
-  },
-  statValue: {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#111827',
-    marginTop: '4px',
-    margin: '4px 0 0 0',
-  },
-  statIcon: {
-    opacity: 0.8,
-  },
-  kpiCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-    overflow: 'hidden',
-  },
-  kpiHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '16px 24px',
-    borderBottom: '1px solid #E5E7EB',
-  },
-  kpiTitle: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#111827',
-    margin: 0,
-  },
-  kpiBadge: {
-    fontSize: '12px',
-    fontWeight: '500',
-    color: '#64748B',
-    backgroundColor: '#F1F5F9',
-    padding: '2px 10px',
-    borderRadius: '12px',
-  },
-  kpiContent: {
-    padding: '16px 24px',
-  },
-  tableWrapper: {
-    overflowX: 'auto',
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-  },
-  tableHeader: {
-    borderBottom: '1px solid #E5E7EB',
-  },
-  tableHeaderCell: {
-    textAlign: 'left',
-    padding: '8px 12px',
-    fontSize: '12px',
-    fontWeight: '600',
-    color: '#64748B',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  tableRow: {
-    borderBottom: '1px solid #F3F4F6',
-    transition: 'background-color 0.2s ease',
-  },
-  tableCell: {
-    padding: '8px 12px',
-    fontSize: '14px',
-    color: '#374151',
-  },
-  cellProductivity: {
-    color: '#3B82F6',
-    fontWeight: '500',
-  },
-  cellCompletion: {
-    color: '#22C55E',
-    fontWeight: '500',
-  },
-  cellUtilization: {
-    color: '#F59E0B',
-    fontWeight: '500',
-  },
-  cellQaPass: {
-    color: '#8B5CF6',
-    fontWeight: '500',
-  },
-  emptyTableState: {
-    textAlign: 'center',
-    padding: '32px 16px',
-  },
-  emptyContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  emptyIcon: {
-    color: '#94A3B8',
-  },
-  emptySubtext: {
-    fontSize: '12px',
-    color: '#94A3B8',
-  },
-};
-
-// Add hover styles and media queries
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  .back-button:hover {
-    background-color: #F3F4F6 !important;
-  }
-  
-  .edit-button:hover {
-    background-color: #F9FAFB !important;
-  }
-  
-  .cancel-button:hover {
-    background-color: #F9FAFB !important;
-  }
-  
-  .save-button:hover:not(:disabled) {
-    background-color: #2563EB !important;
-  }
-  
-  .save-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-  
-  .form-input:focus,
-  .form-select:focus {
-    border-color: #3B82F6 !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-  }
-  
-  .table-row:hover {
-    background-color: #F8FAFC !important;
-  }
-  
-  .retry-button:hover {
-    background-color: #2563EB !important;
-  }
-  
-  .error-button:hover {
-    background-color: #E2E8F0 !important;
-  }
-  
-  .not-found-link:hover {
-    background-color: #2563EB !important;
-  }
-  
-  @media (max-width: 1024px) {
-    .profile-grid {
-      grid-template-columns: 1fr !important;
-    }
-    
-    .stats-grid {
-      grid-template-columns: repeat(3, 1fr) !important;
-    }
-  }
-  
-  @media (max-width: 768px) {
-    .container {
-      padding: 16px !important;
-    }
-    
-    .header {
-      flex-direction: column !important;
-      align-items: stretch !important;
-    }
-    
-    .header-actions {
-      width: 100% !important;
-    }
-    
-    .edit-button,
-    .cancel-button,
-    .save-button {
-      flex: 1 !important;
-      justify-content: center !important;
-    }
-    
-    .stats-grid {
-      grid-template-columns: 1fr !important;
-    }
-    
-    .error-actions {
-      flex-direction: column !important;
-      width: 100% !important;
-    }
-    
-    .error-button,
-    .retry-button {
-      width: 100% !important;
-      text-align: center !important;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .container {
-      padding: 12px !important;
-    }
-    
-    .header-actions {
-      flex-direction: column !important;
-    }
-    
-    .edit-button,
-    .cancel-button,
-    .save-button {
-      width: 100% !important;
-    }
-    
-    .profile-content {
-      padding: 16px !important;
-    }
-    
-    .avatar {
-      width: 72px !important;
-      height: 72px !important;
-      font-size: 24px !important;
-    }
-  }
-`;
-document.head.appendChild(styleSheet);
 
 export default EmployeeProfile;

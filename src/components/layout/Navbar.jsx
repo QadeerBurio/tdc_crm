@@ -46,26 +46,22 @@ const Navbar = ({ onMenuClick }) => {
             <Menu style={styles.menuIcon} />
           </button>
 
-       
+          {/* Search Bar */}
+          <div style={styles.searchWrapper}>
+            <Search style={styles.searchIcon} />
+            <input
+              type="text"
+              placeholder="Search..."
+              style={styles.searchInput}
+            />
+          </div>
         </div>
 
         {/* Right Section - Actions & Profile */}
         <div style={styles.rightSection}>
-          <button
-            onClick={toggleTheme}
-            style={styles.iconButton}
-          >
-            {theme === 'dark' ? (
-              <Sun style={styles.icon} />
-            ) : (
-              <Moon style={styles.icon} />
-            )}
-          </button>
+          
 
-          <button style={styles.iconButton}>
-            <Bell style={styles.icon} />
-            <span style={styles.notificationBadge}></span>
-          </button>
+          
 
           {/* Profile Dropdown */}
           <div style={styles.profileContainer}>
@@ -136,12 +132,13 @@ const Navbar = ({ onMenuClick }) => {
 
 const styles = {
   navbar: {
-    backgroundColor: '#ffffff',
-    borderBottom: '1px solid #e5e7eb',
-    padding: '10px 24px',
+    backgroundColor: '#ffffff', // White
+    borderBottom: '2px solid #FFEFB3', // Warm cream accent
+    padding: '12px 28px',
     position: 'sticky',
     top: 0,
     zIndex: 40,
+    boxShadow: '0 2px 8px rgba(1, 62, 55, 0.08)', // Subtle shadow with primary color
   },
   container: {
     maxWidth: '1400px',
@@ -153,7 +150,7 @@ const styles = {
   leftSection: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
+    gap: '16px',
   },
   menuButton: {
     padding: '8px',
@@ -164,68 +161,82 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    transition: 'background-color 0.2s',
+    transition: 'all 0.2s ease',
+  },
+  menuButtonHover: {
+    backgroundColor: '#FFEFB3', // Warm cream on hover
   },
   menuIcon: {
-    width: '20px',
-    height: '20px',
-    color: '#6b7280',
+    width: '22px',
+    height: '22px',
+    color: '#013E37', // Primary dark teal
   },
   searchWrapper: {
     display: 'flex',
     alignItems: 'center',
     position: 'relative',
-    backgroundColor: '#f9fafb',
-    borderRadius: '8px',
-    border: '1px solid #e5e7eb',
-    transition: 'all 0.2s',
+    backgroundColor: '#FFEFB3', // Warm cream background
+    borderRadius: '10px',
+    border: '2px solid #013E37', // Primary dark teal border
+    transition: 'all 0.3s ease',
+  },
+  searchWrapperFocus: {
+    boxShadow: '0 0 0 3px rgba(1, 62, 55, 0.15)',
   },
   searchIcon: {
     position: 'absolute',
-    left: '12px',
-    width: '16px',
-    height: '16px',
-    color: '#9ca3af',
+    left: '14px',
+    width: '18px',
+    height: '18px',
+    color: '#013E37', // Primary dark teal
   },
   searchInput: {
-    padding: '8px 12px 8px 36px',
+    padding: '10px 14px 10px 42px',
     border: 'none',
     background: 'transparent',
     outline: 'none',
     fontSize: '14px',
-    color: '#111827',
-    width: '240px',
-    borderRadius: '8px',
+    color: '#013E37', // Primary dark teal
+    width: '260px',
+    borderRadius: '10px',
+    fontWeight: '400',
+  },
+  searchInputPlaceholder: {
+    color: 'rgba(1, 62, 55, 0.6)',
   },
   rightSection: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '4px',
   },
   iconButton: {
-    padding: '8px',
-    borderRadius: '8px',
+    padding: '10px',
+    borderRadius: '10px',
     border: 'none',
     background: 'transparent',
     cursor: 'pointer',
     position: 'relative',
-    transition: 'background-color 0.2s',
+    transition: 'all 0.2s ease',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
   },
+  iconButtonHover: {
+    backgroundColor: '#FFEFB3',
+  },
   icon: {
-    width: '20px',
-    height: '20px',
-    color: '#6b7280',
+    width: '22px',
+    height: '22px',
+    color: '#013E37', // Primary dark teal
+    transition: 'transform 0.2s ease',
   },
   notificationBadge: {
     position: 'absolute',
     top: '6px',
     right: '6px',
-    width: '8px',
-    height: '8px',
-    backgroundColor: '#ef4444',
+    width: '10px',
+    height: '10px',
+    backgroundColor: '#FF6B6B', // Red for notifications
     borderRadius: '50%',
     border: '2px solid #ffffff',
   },
@@ -236,103 +247,231 @@ const styles = {
   profileButton: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    padding: '6px 12px 6px 6px',
-    borderRadius: '8px',
-    border: 'none',
+    gap: '10px',
+    padding: '6px 14px 6px 6px',
+    borderRadius: '10px',
+    border: '2px solid transparent',
     background: 'transparent',
     cursor: 'pointer',
-    transition: 'background-color 0.2s',
+    transition: 'all 0.2s ease',
+  },
+  profileButtonHover: {
+    borderColor: '#FFEFB3',
+    backgroundColor: '#FFEFB3',
   },
   avatar: {
-    width: '32px',
-    height: '32px',
+    width: '36px',
+    height: '36px',
     borderRadius: '50%',
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#013E37', // Primary dark teal
     color: '#ffffff',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '14px',
+    fontSize: '15px',
     fontWeight: '600',
     textTransform: 'uppercase',
+    letterSpacing: '0.5px',
   },
   userName: {
     fontSize: '14px',
     fontWeight: '500',
-    color: '#111827',
+    color: '#013E37', // Primary dark teal
     display: 'none',
   },
   chevronIcon: {
-    width: '16px',
-    height: '16px',
-    color: '#9ca3af',
+    width: '18px',
+    height: '18px',
+    color: '#013E37', // Primary dark teal
   },
   dropdown: {
     position: 'absolute',
     right: 0,
-    marginTop: '8px',
-    width: '240px',
+    marginTop: '12px',
+    width: '260px',
     backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-    border: '1px solid #e5e7eb',
-    padding: '6px 0',
+    borderRadius: '14px',
+    boxShadow: '0 12px 30px rgba(1, 62, 55, 0.15)',
+    border: '2px solid #FFEFB3', // Warm cream border
+    padding: '8px 0',
     zIndex: 50,
+    animation: 'slideDown 0.2s ease',
   },
   dropdownHeader: {
-    padding: '12px 16px',
-    borderBottom: '1px solid #e5e7eb',
+    padding: '14px 18px',
+    borderBottom: '2px solid #FFEFB3', // Warm cream
     marginBottom: '4px',
   },
   dropdownName: {
-    fontSize: '14px',
+    fontSize: '15px',
     fontWeight: '600',
-    color: '#111827',
+    color: '#013E37', // Primary dark teal
     margin: 0,
   },
   dropdownEmail: {
     fontSize: '13px',
-    color: '#6b7280',
+    color: 'rgba(1, 62, 55, 0.7)',
     margin: '4px 0 0 0',
   },
   dropdownItem: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    padding: '10px 16px',
+    gap: '14px',
+    padding: '12px 18px',
     fontSize: '14px',
-    color: '#374151',
+    fontWeight: '500',
+    color: '#013E37', // Primary dark teal
     textDecoration: 'none',
-    transition: 'background-color 0.2s',
+    transition: 'all 0.2s ease',
     cursor: 'pointer',
+    borderRadius: '0',
+  },
+  dropdownItemHover: {
+    backgroundColor: '#FFEFB3', // Warm cream
   },
   dropdownIcon: {
-    width: '16px',
-    height: '16px',
-    color: '#6b7280',
+    width: '18px',
+    height: '18px',
+    color: '#013E37', // Primary dark teal
   },
   dropdownLogout: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    padding: '10px 16px',
+    gap: '14px',
+    padding: '12px 18px',
     fontSize: '14px',
-    color: '#ef4444',
+    fontWeight: '500',
+    color: '#FF6B6B', // Red for logout
     border: 'none',
     background: 'transparent',
     width: '100%',
     cursor: 'pointer',
-    borderTop: '1px solid #e5e7eb',
+    borderTop: '2px solid #FFEFB3', // Warm cream
     marginTop: '4px',
-    transition: 'background-color 0.2s',
+    transition: 'all 0.2s ease',
+    borderRadius: '0 0 14px 14px',
+  },
+  dropdownLogoutHover: {
+    backgroundColor: '#FFEFB3',
   },
 };
 
-// Media Queries - Add these to your global CSS or use className
-// .lg\\:hidden { display: none; } // For menu button
-// .dark\\:bg-gray-700 { background-color: #374151; }
-// .dark\\:text-white { color: #ffffff; }
-// .dark\\:border-gray-600 { border-color: #4b5563; }
+// Add this to your global CSS or component styles
+const globalStyles = `
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Media Queries for Responsive */
+  @media (min-width: 1024px) {
+    .lg\\:hidden {
+      display: none !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .userName {
+      display: none !important;
+    }
+  }
+
+  /* Hover States - You'll need to handle these with CSS or use className */
+  .navbar-button:hover {
+    background-color: #FFEFB3 !important;
+  }
+
+  .navbar-search:hover {
+    border-color: #013E37 !important;
+    box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1) !important;
+  }
+
+  /* Dark Theme Overrides (if needed) */
+  .dark-theme .navbar {
+    background-color: #013E37 !important;
+    border-bottom-color: #FFEFB3 !important;
+  }
+
+  .dark-theme .searchWrapper {
+    background-color: rgba(255, 239, 179, 0.1) !important;
+    border-color: #FFEFB3 !important;
+  }
+
+  .dark-theme .searchInput {
+    color: #FFEFB3 !important;
+  }
+
+  .dark-theme .searchIcon {
+    color: #FFEFB3 !important;
+  }
+
+  .dark-theme .icon {
+    color: #FFEFB3 !important;
+  }
+
+  .dark-theme .menuIcon {
+    color: #FFEFB3 !important;
+  }
+
+  .dark-theme .dropdown {
+    background-color: #013E37 !important;
+    border-color: #FFEFB3 !important;
+  }
+
+  .dark-theme .dropdownName {
+    color: #FFEFB3 !important;
+  }
+
+  .dark-theme .dropdownEmail {
+    color: rgba(255, 239, 179, 0.7) !important;
+  }
+
+  .dark-theme .dropdownItem {
+    color: #FFEFB3 !important;
+  }
+
+  .dark-theme .dropdownItem:hover {
+    background-color: rgba(255, 239, 179, 0.1) !important;
+  }
+
+  .dark-theme .dropdownIcon {
+    color: #FFEFB3 !important;
+  }
+
+  .dark-theme .avatar {
+    background-color: #FFEFB3 !important;
+    color: #013E37 !important;
+  }
+
+  .dark-theme .userName {
+    color: #FFEFB3 !important;
+  }
+
+  .dark-theme .chevronIcon {
+    color: #FFEFB3 !important;
+  }
+
+  .dark-theme .dropdownHeader {
+    border-bottom-color: rgba(255, 239, 179, 0.2) !important;
+  }
+
+  .dark-theme .dropdownLogout {
+    border-top-color: rgba(255, 239, 179, 0.2) !important;
+  }
+`;
+
+// You can inject the global styles or add them to your main CSS file
+// For React, you can add this to your index.js or App.js
+// if (typeof document !== 'undefined') {
+//   const styleTag = document.createElement('style');
+//   styleTag.textContent = globalStyles;
+//   document.head.appendChild(styleTag);
+// }
 
 export default Navbar;

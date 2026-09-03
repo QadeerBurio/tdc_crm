@@ -1,7 +1,8 @@
-// components/projects/TaskForm.jsx - COMPLETE FIXED VERSION
+// components/projects/TaskForm.jsx - MODERN MODAL DESIGN LIKE SEGMENTS
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { X, Check, Users, Clock, Flag, Calendar, FileText, Tag, User, Briefcase, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -30,7 +31,6 @@ const TaskForm = ({ initialData = null, projectId = null, onSuccess, onCancel })
   useEffect(() => {
     fetchProjects();
     fetchTeamMembers();
-    // ✅ Set taskId if editing
     if (initialData?._id) {
       setTaskId(initialData._id);
     }
@@ -72,9 +72,7 @@ const TaskForm = ({ initialData = null, projectId = null, onSuccess, onCancel })
           users = response.data;
         }
       }
-      // ✅ Filter to only show active users
       users = users.filter(u => u.status !== 'inactive');
-      console.log('📋 Team members fetched:', users.length);
       setTeamMembers(users);
     } catch (err) {
       console.error('Error fetching team members:', err);
@@ -97,7 +95,6 @@ const TaskForm = ({ initialData = null, projectId = null, onSuccess, onCancel })
     e.preventDefault();
     setLoading(true);
 
-    // ✅ Validation
     if (!formData.title.trim()) {
       toast.error('Task title is required');
       setLoading(false);
@@ -111,13 +108,12 @@ const TaskForm = ({ initialData = null, projectId = null, onSuccess, onCancel })
     }
 
     try {
-      // ✅ CRITICAL FIX: Ensure both assignedTo and assignees are set
       const submitData = {
         title: formData.title.trim(),
         description: formData.description?.trim() || '',
         projectId: formData.projectId || undefined,
         assignedTo: formData.assignedTo,
-        assignees: [formData.assignedTo], // ✅ Always set assignees array
+        assignees: [formData.assignedTo],
         reviewerId: formData.reviewerId || undefined,
         priority: formData.priority,
         status: formData.status,
@@ -125,10 +121,6 @@ const TaskForm = ({ initialData = null, projectId = null, onSuccess, onCancel })
         deadline: formData.deadline || undefined,
         createdBy: user?._id
       };
-
-      console.log('📋 Submitting task data:', submitData);
-      console.log('👤 Created by:', user?._id);
-      console.log('👤 Assigned to:', formData.assignedTo);
 
       let response;
       const url = `${API_URL}/tasks`;
@@ -143,22 +135,6 @@ const TaskForm = ({ initialData = null, projectId = null, onSuccess, onCancel })
           headers: { Authorization: `Bearer ${token}` }
         });
         toast.success('Task created successfully');
-      }
-
-      console.log('✅ Task saved:', response.data);
-
-      // ✅ After saving, immediately fetch the task to verify it was saved correctly
-      if (response.data?.data?._id) {
-        try {
-          const verifyResponse = await axios.get(`${API_URL}/tasks/${response.data.data._id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          console.log('🔍 Verified task:', verifyResponse.data);
-          console.log('🔍 assignedTo:', verifyResponse.data.data?.assignedTo);
-          console.log('🔍 assignees:', verifyResponse.data.data?.assignees);
-        } catch (verifyErr) {
-          console.error('Could not verify task:', verifyErr);
-        }
       }
 
       if (onSuccess) {
@@ -183,290 +159,433 @@ const TaskForm = ({ initialData = null, projectId = null, onSuccess, onCancel })
   };
 
   return (
-    <form onSubmit={handleSubmit} style={styles.form}>
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Task Title *</label>
-        <input
-          type="text"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          style={styles.input}
-          placeholder="Enter task title"
-          disabled={loading}
-          required
-        />
-      </div>
-
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Description</label>
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          style={styles.textarea}
-          placeholder="Enter task description..."
-          rows={3}
-          disabled={loading}
-        />
-      </div>
-
-      <div style={styles.row}>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Project</label>
-          <select
-            name="projectId"
-            value={formData.projectId}
-            onChange={handleChange}
-            style={styles.select}
-            disabled={loading || !!projectId}
-          >
-            <option value="">Select project...</option>
-            {projects.map((project) => (
-              <option key={project._id} value={project._id}>
-                {project.projectName}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Status</label>
-          <select
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            style={styles.select}
-            disabled={loading}
-          >
-            <option value="Backlog">Backlog</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Internal QA">Internal QA</option>
-            <option value="Client Review">Client Review</option>
-            <option value="Approved">Approved</option>
-            <option value="Completed">Completed</option>
-          </select>
-        </div>
-      </div>
-
-      <div style={styles.row}>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Priority</label>
-          <select
-            name="priority"
-            value={formData.priority}
-            onChange={handleChange}
-            style={styles.select}
-            disabled={loading}
-          >
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-            <option value="Urgent">Urgent</option>
-          </select>
-        </div>
-
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Estimated Hours</label>
+    <div className="task-form-container">
+      <form onSubmit={handleSubmit} className="task-form">
+        {/* Title */}
+        <div className="task-form-group">
+          <label className="task-form-label">
+            <FileText className="task-form-label-icon" />
+            Task Title <span className="task-form-required">*</span>
+          </label>
           <input
-            type="number"
-            name="estimatedHours"
-            value={formData.estimatedHours}
+            type="text"
+            name="title"
+            value={formData.title}
             onChange={handleChange}
-            style={styles.input}
-            placeholder="0"
-            min="0"
-            step="0.5"
+            className="task-form-input"
+            placeholder="Enter task title"
+            disabled={loading}
+            autoFocus
+          />
+        </div>
+
+        {/* Description */}
+        <div className="task-form-group">
+          <label className="task-form-label">
+            <FileText className="task-form-label-icon" />
+            Description
+          </label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            className="task-form-textarea"
+            placeholder="Enter task description..."
+            rows={3}
             disabled={loading}
           />
         </div>
-      </div>
 
-      <div style={styles.row}>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Assigned To *</label>
-          <select
-            name="assignedTo"
-            value={formData.assignedTo}
-            onChange={handleChange}
-            style={styles.select}
-            disabled={loading}
-            required
-          >
-            <option value="">Select team member...</option>
-            {teamMembers.map((member) => (
-              <option key={member._id} value={member._id}>
-                {member.firstName} {member.lastName} ({member.email}) - {member.role || 'Employee'}
-              </option>
-            ))}
-          </select>
-          {teamMembers.length === 0 && (
-            <p style={styles.helperText}>No team members found. Please add users first.</p>
-          )}
+        {/* Row: Project & Status */}
+        <div className="task-form-row">
+          <div className="task-form-group">
+            <label className="task-form-label">
+              <Briefcase className="task-form-label-icon" />
+              Project
+            </label>
+            <select
+              name="projectId"
+              value={formData.projectId}
+              onChange={handleChange}
+              className="task-form-select"
+              disabled={loading || !!projectId}
+            >
+              <option value="">Select project...</option>
+              {projects.map((project) => (
+                <option key={project._id} value={project._id}>
+                  {project.projectName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="task-form-group">
+            <label className="task-form-label">
+              <Tag className="task-form-label-icon" />
+              Status
+            </label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="task-form-select"
+              disabled={loading}
+            >
+              <option value="Backlog">📋 Backlog</option>
+              <option value="In Progress">🔄 In Progress</option>
+              <option value="Internal QA">🔍 Internal QA</option>
+              <option value="Client Review">👀 Client Review</option>
+              <option value="Approved">✅ Approved</option>
+              <option value="Completed">🎉 Completed</option>
+            </select>
+          </div>
         </div>
 
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Reviewer</label>
-          <select
-            name="reviewerId"
-            value={formData.reviewerId}
+        {/* Row: Priority & Hours */}
+        <div className="task-form-row">
+          <div className="task-form-group">
+            <label className="task-form-label">
+              <Flag className="task-form-label-icon" />
+              Priority
+            </label>
+            <select
+              name="priority"
+              value={formData.priority}
+              onChange={handleChange}
+              className="task-form-select"
+              disabled={loading}
+            >
+              <option value="Low">🟢 Low</option>
+              <option value="Medium">🟡 Medium</option>
+              <option value="High">🟠 High</option>
+              <option value="Urgent">🔴 Urgent</option>
+            </select>
+          </div>
+
+          <div className="task-form-group">
+            <label className="task-form-label">
+              <Clock className="task-form-label-icon" />
+              Estimated Hours
+            </label>
+            <input
+              type="number"
+              name="estimatedHours"
+              value={formData.estimatedHours}
+              onChange={handleChange}
+              className="task-form-input"
+              placeholder="0"
+              min="0"
+              step="0.5"
+              disabled={loading}
+            />
+          </div>
+        </div>
+
+        {/* Row: Assigned To & Reviewer */}
+        <div className="task-form-row">
+          <div className="task-form-group">
+            <label className="task-form-label">
+              <User className="task-form-label-icon" />
+              Assigned To <span className="task-form-required">*</span>
+            </label>
+            <select
+              name="assignedTo"
+              value={formData.assignedTo}
+              onChange={handleChange}
+              className="task-form-select"
+              disabled={loading}
+              required
+            >
+              <option value="">Select team member...</option>
+              {teamMembers.map((member) => (
+                <option key={member._id} value={member._id}>
+                  {member.firstName} {member.lastName} ({member.role || 'Employee'})
+                </option>
+              ))}
+            </select>
+            {teamMembers.length === 0 && (
+              <p className="task-form-helper">No team members found. Please add users first.</p>
+            )}
+          </div>
+
+          <div className="task-form-group">
+            <label className="task-form-label">
+              <Users className="task-form-label-icon" />
+              Reviewer
+            </label>
+            <select
+              name="reviewerId"
+              value={formData.reviewerId}
+              onChange={handleChange}
+              className="task-form-select"
+              disabled={loading}
+            >
+              <option value="">No reviewer</option>
+              {teamMembers.map((member) => (
+                <option key={member._id} value={member._id}>
+                  {member.firstName} {member.lastName}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Deadline */}
+        <div className="task-form-group">
+          <label className="task-form-label">
+            <Calendar className="task-form-label-icon" />
+            Deadline
+          </label>
+          <input
+            type="date"
+            name="deadline"
+            value={formData.deadline}
             onChange={handleChange}
-            style={styles.select}
+            className="task-form-input"
+            disabled={loading}
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="task-form-actions">
+          <button
+            type="button"
+            className="task-form-cancel"
+            onClick={onCancel}
             disabled={loading}
           >
-            <option value="">No reviewer</option>
-            {teamMembers.map((member) => (
-              <option key={member._id} value={member._id}>
-                {member.firstName} {member.lastName}
-              </option>
-            ))}
-          </select>
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="task-form-submit"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <div className="task-form-spinner"></div>
+                Saving...
+              </>
+            ) : (
+              <>
+                <Check className="task-form-submit-icon" />
+                {initialData ? 'Update Task' : 'Create Task'}
+              </>
+            )}
+          </button>
         </div>
-      </div>
+      </form>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Deadline</label>
-        <input
-          type="date"
-          name="deadline"
-          value={formData.deadline}
-          onChange={handleChange}
-          style={styles.input}
-          disabled={loading}
-        />
-      </div>
+      <style>{`
+        .task-form-container {
+          padding: 0;
+          max-width: 100%;
+        }
 
-      <div style={styles.actions}>
-        <button
-          type="button"
-          style={styles.cancelButton}
-          onClick={onCancel}
-          disabled={loading}
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          style={styles.submitButton}
-          disabled={loading}
-        >
-          {loading ? 'Saving...' : (initialData ? 'Update Task' : 'Create Task')}
-        </button>
-      </div>
-    </form>
+        .task-form {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .task-form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          animation: taskFadeIn 0.4s ease forwards;
+          opacity: 0;
+        }
+        .task-form-group:nth-child(1) { animation-delay: 0.05s; }
+        .task-form-group:nth-child(2) { animation-delay: 0.1s; }
+        .task-form-group:nth-child(3) { animation-delay: 0.15s; }
+        .task-form-group:nth-child(4) { animation-delay: 0.2s; }
+        .task-form-group:nth-child(5) { animation-delay: 0.25s; }
+        .task-form-group:nth-child(6) { animation-delay: 0.3s; }
+        .task-form-group:nth-child(7) { animation-delay: 0.35s; }
+
+        .task-form-label {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          font-weight: 500;
+          color: #013E37;
+        }
+
+        .task-form-label-icon {
+          width: 14px;
+          height: 14px;
+          opacity: 0.6;
+        }
+
+        .task-form-required {
+          color: #EF4444;
+        }
+
+        .task-form-input,
+        .task-form-select,
+        .task-form-textarea {
+          padding: 8px 12px;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          font-size: 14px;
+          outline: none;
+          transition: all 0.3s ease;
+          width: 100%;
+          font-family: inherit;
+          background: #ffffff;
+          color: #013E37;
+        }
+
+        .task-form-input:focus,
+        .task-form-select:focus,
+        .task-form-textarea:focus {
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.08);
+          transform: scale(1.01);
+        }
+
+        .task-form-input::placeholder,
+        .task-form-textarea::placeholder {
+          color: #013E37;
+          opacity: 0.4;
+        }
+
+        .task-form-textarea {
+          resize: vertical;
+          min-height: 60px;
+        }
+
+        .task-form-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+
+        .task-form-helper {
+          font-size: 12px;
+          color: #EF4444;
+          margin-top: 4px;
+        }
+
+        .task-form-actions {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 12px;
+          padding-top: 16px;
+          border-top: 1px solid #FFEFB3;
+          margin-top: 4px;
+        }
+
+        .task-form-cancel {
+          padding: 8px 16px;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          background: transparent;
+          color: #013E37;
+          font-weight: 500;
+          font-size: 14px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .task-form-cancel:hover:not(:disabled) {
+          background: #FFEFB3;
+          border-color: #013E37;
+          transform: scale(1.02);
+        }
+
+        .task-form-cancel:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .task-form-submit {
+          padding: 8px 20px;
+          background: #013E37;
+          border: none;
+          border-radius: 8px;
+          color: #ffffff;
+          font-weight: 500;
+          font-size: 14px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(1, 62, 55, 0.2);
+        }
+
+        .task-form-submit:hover:not(:disabled) {
+          background: #0A5C54;
+          transform: translateY(-2px) scale(1.02);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
+        }
+
+        .task-form-submit:active:not(:disabled) {
+          transform: scale(0.95);
+        }
+
+        .task-form-submit:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .task-form-submit-icon {
+          width: 16px;
+          height: 16px;
+        }
+
+        .task-form-spinner {
+          width: 16px;
+          height: 16px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top-color: #ffffff;
+          border-radius: 50%;
+          animation: taskSpin 0.8s linear infinite;
+        }
+
+        @keyframes taskSpin {
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes taskFadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @media (max-width: 768px) {
+          .task-form-row {
+            grid-template-columns: 1fr;
+          }
+          .task-form-actions {
+            flex-direction: column-reverse;
+          }
+          .task-form-cancel,
+          .task-form-submit {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .task-form-container {
+            padding: 0;
+          }
+          .task-form-group {
+            margin-bottom: 0;
+          }
+        }
+      `}</style>
+    </div>
   );
 };
-
-const styles = {
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-  row: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '16px',
-  },
-  formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  },
-  label: {
-    fontSize: '14px',
-    fontWeight: '500',
-    color: '#374151',
-  },
-  input: {
-    padding: '10px 12px',
-    border: '1px solid #D1D5DB',
-    borderRadius: '8px',
-    fontSize: '14px',
-    outline: 'none',
-    backgroundColor: '#FFFFFF',
-    color: '#111827',
-    width: '100%',
-    boxSizing: 'border-box',
-    transition: 'all 0.2s ease',
-  },
-  select: {
-    padding: '10px 12px',
-    border: '1px solid #D1D5DB',
-    borderRadius: '8px',
-    fontSize: '14px',
-    outline: 'none',
-    backgroundColor: '#FFFFFF',
-    color: '#111827',
-    width: '100%',
-    boxSizing: 'border-box',
-    transition: 'all 0.2s ease',
-  },
-  textarea: {
-    padding: '10px 12px',
-    border: '1px solid #D1D5DB',
-    borderRadius: '8px',
-    fontSize: '14px',
-    outline: 'none',
-    backgroundColor: '#FFFFFF',
-    color: '#111827',
-    width: '100%',
-    boxSizing: 'border-box',
-    resize: 'vertical',
-    fontFamily: 'inherit',
-    transition: 'all 0.2s ease',
-  },
-  helperText: {
-    fontSize: '12px',
-    color: '#EF4444',
-    marginTop: '4px',
-  },
-  actions: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '8px',
-    paddingTop: '16px',
-    borderTop: '1px solid #E5E7EB',
-  },
-  cancelButton: {
-    padding: '10px 20px',
-    backgroundColor: 'transparent',
-    color: '#374151',
-    border: '1px solid #D1D5DB',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  submitButton: {
-    padding: '10px 20px',
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-};
-
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  .cancel-button:hover:not(:disabled) { background-color: #F9FAFB !important; }
-  .submit-button:hover:not(:disabled) { background-color: #2563EB !important; }
-  .input:focus, .select:focus, .textarea:focus {
-    border-color: #3B82F6 !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-  }
-  .cancel-button:disabled, .submit-button:disabled { opacity: 0.6; cursor: not-allowed; }
-  @media (max-width: 768px) {
-    .row { grid-template-columns: 1fr !important; }
-    .actions { flex-direction: column !important; }
-    .cancel-button, .submit-button { width: 100% !important; justify-content: center !important; }
-  }
-`;
-document.head.appendChild(styleSheet);
 
 export default TaskForm;

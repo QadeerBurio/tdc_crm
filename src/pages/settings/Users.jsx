@@ -1,13 +1,6 @@
 // pages/admin/Users.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
-import { Input } from '../../components/common/Input';
-import { Select } from '../../components/common/Select';
-import { Modal } from '../../components/common/Modal';
-import { Table } from '../../components/common/Table';
-import { Badge } from '../../components/common/Badge';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { 
@@ -15,24 +8,42 @@ import {
   Plus, 
   Edit, 
   Trash2, 
-  MoreVertical,
   UserPlus,
-  Mail,
-  Phone,
-  Shield,
-  Calendar,
   Search,
   Filter,
   ChevronDown,
   X,
   Check,
-  Clock,
   UserCheck,
   UserX,
   Activity,
   Layers,
-  ArrowLeft
+  ArrowLeft,
+  Shield,
+  Mail,
+  Phone,
+  Calendar,
+  Clock,
+  MoreVertical
 } from 'lucide-react';
+
+// Color Palette
+const COLORS = {
+  primary: '#013E37',
+  secondary: '#FFEFB3',
+  white: '#FFFFFF',
+  primaryLight: '#015A50',
+  primaryDark: '#002A25',
+  secondaryLight: '#FFF9E6',
+  textPrimary: '#013E37',
+  textSecondary: '#5A7A75',
+  border: '#E8F0EE',
+  bgLight: '#F7FAF9',
+  success: '#2D8B7A',
+  warning: '#D4A843',
+  danger: '#C0392B',
+  info: '#3B82F6',
+};
 
 const Users = () => {
   const { token } = useAuth();
@@ -61,8 +72,7 @@ const Users = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
 
-  // API base URL
-  const API_URL ='https://crmserver-production-4a42.up.railway.app/api';
+  const API_URL = 'https://crmserver-production-4a42.up.railway.app/api';
 
   useEffect(() => {
     fetchUsers();
@@ -73,31 +83,14 @@ const Users = () => {
     try {
       const response = await axios.get(`${API_URL}/users`, {
         params: filters,
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
-
       if (response.data) {
         setUsers(response.data.data || []);
       }
     } catch (err) {
       console.error('Error fetching users:', err);
-      let errorMessage = 'Failed to load users.';
-      
-      if (err.response) {
-        if (err.response.status === 401) {
-          errorMessage = 'Session expired. Please login again.';
-        } else if (err.response.status === 403) {
-          errorMessage = 'You do not have permission to view users.';
-        } else if (err.response.data?.message) {
-          errorMessage = err.response.data.message;
-        }
-      } else if (err.request) {
-        errorMessage = 'Cannot connect to server. Please make sure the backend is running.';
-      }
-      
-      toast.error(errorMessage);
+      toast.error('Failed to load users.');
     } finally {
       setLoading(false);
     }
@@ -106,7 +99,6 @@ const Users = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setActionLoading(true);
-
     try {
       const userData = {
         firstName: formData.firstName,
@@ -118,89 +110,42 @@ const Users = () => {
         timezone: formData.timezone,
         status: formData.status,
       };
+      if (!isEditing) userData.password = formData.password;
 
-      if (!isEditing) {
-        userData.password = formData.password;
-      }
-
-      let response;
       if (isEditing && selectedUser) {
-        response = await axios.put(`${API_URL}/users/${selectedUser._id}`, userData, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+        await axios.put(`${API_URL}/users/${selectedUser._id}`, userData, {
+          headers: { Authorization: `Bearer ${token}` }
         });
         toast.success('User updated successfully');
       } else {
-        response = await axios.post(`${API_URL}/users`, userData, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+        await axios.post(`${API_URL}/users`, userData, {
+          headers: { Authorization: `Bearer ${token}` }
         });
         toast.success('User created successfully');
       }
-
-      if (response.data) {
-        setShowModal(false);
-        resetForm();
-        await fetchUsers();
-      }
+      setShowModal(false);
+      resetForm();
+      await fetchUsers();
     } catch (err) {
       console.error('Error saving user:', err);
-      let errorMessage = isEditing ? 'Failed to update user.' : 'Failed to create user.';
-      
-      if (err.response) {
-        if (err.response.status === 401) {
-          errorMessage = 'Session expired. Please login again.';
-        } else if (err.response.status === 403) {
-          errorMessage = 'You do not have permission to perform this action.';
-        } else if (err.response.status === 409) {
-          errorMessage = 'Email already exists. Please use a different email.';
-        } else if (err.response.data?.message) {
-          errorMessage = err.response.data.message;
-        }
-      } else if (err.request) {
-        errorMessage = 'Cannot connect to server. Please make sure the backend is running.';
-      }
-      
-      toast.error(errorMessage);
+      toast.error(isEditing ? 'Failed to update user.' : 'Failed to create user.');
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleDelete = async (user) => {
-    if (!window.confirm(`Are you sure you want to delete ${user.firstName} ${user.lastName}?`)) {
-      return;
-    }
-
+    if (!window.confirm(`Are you sure you want to delete ${user.firstName} ${user.lastName}?`)) return;
     setActionLoading(true);
     try {
       await axios.delete(`${API_URL}/users/${user._id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
-
       toast.success('User deleted successfully');
       await fetchUsers();
     } catch (err) {
       console.error('Error deleting user:', err);
-      let errorMessage = 'Failed to delete user.';
-      
-      if (err.response) {
-        if (err.response.status === 401) {
-          errorMessage = 'Session expired. Please login again.';
-        } else if (err.response.status === 403) {
-          errorMessage = 'You do not have permission to delete this user.';
-        } else if (err.response.data?.message) {
-          errorMessage = err.response.data.message;
-        }
-      } else if (err.request) {
-        errorMessage = 'Cannot connect to server. Please make sure the backend is running.';
-      }
-      
-      toast.error(errorMessage);
+      toast.error('Failed to delete user.');
     } finally {
       setActionLoading(false);
     }
@@ -264,10 +209,10 @@ const Users = () => {
   const getRoleColor = (role) => {
     const colors = {
       super_admin: { bg: '#8B5CF6', text: '#FFFFFF' },
-      admin: { bg: '#3B82F6', text: '#FFFFFF' },
-      manager: { bg: '#10B981', text: '#FFFFFF' },
+      admin: { bg: COLORS.primary, text: '#FFFFFF' },
+      manager: { bg: '#2D8B7A', text: '#FFFFFF' },
       employee: { bg: '#6B7280', text: '#FFFFFF' },
-      client: { bg: '#F59E0B', text: '#FFFFFF' },
+      client: { bg: '#D4A843', text: '#FFFFFF' },
     };
     return colors[role] || colors.employee;
   };
@@ -281,93 +226,6 @@ const Users = () => {
     return colors[status] || colors.active;
   };
 
-  const columns = [
-    {
-      header: 'User',
-      accessor: (user) => (
-        <div style={styles.userCell}>
-          <div style={styles.avatar}>
-            {user.firstName?.[0]}{user.lastName?.[0]}
-          </div>
-          <div>
-            <div style={styles.userName}>{user.firstName} {user.lastName}</div>
-            <div style={styles.userEmail}>{user.email}</div>
-          </div>
-        </div>
-      )
-    },
-    {
-      header: 'Role',
-      accessor: (user) => {
-        const roleColor = getRoleColor(user.role);
-        return (
-          <span style={{
-            ...styles.roleBadge,
-            backgroundColor: roleColor.bg,
-            color: roleColor.text,
-          }}>
-            {user.role ? user.role.replace('_', ' ').toUpperCase() : 'N/A'}
-          </span>
-        );
-      }
-    },
-    {
-      header: 'Department',
-      accessor: (user) => (
-        <span style={styles.departmentText}>
-          {user.department || '—'}
-        </span>
-      )
-    },
-    {
-      header: 'Status',
-      accessor: (user) => {
-        const statusColor = getStatusColor(user.status);
-        return (
-          <span style={{
-            ...styles.statusBadge,
-            backgroundColor: statusColor.bg,
-            color: statusColor.text,
-          }}>
-            {user.status ? user.status.charAt(0).toUpperCase() + user.status.slice(1) : 'N/A'}
-          </span>
-        );
-      }
-    },
-    {
-      header: 'Last Login',
-      accessor: (user) => (
-        <span style={styles.lastLoginText}>
-          {formatDate(user.lastLogin)}
-        </span>
-      )
-    },
-    {
-      header: 'Actions',
-      accessor: (user) => (
-        <div style={styles.actionButtons}>
-          <button 
-            style={styles.actionButtonEdit}
-            onClick={() => openEditModal(user)}
-            disabled={actionLoading}
-            title="Edit User"
-          >
-            <Edit size={16} />
-          </button>
-          <button 
-            style={styles.actionButtonDelete}
-            onClick={() => handleDelete(user)}
-            disabled={actionLoading}
-            title="Delete User"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      )
-    }
-  ];
-
-  // Stats cards data
   const stats = {
     total: users.length,
     active: users.filter(u => u.status === 'active').length,
@@ -401,8 +259,8 @@ const Users = () => {
       {/* Stats Cards */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <div style={styles.statIconWrapper}>
-            <UsersIcon size={20} style={styles.statIconBlue} />
+          <div style={{...styles.statIconWrapper, backgroundColor: `${COLORS.primary}15` }}>
+            <UsersIcon size={20} style={{ color: COLORS.primary }} />
           </div>
           <div>
             <p style={styles.statNumber}>{stats.total}</p>
@@ -410,8 +268,8 @@ const Users = () => {
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIconWrapper}>
-            <UserCheck size={20} style={styles.statIconGreen} />
+          <div style={{...styles.statIconWrapper, backgroundColor: '#2D8B7A15' }}>
+            <UserCheck size={20} style={{ color: '#2D8B7A' }} />
           </div>
           <div>
             <p style={styles.statNumber}>{stats.active}</p>
@@ -419,8 +277,8 @@ const Users = () => {
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIconWrapper}>
-            <Shield size={20} style={styles.statIconPurple} />
+          <div style={{...styles.statIconWrapper, backgroundColor: '#8B5CF615' }}>
+            <Shield size={20} style={{ color: '#8B5CF6' }} />
           </div>
           <div>
             <p style={styles.statNumber}>{stats.admins}</p>
@@ -428,8 +286,8 @@ const Users = () => {
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIconWrapper}>
-            <Layers size={20} style={styles.statIconOrange} />
+          <div style={{...styles.statIconWrapper, backgroundColor: '#D4A84315' }}>
+            <Layers size={20} style={{ color: '#D4A843' }} />
           </div>
           <div>
             <p style={styles.statNumber}>{stats.managers}</p>
@@ -450,18 +308,12 @@ const Users = () => {
             style={styles.searchInput}
           />
           {filters.search && (
-            <button 
-              style={styles.clearSearch}
-              onClick={() => setFilters({ ...filters, search: '' })}
-            >
+            <button style={styles.clearSearch} onClick={() => setFilters({ ...filters, search: '' })}>
               <X size={16} />
             </button>
           )}
         </div>
-        <button 
-          style={styles.filterToggle}
-          onClick={() => setShowFilters(!showFilters)}
-        >
+        <button style={styles.filterToggle} onClick={() => setShowFilters(!showFilters)}>
           <Filter size={16} />
           Filters
           <ChevronDown size={14} style={{
@@ -502,10 +354,7 @@ const Users = () => {
                 <option value="suspended">Suspended</option>
               </select>
             </div>
-            <button 
-              style={styles.clearFilters}
-              onClick={() => setFilters({ role: '', status: '', search: '' })}
-            >
+            <button style={styles.clearFilters} onClick={() => setFilters({ role: '', status: '', search: '' })}>
               Clear Filters
             </button>
           </div>
@@ -514,81 +363,121 @@ const Users = () => {
 
       {/* Users Table */}
       <div style={styles.tableWrapper}>
-        <Table
-          columns={columns}
-          data={users}
-          loading={loading}
-          emptyMessage="No users found. Create your first user to get started."
-        />
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.tableHeader}>User</th>
+              <th style={styles.tableHeader}>Role</th>
+              <th style={styles.tableHeader}>Department</th>
+              <th style={styles.tableHeader}>Status</th>
+              <th style={styles.tableHeader}>Last Login</th>
+              <th style={{...styles.tableHeader, textAlign: 'right'}}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan="6" style={styles.emptyState}>
+                  <UsersIcon size={40} style={{ color: COLORS.textSecondary, marginBottom: '12px' }} />
+                  <p style={styles.emptyStateText}>No users found</p>
+                  <p style={styles.emptyStateSubtext}>Create your first user to get started</p>
+                </td>
+              </tr>
+            ) : (
+              users.map((user) => (
+                <tr key={user._id} style={styles.tableRow}>
+                  <td style={styles.tableCell}>
+                    <div style={styles.userCell}>
+                      <div style={{...styles.avatar, backgroundColor: COLORS.secondary, color: COLORS.primary }}>
+                        {user.firstName?.[0]}{user.lastName?.[0]}
+                      </div>
+                      <div>
+                        <div style={styles.userName}>{user.firstName} {user.lastName}</div>
+                        <div style={styles.userEmail}>{user.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style={styles.tableCell}>
+                    <span style={{
+                      ...styles.roleBadge,
+                      backgroundColor: getRoleColor(user.role).bg,
+                      color: getRoleColor(user.role).text,
+                    }}>
+                      {user.role ? user.role.replace('_', ' ').toUpperCase() : 'N/A'}
+                    </span>
+                  </td>
+                  <td style={styles.tableCell}>
+                    <span style={styles.departmentText}>{user.department || '—'}</span>
+                  </td>
+                  <td style={styles.tableCell}>
+                    <span style={{
+                      ...styles.statusBadge,
+                      backgroundColor: getStatusColor(user.status).bg,
+                      color: getStatusColor(user.status).text,
+                    }}>
+                      {user.status ? user.status.charAt(0).toUpperCase() + user.status.slice(1) : 'N/A'}
+                    </span>
+                  </td>
+                  <td style={styles.tableCell}>
+                    <span style={styles.lastLoginText}>{formatDate(user.lastLogin)}</span>
+                  </td>
+                  <td style={{...styles.tableCell, textAlign: 'right'}}>
+                    <div style={styles.actionButtons}>
+                      <button style={styles.actionButtonEdit} onClick={() => openEditModal(user)} disabled={actionLoading}>
+                        <Edit size={16} />
+                      </button>
+                      <button style={styles.actionButtonDelete} onClick={() => handleDelete(user)} disabled={actionLoading}>
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Full Screen Modal */}
       {showModal && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContainer}>
-            {/* Modal Header */}
             <div style={styles.modalHeader}>
               <div style={styles.modalHeaderLeft}>
-                <button 
-                  style={styles.modalBackButton}
-                  onClick={() => {
-                    setShowModal(false);
-                    resetForm();
-                  }}
-                >
+                <button style={styles.modalBackButton} onClick={() => { setShowModal(false); resetForm(); }}>
                   <ArrowLeft size={20} />
                 </button>
                 <div>
-                  <h2 style={styles.modalTitle}>
-                    {isEditing ? 'Edit User' : 'Create New User'}
-                  </h2>
+                  <h2 style={styles.modalTitle}>{isEditing ? 'Edit User' : 'Create New User'}</h2>
                   <p style={styles.modalSubtitle}>
                     {isEditing ? 'Update user information and permissions' : 'Add a new team member to your organization'}
                   </p>
                 </div>
               </div>
-              <button 
-                style={styles.modalCloseButton}
-                onClick={() => {
-                  setShowModal(false);
-                  resetForm();
-                }}
-              >
+              <button style={styles.modalCloseButton} onClick={() => { setShowModal(false); resetForm(); }}>
                 <X size={24} />
               </button>
             </div>
 
-            {/* Modal Body */}
             <div style={styles.modalBody}>
               <form onSubmit={handleSubmit} style={styles.modalForm}>
-                {/* Step Indicator */}
                 <div style={styles.stepIndicator}>
-                  <div style={{
-                    ...styles.stepItem,
-                    ...(currentStep === 1 ? styles.stepActive : {})
-                  }}>
+                  <div style={{...styles.stepItem, ...(currentStep === 1 ? styles.stepActive : {})}}>
                     <span style={styles.stepNumber}>1</span>
                     <span style={styles.stepLabel}>Personal Info</span>
                   </div>
                   <div style={styles.stepLine} />
-                  <div style={{
-                    ...styles.stepItem,
-                    ...(currentStep === 2 ? styles.stepActive : {})
-                  }}>
+                  <div style={{...styles.stepItem, ...(currentStep === 2 ? styles.stepActive : {})}}>
                     <span style={styles.stepNumber}>2</span>
                     <span style={styles.stepLabel}>Account Details</span>
                   </div>
                   <div style={styles.stepLine} />
-                  <div style={{
-                    ...styles.stepItem,
-                    ...(currentStep === 3 ? styles.stepActive : {})
-                  }}>
+                  <div style={{...styles.stepItem, ...(currentStep === 3 ? styles.stepActive : {})}}>
                     <span style={styles.stepNumber}>3</span>
                     <span style={styles.stepLabel}>Review</span>
                   </div>
                 </div>
 
-                {/* Step 1: Personal Info */}
                 {currentStep === 1 && (
                   <div style={styles.stepContent}>
                     <div style={styles.formGrid}>
@@ -657,7 +546,6 @@ const Users = () => {
                   </div>
                 )}
 
-                {/* Step 2: Account Details */}
                 {currentStep === 2 && (
                   <div style={styles.stepContent}>
                     <div style={styles.formGrid}>
@@ -742,11 +630,7 @@ const Users = () => {
                     )}
 
                     <div style={styles.stepActions}>
-                      <button
-                        type="button"
-                        style={styles.stepBackButton}
-                        onClick={() => setCurrentStep(1)}
-                      >
+                      <button type="button" style={styles.stepBackButton} onClick={() => setCurrentStep(1)}>
                         ← Back
                       </button>
                       <button
@@ -761,7 +645,6 @@ const Users = () => {
                   </div>
                 )}
 
-                {/* Step 3: Review */}
                 {currentStep === 3 && (
                   <div style={styles.stepContent}>
                     <div style={styles.reviewSection}>
@@ -769,9 +652,7 @@ const Users = () => {
                       <div style={styles.reviewGrid}>
                         <div style={styles.reviewItem}>
                           <span style={styles.reviewLabel}>Full Name</span>
-                          <span style={styles.reviewValue}>
-                            {formData.firstName} {formData.lastName}
-                          </span>
+                          <span style={styles.reviewValue}>{formData.firstName} {formData.lastName}</span>
                         </div>
                         <div style={styles.reviewItem}>
                           <span style={styles.reviewLabel}>Email</span>
@@ -811,18 +692,10 @@ const Users = () => {
                     </div>
 
                     <div style={styles.stepActions}>
-                      <button
-                        type="button"
-                        style={styles.stepBackButton}
-                        onClick={() => setCurrentStep(2)}
-                      >
+                      <button type="button" style={styles.stepBackButton} onClick={() => setCurrentStep(2)}>
                         ← Back
                       </button>
-                      <button
-                        type="submit"
-                        style={styles.modalSubmitButton}
-                        disabled={actionLoading}
-                      >
+                      <button type="submit" style={styles.modalSubmitButton} disabled={actionLoading}>
                         {actionLoading ? (
                           <>
                             <span style={styles.spinnerSmall} />
@@ -850,7 +723,7 @@ const styles = {
     maxWidth: '1400px',
     margin: '0 auto',
     width: '100%',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.bgLight,
     minHeight: '100vh',
   },
   loadingContainer: {
@@ -862,7 +735,7 @@ const styles = {
     gap: '16px',
   },
   loadingText: {
-    color: '#6B7280',
+    color: COLORS.textSecondary,
     fontSize: '14px',
     fontWeight: '500',
   },
@@ -870,8 +743,8 @@ const styles = {
     width: '40px',
     height: '40px',
     borderRadius: '50%',
-    border: '3px solid #E5E7EB',
-    borderTopColor: '#3B82F6',
+    border: `3px solid ${COLORS.border}`,
+    borderTopColor: COLORS.primary,
     animation: 'spin 0.8s linear infinite',
   },
   spinnerSmall: {
@@ -895,13 +768,13 @@ const styles = {
   pageTitle: {
     fontSize: '28px',
     fontWeight: '700',
-    color: '#0F172A',
+    color: COLORS.textPrimary,
     margin: 0,
     letterSpacing: '-0.5px',
   },
   pageSubtitle: {
     fontSize: '15px',
-    color: '#64748B',
+    color: COLORS.textSecondary,
     marginTop: '4px',
     margin: '4px 0 0 0',
   },
@@ -910,15 +783,15 @@ const styles = {
     alignItems: 'center',
     gap: '8px',
     padding: '10px 24px',
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
+    backgroundColor: COLORS.primary,
+    color: COLORS.white,
     border: 'none',
     borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)',
+    boxShadow: `0 2px 4px ${COLORS.primary}40`,
   },
   statsGrid: {
     display: 'grid',
@@ -930,11 +803,13 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '14px',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
     borderRadius: '12px',
     padding: '16px 20px',
     boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
-    border: '1px solid #E2E8F0',
+    border: `1px solid ${COLORS.border}`,
+    transition: 'all 0.2s ease',
+    cursor: 'default',
   },
   statIconWrapper: {
     width: '40px',
@@ -945,28 +820,16 @@ const styles = {
     justifyContent: 'center',
     flexShrink: 0,
   },
-  statIconBlue: {
-    color: '#3B82F6',
-  },
-  statIconGreen: {
-    color: '#10B981',
-  },
-  statIconPurple: {
-    color: '#8B5CF6',
-  },
-  statIconOrange: {
-    color: '#F59E0B',
-  },
   statNumber: {
     fontSize: '22px',
     fontWeight: '700',
-    color: '#0F172A',
+    color: COLORS.textPrimary,
     margin: 0,
     lineHeight: 1.2,
   },
   statLabel: {
     fontSize: '13px',
-    color: '#64748B',
+    color: COLORS.textSecondary,
     margin: 0,
     fontWeight: '500',
   },
@@ -981,15 +844,15 @@ const styles = {
     flex: 1,
     display: 'flex',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
+    backgroundColor: COLORS.white,
+    border: `1px solid ${COLORS.border}`,
     borderRadius: '10px',
     padding: '0 14px',
     transition: 'all 0.2s ease',
     minWidth: '200px',
   },
   searchIcon: {
-    color: '#94A3B8',
+    color: COLORS.textSecondary,
     flexShrink: 0,
   },
   searchInput: {
@@ -999,7 +862,7 @@ const styles = {
     outline: 'none',
     fontSize: '14px',
     backgroundColor: 'transparent',
-    color: '#0F172A',
+    color: COLORS.textPrimary,
     minWidth: '120px',
   },
   clearSearch: {
@@ -1009,7 +872,7 @@ const styles = {
     padding: '4px',
     background: 'none',
     border: 'none',
-    color: '#94A3B8',
+    color: COLORS.textSecondary,
     cursor: 'pointer',
     borderRadius: '4px',
     transition: 'all 0.2s ease',
@@ -1019,19 +882,19 @@ const styles = {
     alignItems: 'center',
     gap: '6px',
     padding: '10px 16px',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
+    backgroundColor: COLORS.white,
+    border: `1px solid ${COLORS.border}`,
     borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '500',
-    color: '#475569',
+    color: COLORS.textSecondary,
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     whiteSpace: 'nowrap',
   },
   filterPanel: {
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
+    backgroundColor: COLORS.white,
+    border: `1px solid ${COLORS.border}`,
     borderRadius: '10px',
     padding: '16px 20px',
     marginBottom: '16px',
@@ -1052,40 +915,80 @@ const styles = {
   filterLabel: {
     fontSize: '12px',
     fontWeight: '600',
-    color: '#64748B',
+    color: COLORS.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
   },
   filterSelect: {
     padding: '8px 12px',
-    border: '1px solid #E2E8F0',
+    border: `1px solid ${COLORS.border}`,
     borderRadius: '8px',
     fontSize: '14px',
-    backgroundColor: '#FFFFFF',
-    color: '#0F172A',
+    backgroundColor: COLORS.white,
+    color: COLORS.textPrimary,
     outline: 'none',
     transition: 'all 0.2s ease',
     cursor: 'pointer',
   },
   clearFilters: {
     padding: '8px 16px',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.secondary,
     border: 'none',
     borderRadius: '8px',
     fontSize: '13px',
     fontWeight: '500',
-    color: '#475569',
+    color: COLORS.primary,
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     whiteSpace: 'nowrap',
     alignSelf: 'center',
   },
   tableWrapper: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
     borderRadius: '12px',
-    border: '1px solid #E2E8F0',
+    border: `1px solid ${COLORS.border}`,
     overflow: 'hidden',
     boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+  },
+  tableHeader: {
+    padding: '12px 16px',
+    textAlign: 'left',
+    fontSize: '12px',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    color: COLORS.textSecondary,
+    backgroundColor: COLORS.bgLight,
+    borderBottom: `1px solid ${COLORS.border}`,
+  },
+  tableRow: {
+    borderBottom: `1px solid ${COLORS.border}`,
+    transition: 'background-color 0.15s ease',
+  },
+  tableCell: {
+    padding: '12px 16px',
+    fontSize: '14px',
+    color: COLORS.textPrimary,
+  },
+  emptyState: {
+    padding: '48px 24px',
+    textAlign: 'center',
+    color: COLORS.textSecondary,
+  },
+  emptyStateText: {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    margin: '0 0 4px 0',
+  },
+  emptyStateSubtext: {
+    fontSize: '14px',
+    color: COLORS.textSecondary,
+    margin: 0,
   },
   userCell: {
     display: 'flex',
@@ -1096,8 +999,6 @@ const styles = {
     width: '38px',
     height: '38px',
     borderRadius: '50%',
-    backgroundColor: '#DBEAFE',
-    color: '#2563EB',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1107,12 +1008,12 @@ const styles = {
   },
   userName: {
     fontWeight: '500',
-    color: '#0F172A',
+    color: COLORS.textPrimary,
     fontSize: '14px',
   },
   userEmail: {
     fontSize: '12px',
-    color: '#64748B',
+    color: COLORS.textSecondary,
   },
   roleBadge: {
     display: 'inline-flex',
@@ -1125,7 +1026,7 @@ const styles = {
   },
   departmentText: {
     fontSize: '13px',
-    color: '#475569',
+    color: COLORS.textSecondary,
   },
   statusBadge: {
     display: 'inline-flex',
@@ -1136,11 +1037,12 @@ const styles = {
   },
   lastLoginText: {
     fontSize: '13px',
-    color: '#64748B',
+    color: COLORS.textSecondary,
   },
   actionButtons: {
     display: 'flex',
     gap: '6px',
+    justifyContent: 'flex-end',
   },
   actionButtonEdit: {
     display: 'inline-flex',
@@ -1150,8 +1052,8 @@ const styles = {
     borderRadius: '6px',
     border: 'none',
     cursor: 'pointer',
-    backgroundColor: '#EFF6FF',
-    color: '#3B82F6',
+    backgroundColor: `${COLORS.secondary}`,
+    color: COLORS.primary,
     transition: 'all 0.2s ease',
   },
   actionButtonDelete: {
@@ -1166,7 +1068,6 @@ const styles = {
     color: '#EF4444',
     transition: 'all 0.2s ease',
   },
-  // Full Screen Modal Styles
   modalOverlay: {
     position: 'fixed',
     top: 0,
@@ -1183,7 +1084,7 @@ const styles = {
     animation: 'fadeIn 0.3s ease',
   },
   modalContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
     borderRadius: '20px',
     width: '100%',
     maxWidth: '900px',
@@ -1199,8 +1100,8 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '20px 32px',
-    borderBottom: '1px solid #E2E8F0',
-    backgroundColor: '#F8FAFC',
+    borderBottom: `1px solid ${COLORS.border}`,
+    backgroundColor: COLORS.bgLight,
     flexShrink: 0,
   },
   modalHeaderLeft: {
@@ -1216,19 +1117,19 @@ const styles = {
     borderRadius: '10px',
     border: 'none',
     backgroundColor: 'transparent',
-    color: '#64748B',
+    color: COLORS.textSecondary,
     cursor: 'pointer',
     transition: 'all 0.2s ease',
   },
   modalTitle: {
     fontSize: '20px',
     fontWeight: '700',
-    color: '#0F172A',
+    color: COLORS.textPrimary,
     margin: 0,
   },
   modalSubtitle: {
     fontSize: '14px',
-    color: '#64748B',
+    color: COLORS.textSecondary,
     marginTop: '2px',
     margin: '2px 0 0 0',
   },
@@ -1240,7 +1141,7 @@ const styles = {
     borderRadius: '10px',
     border: 'none',
     backgroundColor: 'transparent',
-    color: '#64748B',
+    color: COLORS.textSecondary,
     cursor: 'pointer',
     transition: 'all 0.2s ease',
   },
@@ -1254,7 +1155,6 @@ const styles = {
     flexDirection: 'column',
     gap: '24px',
   },
-  // Step Indicator
   stepIndicator: {
     display: 'flex',
     alignItems: 'center',
@@ -1269,13 +1169,13 @@ const styles = {
     gap: '8px',
     padding: '8px 16px',
     borderRadius: '20px',
-    backgroundColor: '#F1F5F9',
-    color: '#94A3B8',
+    backgroundColor: COLORS.bgLight,
+    color: COLORS.textSecondary,
     transition: 'all 0.3s ease',
   },
   stepActive: {
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
+    backgroundColor: COLORS.primary,
+    color: COLORS.white,
   },
   stepNumber: {
     display: 'flex',
@@ -1295,7 +1195,7 @@ const styles = {
   stepLine: {
     width: '40px',
     height: '2px',
-    backgroundColor: '#E2E8F0',
+    backgroundColor: COLORS.border,
     margin: '0 4px',
   },
   stepContent: {
@@ -1309,13 +1209,13 @@ const styles = {
     alignItems: 'center',
     gap: '12px',
     paddingTop: '16px',
-    borderTop: '1px solid #E2E8F0',
+    borderTop: `1px solid ${COLORS.border}`,
     flexWrap: 'wrap',
   },
   stepNextButton: {
     padding: '10px 24px',
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
+    backgroundColor: COLORS.primary,
+    color: COLORS.white,
     border: 'none',
     borderRadius: '10px',
     fontSize: '14px',
@@ -1329,8 +1229,8 @@ const styles = {
   stepBackButton: {
     padding: '10px 24px',
     backgroundColor: 'transparent',
-    color: '#475569',
-    border: '1px solid #E2E8F0',
+    color: COLORS.textSecondary,
+    border: `1px solid ${COLORS.border}`,
     borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '600',
@@ -1340,17 +1240,16 @@ const styles = {
     alignItems: 'center',
     gap: '8px',
   },
-  // Review Section
   reviewSection: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.bgLight,
     borderRadius: '12px',
     padding: '24px',
-    border: '1px solid #E2E8F0',
+    border: `1px solid ${COLORS.border}`,
   },
   reviewTitle: {
     fontSize: '16px',
     fontWeight: '600',
-    color: '#0F172A',
+    color: COLORS.textPrimary,
     margin: '0 0 16px 0',
   },
   reviewGrid: {
@@ -1363,22 +1262,21 @@ const styles = {
     flexDirection: 'column',
     gap: '2px',
     padding: '8px 12px',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
     borderRadius: '8px',
   },
   reviewLabel: {
     fontSize: '11px',
     fontWeight: '600',
-    color: '#94A3B8',
+    color: COLORS.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
   },
   reviewValue: {
     fontSize: '14px',
     fontWeight: '500',
-    color: '#0F172A',
+    color: COLORS.textPrimary,
   },
-  // Form Styles
   formGrid: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
@@ -1392,32 +1290,32 @@ const styles = {
   formLabel: {
     fontSize: '13px',
     fontWeight: '600',
-    color: '#0F172A',
+    color: COLORS.textPrimary,
   },
   formInput: {
     padding: '9px 14px',
-    border: '1px solid #E2E8F0',
+    border: `1px solid ${COLORS.border}`,
     borderRadius: '8px',
     fontSize: '14px',
     outline: 'none',
     transition: 'all 0.2s ease',
-    backgroundColor: '#FFFFFF',
-    color: '#0F172A',
+    backgroundColor: COLORS.white,
+    color: COLORS.textPrimary,
   },
   formSelect: {
     padding: '9px 14px',
-    border: '1px solid #E2E8F0',
+    border: `1px solid ${COLORS.border}`,
     borderRadius: '8px',
     fontSize: '14px',
     outline: 'none',
     transition: 'all 0.2s ease',
-    backgroundColor: '#FFFFFF',
-    color: '#0F172A',
+    backgroundColor: COLORS.white,
+    color: COLORS.textPrimary,
   },
   modalSubmitButton: {
     padding: '10px 24px',
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
+    backgroundColor: COLORS.primary,
+    color: COLORS.white,
     border: 'none',
     borderRadius: '10px',
     fontSize: '14px',
@@ -1455,69 +1353,76 @@ styleSheet.textContent = `
   }
   
   .primary-button:hover:not(:disabled) {
-    background-color: #2563EB !important;
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.35) !important;
+    background-color: ${COLORS.primaryDark} !important;
+    box-shadow: 0 4px 8px ${COLORS.primary}50 !important;
     transform: translateY(-1px);
   }
   
   .filter-toggle:hover:not(:disabled) {
-    background-color: #F1F5F9 !important;
+    background-color: ${COLORS.secondary} !important;
+    border-color: ${COLORS.primary} !important;
   }
   
   .clear-filters:hover:not(:disabled) {
-    background-color: #E2E8F0 !important;
+    background-color: ${COLORS.primary} !important;
+    color: ${COLORS.white} !important;
   }
   
   .search-bar:focus-within {
-    border-color: #3B82F6 !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    border-color: ${COLORS.primary} !important;
+    box-shadow: 0 0 0 3px ${COLORS.primary}20 !important;
   }
   
   .form-input:focus,
   .form-select:focus {
-    border-color: #3B82F6 !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    border-color: ${COLORS.primary} !important;
+    box-shadow: 0 0 0 3px ${COLORS.primary}20 !important;
   }
   
   .action-button-edit:hover:not(:disabled) {
-    background-color: #DBEAFE !important;
+    background-color: ${COLORS.primary} !important;
+    color: ${COLORS.white} !important;
   }
   
   .action-button-delete:hover:not(:disabled) {
-    background-color: #FEE2E2 !important;
+    background-color: #EF4444 !important;
+    color: ${COLORS.white} !important;
   }
   
   .modal-back-button:hover:not(:disabled) {
-    background-color: #F1F5F9 !important;
+    background-color: ${COLORS.secondary} !important;
   }
   
   .modal-close-button:hover:not(:disabled) {
-    background-color: #F1F5F9 !important;
+    background-color: ${COLORS.secondary} !important;
   }
   
   .step-next-button:hover:not(:disabled) {
-    background-color: #2563EB !important;
+    background-color: ${COLORS.primaryDark} !important;
   }
   
   .step-back-button:hover:not(:disabled) {
-    background-color: #F1F5F9 !important;
+    background-color: ${COLORS.secondary} !important;
+    border-color: ${COLORS.primary} !important;
   }
   
   .modal-submit-button:hover:not(:disabled) {
-    background-color: #2563EB !important;
+    background-color: ${COLORS.primaryDark} !important;
   }
   
   .clear-search:hover {
-    background-color: #F1F5F9 !important;
-  }
-  
-  .stat-card {
-    transition: all 0.2s ease;
+    background-color: ${COLORS.secondary} !important;
+    border-radius: 4px;
   }
   
   .stat-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    border-color: ${COLORS.primary} !important;
+  }
+  
+  .table-row:hover {
+    background-color: ${COLORS.secondary} !important;
   }
   
   /* Responsive Styles */
@@ -1639,6 +1544,10 @@ styleSheet.textContent = `
     
     .review-section {
       padding: 16px !important;
+    }
+    
+    .action-buttons {
+      justify-content: center !important;
     }
   }
   

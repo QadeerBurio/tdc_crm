@@ -1,3 +1,4 @@
+// pages/risk/RiskDashboard.jsx - COMPLETE FIXED VERSION WITH NEW COLOR SCHEME
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -28,7 +29,7 @@ const RiskDashboard = () => {
   });
 
   const API_URL = 'https://crmserver-production-4a42.up.railway.app/api';
-  const COLORS = ['#EF4444', '#F59E0B', '#3B82F6', '#10B981', '#8B5CF6'];
+  const COLORS = ['#013E37', '#0A5C54', '#FFEFB3', '#FFD580', '#E8F5E9'];
 
   useEffect(() => {
     fetchDashboardData();
@@ -66,7 +67,6 @@ const RiskDashboard = () => {
     } catch (error) {
       console.error('Error fetching risk dashboard:', error);
       toast.error(error.message || 'Failed to load dashboard');
-      // Set mock data for demo
       setSummary(getMockSummary());
       setRisks(getMockRisks());
       toast.info('Showing sample dashboard data');
@@ -384,10 +384,10 @@ const RiskDashboard = () => {
                 </Pie>
                 <Tooltip 
                   contentStyle={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#FFFFFF',
+                    border: '1px solid #FFEFB3',
                     borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                    boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
                   }}
                 />
               </RePieChart>
@@ -413,19 +413,19 @@ const RiskDashboard = () => {
               ]}>
                 <defs>
                   <linearGradient id="rdGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#EF4444" stopOpacity={0.05}/>
+                    <stop offset="5%" stopColor="#013E37" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#013E37" stopOpacity={0.05}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
-                <YAxis stroke="#94a3b8" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#FFEFB3" />
+                <XAxis dataKey="month" stroke="#013E37" fontSize={12} />
+                <YAxis stroke="#013E37" fontSize={12} />
                 <Tooltip 
                   contentStyle={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#FFFFFF',
+                    border: '1px solid #FFEFB3',
                     borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                    boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
                   }}
                 />
                 <Legend />
@@ -433,7 +433,7 @@ const RiskDashboard = () => {
                   type="monotone"
                   dataKey="risks"
                   name="Risks"
-                  stroke="#EF4444"
+                  stroke="#013E37"
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#rdGradient)"
@@ -538,7 +538,7 @@ const RiskDashboard = () => {
         </button>
       </div>
 
-      {/* Custom CSS */}
+      {/* Custom CSS - Modern Design with #FFFFFF, #FFEFB3, #013E37 */}
       <style>{`
         /* ============================================
            CONTAINER
@@ -547,7 +547,7 @@ const RiskDashboard = () => {
           padding: 24px 32px;
           max-width: 1400px;
           margin: 0 auto;
-          background: #f8fafc;
+          background: #FFFFFF;
           min-height: 100vh;
           animation: rdFadeIn 0.4s ease;
         }
@@ -567,13 +567,14 @@ const RiskDashboard = () => {
           justify-content: center;
           min-height: 60vh;
           gap: 16px;
+          background: #FFFFFF;
         }
 
         .rd-spinner {
           width: 40px;
           height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #ef4444;
+          border: 3px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
           animation: rdSpin 0.8s linear infinite;
         }
@@ -583,7 +584,7 @@ const RiskDashboard = () => {
         }
 
         .rd-loading-text {
-          color: #64748b;
+          color: #013E37;
           font-size: 14px;
           font-weight: 500;
         }
@@ -613,31 +614,32 @@ const RiskDashboard = () => {
         .rd-header-icon {
           width: 48px;
           height: 48px;
-          background: linear-gradient(135deg, #ef4444, #dc2626);
+          background: linear-gradient(135deg, #013E37, #0A5C54);
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.25);
         }
 
         .rd-header-svg {
           width: 24px;
           height: 24px;
-          color: #ffffff;
+          color: #FFFFFF;
         }
 
         .rd-title {
           font-size: 24px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
           letter-spacing: -0.5px;
         }
 
         .rd-subtitle {
           font-size: 15px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.7;
           margin: 2px 0 0 0;
         }
 
@@ -651,11 +653,11 @@ const RiskDashboard = () => {
         .rd-period-select,
         .rd-filter-select {
           padding: 8px 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
-          background: #ffffff;
-          color: #0f172a;
+          background: #FFFFFF;
+          color: #013E37;
           outline: none;
           cursor: pointer;
           transition: all 0.2s ease;
@@ -664,8 +666,13 @@ const RiskDashboard = () => {
 
         .rd-period-select:focus,
         .rd-filter-select:focus {
-          border-color: #ef4444;
-          box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+
+        .rd-period-select:hover,
+        .rd-filter-select:hover {
+          border-color: #013E37;
         }
 
         .rd-icon-btn {
@@ -673,16 +680,17 @@ const RiskDashboard = () => {
           align-items: center;
           justify-content: center;
           padding: 8px 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
-          background: #ffffff;
+          background: #FFFFFF;
           cursor: pointer;
           transition: all 0.2s ease;
-          color: #64748b;
+          color: #013E37;
         }
 
         .rd-icon-btn:hover:not(:disabled) {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .rd-icon-btn:disabled {
@@ -707,10 +715,10 @@ const RiskDashboard = () => {
         }
 
         .rd-stat-card {
-          background: #ffffff;
+          background: #FFFFFF;
           border-radius: 12px;
           padding: 20px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           transition: all 0.3s ease;
           animation: rdSlideUp 0.5s ease both;
         }
@@ -727,13 +735,14 @@ const RiskDashboard = () => {
 
         .rd-stat-card:hover {
           transform: translateY(-3px);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+          box-shadow: 0 8px 24px rgba(1, 62, 55, 0.1);
+          border-color: #013E37;
         }
 
-        .rd-stat-total { border-left: 4px solid #64748b; }
-        .rd-stat-critical { border-left: 4px solid #ef4444; }
-        .rd-stat-progress { border-left: 4px solid #3b82f6; }
-        .rd-stat-score { border-left: 4px solid #8b5cf6; }
+        .rd-stat-total { border-left: 4px solid #013E37; }
+        .rd-stat-critical { border-left: 4px solid #D32F2F; }
+        .rd-stat-progress { border-left: 4px solid #1976D2; }
+        .rd-stat-score { border-left: 4px solid #6D28D9; }
 
         .rd-stat-content {
           display: flex;
@@ -747,7 +756,8 @@ const RiskDashboard = () => {
 
         .rd-stat-label {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.7;
           margin: 0;
           font-weight: 500;
         }
@@ -755,14 +765,14 @@ const RiskDashboard = () => {
         .rd-stat-number {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 4px 0 0 0;
           line-height: 1.2;
         }
 
-        .rd-stat-number-critical { color: #ef4444; }
-        .rd-stat-number-progress { color: #3b82f6; }
-        .rd-stat-number-score { color: #8b5cf6; }
+        .rd-stat-number-critical { color: #D32F2F; }
+        .rd-stat-number-progress { color: #1976D2; }
+        .rd-stat-number-score { color: #6D28D9; }
 
         .rd-stat-change {
           font-size: 12px;
@@ -770,8 +780,8 @@ const RiskDashboard = () => {
           font-weight: 500;
         }
 
-        .rd-change-up { color: #22c55e; }
-        .rd-change-down { color: #ef4444; }
+        .rd-change-up { color: #013E37; }
+        .rd-change-down { color: #D32F2F; }
 
         .rd-stat-icon-wrapper {
           width: 48px;
@@ -781,22 +791,22 @@ const RiskDashboard = () => {
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          background: #f1f5f9;
+          background: #FFEFB3;
         }
 
-        .rd-stat-icon-critical { background: #fee2e2; }
-        .rd-stat-icon-progress { background: #dbeafe; }
-        .rd-stat-icon-score { background: #f3e8ff; }
+        .rd-stat-icon-critical { background: #FFEBEE; }
+        .rd-stat-icon-progress { background: #E3F2FD; }
+        .rd-stat-icon-score { background: #EDE7F6; }
 
         .rd-stat-icon {
           width: 22px;
           height: 22px;
-          color: #64748b;
+          color: #013E37;
         }
 
-        .rd-stat-critical .rd-stat-icon { color: #ef4444; }
-        .rd-stat-progress .rd-stat-icon { color: #3b82f6; }
-        .rd-stat-score .rd-stat-icon { color: #8b5cf6; }
+        .rd-stat-critical .rd-stat-icon { color: #D32F2F; }
+        .rd-stat-progress .rd-stat-icon { color: #1976D2; }
+        .rd-stat-score .rd-stat-icon { color: #6D28D9; }
 
         /* ============================================
            CHARTS
@@ -809,15 +819,16 @@ const RiskDashboard = () => {
         }
 
         .rd-chart-card {
-          background: #ffffff;
+          background: #FFFFFF;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           padding: 20px;
           transition: all 0.3s ease;
         }
 
         .rd-chart-card:hover {
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
+          border-color: #013E37;
         }
 
         .rd-chart-header {
@@ -830,15 +841,15 @@ const RiskDashboard = () => {
         .rd-chart-title {
           font-size: 16px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .rd-chart-badge {
           font-size: 11px;
           font-weight: 500;
-          color: #64748b;
-          background: #f1f5f9;
+          color: #013E37;
+          background: #FFEFB3;
           padding: 2px 10px;
           border-radius: 12px;
         }
@@ -852,16 +863,17 @@ const RiskDashboard = () => {
            TYPES
            ============================================ */
         .rd-types {
-          background: #ffffff;
+          background: #FFFFFF;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           padding: 20px;
           margin-bottom: 24px;
           transition: all 0.3s ease;
         }
 
         .rd-types:hover {
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
+          border-color: #013E37;
         }
 
         .rd-types-header {
@@ -878,30 +890,32 @@ const RiskDashboard = () => {
         }
 
         .rd-type-item {
-          background: #f8fafc;
+          background: #FFFFFF;
           border-radius: 10px;
           padding: 16px;
           text-align: center;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           transition: all 0.2s ease;
         }
 
         .rd-type-item:hover {
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-          border-color: #cbd5e1;
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.08);
+          border-color: #013E37;
+          background: #FFEFB3;
         }
 
         .rd-type-count {
           font-size: 24px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .rd-type-label {
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.7;
           margin: 2px 0 0 0;
         }
 
@@ -909,16 +923,17 @@ const RiskDashboard = () => {
            RECENT
            ============================================ */
         .rd-recent {
-          background: #ffffff;
+          background: #FFFFFF;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           padding: 20px;
           margin-bottom: 24px;
           transition: all 0.3s ease;
         }
 
         .rd-recent:hover {
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
+          border-color: #013E37;
         }
 
         .rd-recent-header {
@@ -931,7 +946,7 @@ const RiskDashboard = () => {
         .rd-recent-view {
           font-size: 14px;
           font-weight: 500;
-          color: #ef4444;
+          color: #013E37;
           background: none;
           border: none;
           cursor: pointer;
@@ -939,7 +954,8 @@ const RiskDashboard = () => {
         }
 
         .rd-recent-view:hover {
-          color: #dc2626;
+          color: #0A5C54;
+          opacity: 0.8;
         }
 
         .rd-recent-list {
@@ -953,13 +969,15 @@ const RiskDashboard = () => {
           align-items: center;
           justify-content: space-between;
           padding: 12px 16px;
-          background: #f8fafc;
+          background: #FFFFFF;
           border-radius: 8px;
+          border: 1px solid #FFEFB3;
           transition: all 0.2s ease;
         }
 
         .rd-recent-item:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .rd-recent-left {
@@ -977,11 +995,11 @@ const RiskDashboard = () => {
           justify-content: center;
         }
 
-        .rd-bg-critical { background: #ef4444; color: #ffffff; }
-        .rd-bg-high { background: #f97316; color: #ffffff; }
-        .rd-bg-medium { background: #eab308; color: #ffffff; }
-        .rd-bg-low { background: #22c55e; color: #ffffff; }
-        .rd-bg-default { background: #94a3b8; color: #ffffff; }
+        .rd-bg-critical { background: #D32F2F; color: #FFFFFF; }
+        .rd-bg-high { background: #E65100; color: #FFFFFF; }
+        .rd-bg-medium { background: #F9A825; color: #FFFFFF; }
+        .rd-bg-low { background: #013E37; color: #FFFFFF; }
+        .rd-bg-default { background: #013E37; opacity: 0.5; color: #FFFFFF; }
 
         .rd-icon {
           width: 18px;
@@ -995,7 +1013,7 @@ const RiskDashboard = () => {
         .rd-recent-name {
           font-size: 14px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
@@ -1004,7 +1022,8 @@ const RiskDashboard = () => {
           align-items: center;
           gap: 6px;
           font-size: 12px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.7;
           margin-top: 2px;
         }
 
@@ -1013,7 +1032,8 @@ const RiskDashboard = () => {
         }
 
         .rd-recent-separator {
-          color: #d1d5db;
+          color: #013E37;
+          opacity: 0.3;
         }
 
         .rd-recent-status {
@@ -1023,15 +1043,16 @@ const RiskDashboard = () => {
           border-radius: 9999px;
         }
 
-        .rd-status-detected { background: #fef3c7; color: #92400e; }
-        .rd-status-progress { background: #dbeafe; color: #1d4ed8; }
-        .rd-status-mitigated { background: #f3e8ff; color: #6d28d9; }
-        .rd-status-resolved { background: #d1fae5; color: #065f46; }
-        .rd-status-ignored { background: #f1f5f9; color: #475569; }
-        .rd-status-default { background: #f1f5f9; color: #475569; }
+        .rd-status-detected { background: #FFEFB3; color: #013E37; }
+        .rd-status-progress { background: #BBDEFB; color: #0D47A1; }
+        .rd-status-mitigated { background: #E1BEE7; color: #4A148C; }
+        .rd-status-resolved { background: #C8E6C9; color: #013E37; }
+        .rd-status-ignored { background: #F5F5F5; color: #013E37; }
+        .rd-status-default { background: #F5F5F5; color: #013E37; }
 
         .rd-recent-assignee {
-          color: #475569;
+          color: #013E37;
+          opacity: 0.8;
         }
 
         .rd-recent-right {
@@ -1043,7 +1064,8 @@ const RiskDashboard = () => {
         .rd-recent-score {
           font-size: 13px;
           font-weight: 500;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.7;
         }
 
         .rd-recent-view-btn {
@@ -1053,14 +1075,16 @@ const RiskDashboard = () => {
           cursor: pointer;
           border-radius: 6px;
           transition: all 0.2s ease;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
           display: flex;
           align-items: center;
         }
 
         .rd-recent-view-btn:hover {
-          background: #e2e8f0;
-          color: #475569;
+          background: #013E37;
+          color: #FFFFFF;
+          opacity: 1;
         }
 
         .rd-recent-view-icon {
@@ -1071,13 +1095,15 @@ const RiskDashboard = () => {
         .rd-recent-empty {
           text-align: center;
           padding: 32px 0;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.5;
         }
 
         .rd-recent-empty-icon {
           width: 32px;
           height: 32px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.3;
           margin: 0 auto 8px;
         }
 
@@ -1096,35 +1122,36 @@ const RiskDashboard = () => {
           justify-content: center;
           gap: 10px;
           padding: 16px 20px;
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: #FFFFFF;
+          border: 1px solid #FFEFB3;
           border-radius: 12px;
           cursor: pointer;
           transition: all 0.3s ease;
           font-size: 14px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
         }
 
         .rd-action-btn:hover {
           transform: translateY(-2px);
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.1);
+          border-color: #013E37;
         }
 
-        .rd-action-danger:hover { border-color: #ef4444; color: #ef4444; }
-        .rd-action-primary:hover { border-color: #3b82f6; color: #3b82f6; }
-        .rd-action-purple:hover { border-color: #8b5cf6; color: #8b5cf6; }
-        .rd-action-success:hover { border-color: #22c55e; color: #22c55e; }
+        .rd-action-danger:hover { border-color: #D32F2F; color: #D32F2F; background: #FFEBEE; }
+        .rd-action-primary:hover { border-color: #1976D2; color: #1976D2; background: #E3F2FD; }
+        .rd-action-purple:hover { border-color: #6D28D9; color: #6D28D9; background: #EDE7F6; }
+        .rd-action-success:hover { border-color: #013E37; color: #013E37; background: #E8F5E9; }
 
         .rd-action-icon {
           width: 20px;
           height: 20px;
         }
 
-        .rd-action-danger .rd-action-icon { color: #ef4444; }
-        .rd-action-primary .rd-action-icon { color: #3b82f6; }
-        .rd-action-purple .rd-action-icon { color: #8b5cf6; }
-        .rd-action-success .rd-action-icon { color: #22c55e; }
+        .rd-action-danger .rd-action-icon { color: #D32F2F; }
+        .rd-action-primary .rd-action-icon { color: #1976D2; }
+        .rd-action-purple .rd-action-icon { color: #6D28D9; }
+        .rd-action-success .rd-action-icon { color: #013E37; }
 
         /* ============================================
            RESPONSIVE
@@ -1241,18 +1268,23 @@ const RiskDashboard = () => {
           }
         }
 
+        /* Utility */
+        .capitalize {
+          text-transform: capitalize;
+        }
+
         /* Scrollbar */
         .rd-chart-body::-webkit-scrollbar {
           width: 4px;
         }
 
         .rd-chart-body::-webkit-scrollbar-track {
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 4px;
         }
 
         .rd-chart-body::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
+          background: #013E37;
           border-radius: 4px;
         }
       `}</style>

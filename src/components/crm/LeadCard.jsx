@@ -1,4 +1,4 @@
-// components/crm/LeadCard.js
+// components/crm/LeadCard.js - COMPLETE FIXED VERSION WITH NEW COLOR SCHEME
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
@@ -20,12 +20,33 @@ const LeadCard = ({ lead, onAction }) => {
 
   const getStatusStyle = (status) => {
     const styles = {
-      active: { backgroundColor: '#d1fae5', color: '#065f46' },
-      stale: { backgroundColor: '#fef3c7', color: '#92400e' },
-      converted: { backgroundColor: '#dbeafe', color: '#1e40af' },
-      lost: { backgroundColor: '#fee2e2', color: '#991b1b' }
+      active: { backgroundColor: '#E8F5E9', color: '#013E37' },
+      stale: { backgroundColor: '#FFEFB3', color: '#013E37' },
+      converted: { backgroundColor: '#E8F5E9', color: '#013E37' },
+      lost: { backgroundColor: '#FFEBEE', color: '#D32F2F' }
     };
-    return styles[status] || { backgroundColor: '#f3f4f6', color: '#374151' };
+    return styles[status] || { backgroundColor: '#F5F5F5', color: '#013E37' };
+  };
+
+  const getStageColor = (stage) => {
+    const colors = {
+      SCRAPED_SOURCED: '#013E37',
+      INITIAL_VERIFICATION: '#0A5C54',
+      FIRST_SEQUENCE_SENT: '#1A7A6E',
+      FOLLOW_UP_PROTOCOL: '#2A9888',
+      DISCOVERY_CALL_SCHEDULED: '#3AB6A2',
+      PROPOSAL_PITCHED: '#4AD4BC',
+      NEGOTIATING: '#5AF2D6',
+      WON: '#013E37',
+      LOST: '#D32F2F',
+      INQUIRY: '#013E37',
+      BRIEFING_DISCOVERY: '#0A5C54',
+      AUDIT_PRESENTATION: '#1A7A6E',
+      COMMERCIAL_PROPOSAL: '#2A9888',
+      CONTRACT_SIGNING: '#3AB6A2',
+      ONBOARDING: '#4AD4BC'
+    };
+    return colors[stage] || '#013E37';
   };
 
   const formatDate = (date) => {
@@ -37,6 +58,8 @@ const LeadCard = ({ lead, onAction }) => {
       day: 'numeric'
     });
   };
+
+  const stageColor = getStageColor(lead.currentStage);
 
   return (
     <div style={styles.card}>
@@ -52,6 +75,15 @@ const LeadCard = ({ lead, onAction }) => {
             <p style={styles.contactName}>{lead.contactName || 'N/A'}</p>
           </div>
           <div style={styles.headerRight}>
+            <span style={{
+              ...styles.stageBadge,
+              backgroundColor: `${stageColor}20`,
+              color: stageColor,
+              borderColor: `${stageColor}40`
+            }}>
+              <span style={{...styles.stageDot, backgroundColor: stageColor}}></span>
+              {lead.currentStage ? lead.currentStage.replace(/_/g, ' ') : 'N/A'}
+            </span>
             <span style={{
               ...styles.statusBadge,
               ...getStatusStyle(lead.status)
@@ -119,8 +151,8 @@ const styles = {
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: '12px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-    transition: 'box-shadow 0.3s ease',
+    border: '1px solid #FFEFB3',
+    transition: 'all 0.3s ease',
     overflow: 'hidden',
   },
   cardContent: {
@@ -138,25 +170,28 @@ const styles = {
   companyLink: {
     fontSize: '18px',
     fontWeight: '600',
-    color: '#3B82F6',
+    color: '#013E37',
     textDecoration: 'none',
     display: 'block',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+    transition: 'color 0.2s ease',
   },
   contactName: {
     fontSize: '14px',
-    color: '#6B7280',
+    color: '#013E37',
+    opacity: 0.7,
     marginTop: '4px',
     margin: '4px 0 0 0',
   },
   headerRight: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '6px',
     flexShrink: 0,
     marginLeft: '12px',
+    flexWrap: 'wrap',
   },
   statusBadge: {
     display: 'inline-flex',
@@ -165,6 +200,22 @@ const styles = {
     fontSize: '12px',
     fontWeight: '500',
     whiteSpace: 'nowrap',
+  },
+  stageBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '4px 8px',
+    borderRadius: '6px',
+    fontSize: '11px',
+    fontWeight: '500',
+    border: '1px solid',
+    whiteSpace: 'nowrap',
+  },
+  stageDot: {
+    width: '5px',
+    height: '5px',
+    borderRadius: '50%',
   },
   moreButton: {
     padding: '4px',
@@ -180,7 +231,8 @@ const styles = {
   moreIcon: {
     width: '16px',
     height: '16px',
-    color: '#9CA3AF',
+    color: '#013E37',
+    opacity: 0.5,
   },
   infoGrid: {
     display: 'grid',
@@ -193,17 +245,19 @@ const styles = {
     alignItems: 'center',
     gap: '8px',
     fontSize: '14px',
-    color: '#6B7280',
+    color: '#013E37',
+    opacity: 0.7,
   },
   infoIcon: {
-    width: '12px',
-    height: '12px',
-    color: '#9CA3AF',
+    width: '14px',
+    height: '14px',
+    color: '#013E37',
+    opacity: 0.5,
     flexShrink: 0,
   },
   infoText: {
-    fontSize: '14px',
-    color: '#6B7280',
+    fontSize: '13px',
+    color: '#013E37',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
@@ -214,35 +268,42 @@ const styles = {
     justifyContent: 'space-between',
     marginTop: '12px',
     fontSize: '12px',
-    color: '#6B7280',
+    color: '#013E37',
+    opacity: 0.6,
     flexWrap: 'wrap',
     gap: '8px',
+    paddingTop: '12px',
+    borderTop: '1px solid #FFEFB3',
   },
   footerText: {
     fontSize: '12px',
-    color: '#6B7280',
+    color: '#013E37',
+    opacity: 0.6,
   },
   assigneeContainer: {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    marginTop: '8px',
+    marginTop: '12px',
+    paddingTop: '12px',
+    borderTop: '1px solid #FFEFB3',
   },
   assigneeAvatar: {
-    width: '20px',
-    height: '20px',
+    width: '24px',
+    height: '24px',
     borderRadius: '50%',
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#013E37',
     color: '#FFFFFF',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: '10px',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   assigneeName: {
-    fontSize: '12px',
-    color: '#6B7280',
+    fontSize: '13px',
+    color: '#013E37',
+    opacity: 0.7,
   },
 };
 
@@ -250,16 +311,22 @@ const styles = {
 const styleSheet = document.createElement('style');
 styleSheet.textContent = `
   .card:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+    box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08) !important;
+    border-color: #013E37 !important;
+    transform: translateY(-2px);
   }
   
   .company-link:hover {
-    color: #1D4ED8 !important;
-    text-decoration: underline !important;
+    color: #0A5C54 !important;
+    text-decoration: none !important;
   }
   
   .more-button:hover {
-    background-color: #F3F4F6 !important;
+    background-color: #FFEFB3 !important;
+  }
+  
+  .more-button:hover .more-icon {
+    opacity: 1 !important;
   }
   
   @media (max-width: 768px) {
@@ -272,7 +339,8 @@ styleSheet.textContent = `
       margin-left: 0 !important;
       margin-top: 8px !important;
       width: 100% !important;
-      justify-content: space-between !important;
+      justify-content: flex-start !important;
+      gap: 6px !important;
     }
     
     .info-grid {
@@ -296,6 +364,16 @@ styleSheet.textContent = `
     
     .info-item {
       font-size: 13px !important;
+    }
+    
+    .header-right {
+      flex-wrap: wrap !important;
+    }
+    
+    .stage-badge,
+    .status-badge {
+      font-size: 10px !important;
+      padding: 2px 6px !important;
     }
   }
 `;

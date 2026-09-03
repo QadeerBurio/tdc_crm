@@ -1,6 +1,6 @@
-// pages/audit/AuditDashboard.jsx - FIXED VERSION
+// pages/audit/AuditDashboard.jsx - COMPLETE FIXED VERSION WITH NEW COLOR SCHEME
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext'; // ✅ Use useAuth hook
+import { useAuth } from '../../context/AuthContext';
 import { 
   Activity, Users, FileText, Clock,
   TrendingUp, TrendingDown, AlertCircle,
@@ -17,7 +17,7 @@ import {
 import toast from 'react-hot-toast';
 
 const AuditDashboard = () => {
-  const { token } = useAuth(); // ✅ Use useAuth hook
+  const { token } = useAuth();
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -29,7 +29,7 @@ const AuditDashboard = () => {
     headers: token ? { Authorization: `Bearer ${token}` } : {}
   });
 
-  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
+  const COLORS = ['#013E37', '#0A5C54', '#FFEFB3', '#FFD580', '#E8F5E9', '#B2DFDB', '#C8E6C9', '#A5D6A7'];
 
   useEffect(() => {
     fetchData();
@@ -150,7 +150,6 @@ const AuditDashboard = () => {
     });
   };
 
-  // ✅ Ensure summary has data
   const data = summary || getMockData();
 
   if (loading && !summary) {
@@ -280,26 +279,27 @@ const AuditDashboard = () => {
             <div className="ad-chart-container">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.topActions || []}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#FFEFB3" />
                   <XAxis 
                     dataKey="_id" 
-                    tick={{ fill: '#6b7280', fontSize: 11 }}
+                    tick={{ fill: '#013E37', fontSize: 11 }}
                     angle={-45}
                     textAnchor="end"
                     height={60}
                   />
-                  <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} />
+                  <YAxis tick={{ fill: '#013E37', fontSize: 11 }} />
                   <Tooltip 
                     contentStyle={{ 
-                      background: '#ffffff', 
-                      border: '1px solid #e5e7eb',
+                      background: '#FFFFFF', 
+                      border: '1px solid #FFEFB3',
                       borderRadius: '8px',
-                      padding: '8px 12px'
+                      padding: '8px 12px',
+                      boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
                     }}
                   />
                   <Bar 
                     dataKey="count" 
-                    fill="#3B82F6" 
+                    fill="#013E37" 
                     radius={[4, 4, 0, 0]}
                     barSize={40}
                   />
@@ -330,10 +330,11 @@ const AuditDashboard = () => {
                   </Pie>
                   <Tooltip 
                     contentStyle={{ 
-                      background: '#ffffff', 
-                      border: '1px solid #e5e7eb',
+                      background: '#FFFFFF', 
+                      border: '1px solid #FFEFB3',
                       borderRadius: '8px',
-                      padding: '8px 12px'
+                      padding: '8px 12px',
+                      boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
                     }}
                   />
                   <Legend />
@@ -352,28 +353,29 @@ const AuditDashboard = () => {
                 <AreaChart data={data.trend}>
                   <defs>
                     <linearGradient id="adTrendGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#013E37" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#013E37" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#FFEFB3" />
                   <XAxis 
                     dataKey="date" 
-                    tick={{ fill: '#6b7280', fontSize: 11 }}
+                    tick={{ fill: '#013E37', fontSize: 11 }}
                   />
-                  <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} />
+                  <YAxis tick={{ fill: '#013E37', fontSize: 11 }} />
                   <Tooltip 
                     contentStyle={{ 
-                      background: '#ffffff', 
-                      border: '1px solid #e5e7eb',
+                      background: '#FFFFFF', 
+                      border: '1px solid #FFEFB3',
                       borderRadius: '8px',
-                      padding: '8px 12px'
+                      padding: '8px 12px',
+                      boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
                     }}
                   />
                   <Area
                     type="monotone"
                     dataKey="count"
-                    stroke="#3B82F6"
+                    stroke="#013E37"
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#adTrendGradient)"
@@ -463,14 +465,23 @@ const AuditDashboard = () => {
         </div>
       </div>
 
-      {/* Custom CSS */}
+      {/* Custom CSS - Modern Design with #FFFFFF, #FFEFB3, #013E37 */}
       <style>{`
         /* ============================================
            CONTAINER
            ============================================ */
         .ad-container {
-          padding: 0 0 24px 0;
-          max-width: 100%;
+          padding: 24px 32px;
+          max-width: 1400px;
+          margin: 0 auto;
+          background: #FFFFFF;
+          min-height: 100vh;
+          animation: adFadeIn 0.4s ease;
+        }
+
+        @keyframes adFadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         /* ============================================
@@ -494,7 +505,7 @@ const AuditDashboard = () => {
         .ad-title {
           font-size: 24px;
           font-weight: 700;
-          color: #111827;
+          color: #013E37;
           display: flex;
           align-items: center;
           gap: 10px;
@@ -504,11 +515,12 @@ const AuditDashboard = () => {
         .ad-title-icon {
           width: 28px;
           height: 28px;
-          color: #3b82f6;
+          color: #013E37;
         }
 
         .ad-subtitle {
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.7;
           font-size: 14px;
           margin: 0;
         }
@@ -522,26 +534,31 @@ const AuditDashboard = () => {
 
         .ad-period-select {
           padding: 8px 12px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           outline: none;
           transition: all 0.2s ease;
-          background: #ffffff;
+          background: #FFFFFF;
           min-width: 140px;
           cursor: pointer;
+          color: #013E37;
         }
 
         .ad-period-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.15);
+        }
+
+        .ad-period-select:hover {
+          border-color: #013E37;
         }
 
         .ad-refresh-btn {
           padding: 8px 10px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
-          background: #ffffff;
+          background: #FFFFFF;
           cursor: pointer;
           transition: all 0.2s ease;
           display: flex;
@@ -550,7 +567,8 @@ const AuditDashboard = () => {
         }
 
         .ad-refresh-btn:hover:not(:disabled) {
-          background: #f9fafb;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .ad-refresh-btn:disabled {
@@ -561,7 +579,7 @@ const AuditDashboard = () => {
         .ad-refresh-icon {
           width: 16px;
           height: 16px;
-          color: #6b7280;
+          color: #013E37;
         }
 
         .ad-spin {
@@ -574,10 +592,10 @@ const AuditDashboard = () => {
 
         .ad-export-btn {
           padding: 8px 16px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #013E37;
           border-radius: 8px;
-          background: #ffffff;
-          color: #4b5563;
+          background: #013E37;
+          color: #FFFFFF;
           font-weight: 500;
           font-size: 14px;
           cursor: pointer;
@@ -588,13 +606,16 @@ const AuditDashboard = () => {
         }
 
         .ad-export-btn:hover {
-          background: #f9fafb;
-          border-color: #9ca3af;
+          background: #0A5C54;
+          border-color: #0A5C54;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.2);
         }
 
         .ad-export-icon {
           width: 16px;
           height: 16px;
+          color: #FFFFFF;
         }
 
         /* ============================================
@@ -608,16 +629,17 @@ const AuditDashboard = () => {
         }
 
         .ad-stat-card {
-          background: #ffffff;
-          border: 1px solid #f3f4f6;
+          background: #FFFFFF;
+          border: 1px solid #FFEFB3;
           border-radius: 12px;
           padding: 16px 20px;
           transition: all 0.2s ease;
         }
 
         .ad-stat-card:hover {
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.08);
           transform: translateY(-2px);
+          border-color: #013E37;
         }
 
         .ad-stat-content {
@@ -628,21 +650,22 @@ const AuditDashboard = () => {
 
         .ad-stat-label {
           font-size: 13px;
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.7;
           margin: 0;
         }
 
         .ad-stat-value {
           font-size: 24px;
           font-weight: 700;
-          color: #111827;
+          color: #013E37;
           margin: 0;
           line-height: 1.2;
         }
 
-        .ad-stat-value-green { color: #22c55e; }
-        .ad-stat-value-purple { color: #8b5cf6; }
-        .ad-stat-value-orange { color: #f97316; }
+        .ad-stat-value-green { color: #013E37; }
+        .ad-stat-value-purple { color: #6D28D9; }
+        .ad-stat-value-orange { color: #E65100; }
 
         .ad-stat-icon {
           width: 44px;
@@ -654,20 +677,20 @@ const AuditDashboard = () => {
           flex-shrink: 0;
         }
 
-        .ad-stat-icon-blue { background: #eff6ff; }
-        .ad-stat-icon-green { background: #dcfce7; }
-        .ad-stat-icon-purple { background: #f5f3ff; }
-        .ad-stat-icon-orange { background: #fff7ed; }
+        .ad-stat-icon-blue { background: #FFEFB3; }
+        .ad-stat-icon-green { background: #E8F5E9; }
+        .ad-stat-icon-purple { background: #EDE7F6; }
+        .ad-stat-icon-orange { background: #FFF3E0; }
 
         .ad-stat-svg {
           width: 20px;
           height: 20px;
         }
 
-        .ad-stat-icon-blue .ad-stat-svg { color: #3b82f6; }
-        .ad-stat-icon-green .ad-stat-svg { color: #22c55e; }
-        .ad-stat-icon-purple .ad-stat-svg { color: #8b5cf6; }
-        .ad-stat-icon-orange .ad-stat-svg { color: #f97316; }
+        .ad-stat-icon-blue .ad-stat-svg { color: #013E37; }
+        .ad-stat-icon-green .ad-stat-svg { color: #013E37; }
+        .ad-stat-icon-purple .ad-stat-svg { color: #6D28D9; }
+        .ad-stat-icon-orange .ad-stat-svg { color: #E65100; }
 
         .ad-stat-change {
           display: flex;
@@ -677,9 +700,9 @@ const AuditDashboard = () => {
           font-size: 13px;
         }
 
-        .ad-stat-change-up { color: #22c55e; }
-        .ad-stat-change-down { color: #ef4444; }
-        .ad-stat-change-neutral { color: #6b7280; }
+        .ad-stat-change-up { color: #013E37; }
+        .ad-stat-change-down { color: #D32F2F; }
+        .ad-stat-change-neutral { color: #013E37; opacity: 0.6; }
 
         .ad-stat-change-icon {
           width: 14px;
@@ -703,16 +726,22 @@ const AuditDashboard = () => {
         }
 
         .ad-chart-card {
-          background: #ffffff;
-          border: 1px solid #f3f4f6;
+          background: #FFFFFF;
+          border: 1px solid #FFEFB3;
           border-radius: 12px;
           padding: 20px;
+          transition: all 0.2s ease;
+        }
+
+        .ad-chart-card:hover {
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.06);
+          border-color: #013E37;
         }
 
         .ad-chart-title {
           font-size: 16px;
           font-weight: 600;
-          color: #111827;
+          color: #013E37;
           margin: 0 0 16px 0;
         }
 
@@ -724,11 +753,17 @@ const AuditDashboard = () => {
            SECTION
            ============================================ */
         .ad-section {
-          background: #ffffff;
-          border: 1px solid #f3f4f6;
+          background: #FFFFFF;
+          border: 1px solid #FFEFB3;
           border-radius: 12px;
           padding: 20px;
           margin-bottom: 20px;
+          transition: all 0.2s ease;
+        }
+
+        .ad-section:hover {
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.06);
+          border-color: #013E37;
         }
 
         .ad-section-header {
@@ -741,21 +776,23 @@ const AuditDashboard = () => {
         .ad-section-title {
           font-size: 16px;
           font-weight: 600;
-          color: #111827;
+          color: #013E37;
           margin: 0;
         }
 
         .ad-view-all-btn {
           font-size: 13px;
-          color: #3b82f6;
+          color: #013E37;
           background: none;
           border: none;
           cursor: pointer;
-          transition: color 0.2s;
+          transition: all 0.2s;
+          font-weight: 500;
         }
 
         .ad-view-all-btn:hover {
-          color: #2563eb;
+          color: #0A5C54;
+          opacity: 0.8;
         }
 
         .ad-trend-container {
@@ -779,21 +816,22 @@ const AuditDashboard = () => {
           padding: 10px 12px;
           font-size: 12px;
           font-weight: 600;
-          color: #6b7280;
+          color: #013E37;
           text-transform: uppercase;
           letter-spacing: 0.05em;
-          border-bottom: 2px solid #f3f4f6;
+          border-bottom: 2px solid #013E37;
+          background: #FFEFB3;
         }
 
         .ad-table tbody td {
           padding: 10px 12px;
           font-size: 14px;
-          color: #374151;
-          border-bottom: 1px solid #f3f4f6;
+          color: #013E37;
+          border-bottom: 1px solid #FFEFB3;
         }
 
         .ad-table tbody tr:hover {
-          background: #f9fafb;
+          background: #FFEFB3;
         }
 
         .ad-table tbody tr:last-child td {
@@ -809,12 +847,12 @@ const AuditDashboard = () => {
         .ad-user-avatar {
           width: 32px;
           height: 32px;
-          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+          background: linear-gradient(135deg, #013E37, #0A5C54);
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #ffffff;
+          color: #FFFFFF;
           font-weight: 600;
           font-size: 12px;
           flex-shrink: 0;
@@ -824,7 +862,7 @@ const AuditDashboard = () => {
           display: inline-flex;
           align-items: center;
           gap: 4px;
-          color: #22c55e;
+          color: #013E37;
           font-weight: 500;
         }
 
@@ -836,7 +874,8 @@ const AuditDashboard = () => {
         .ad-table-empty {
           text-align: center;
           padding: 24px !important;
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.5;
         }
 
         /* ============================================
@@ -859,27 +898,27 @@ const AuditDashboard = () => {
         }
 
         .ad-alert-item:hover {
-          background: #f9fafb;
+          background: #FFEFB3;
         }
 
         .ad-alert-info {
-          background: #eff6ff;
-          border-color: #3b82f6;
+          background: #FFFFFF;
+          border-color: #013E37;
         }
 
         .ad-alert-warning {
-          background: #fffbeb;
-          border-color: #f59e0b;
+          background: #FFFFFF;
+          border-color: #F9A825;
         }
 
         .ad-alert-error {
-          background: #fef2f2;
-          border-color: #ef4444;
+          background: #FFFFFF;
+          border-color: #D32F2F;
         }
 
         .ad-alert-success {
-          background: #f0fdf4;
-          border-color: #22c55e;
+          background: #FFFFFF;
+          border-color: #013E37;
         }
 
         .ad-alert-icon {
@@ -888,10 +927,10 @@ const AuditDashboard = () => {
           flex-shrink: 0;
         }
 
-        .ad-alert-info .ad-alert-icon { color: #3b82f6; }
-        .ad-alert-warning .ad-alert-icon { color: #f59e0b; }
-        .ad-alert-error .ad-alert-icon { color: #ef4444; }
-        .ad-alert-success .ad-alert-icon { color: #22c55e; }
+        .ad-alert-info .ad-alert-icon { color: #013E37; }
+        .ad-alert-warning .ad-alert-icon { color: #F9A825; }
+        .ad-alert-error .ad-alert-icon { color: #D32F2F; }
+        .ad-alert-success .ad-alert-icon { color: #013E37; }
 
         .ad-alert-content {
           flex: 1;
@@ -900,13 +939,14 @@ const AuditDashboard = () => {
 
         .ad-alert-message {
           font-size: 14px;
-          color: #374151;
+          color: #013E37;
           margin: 0;
         }
 
         .ad-alert-time {
           font-size: 12px;
-          color: #9ca3af;
+          color: #013E37;
+          opacity: 0.5;
         }
 
         .ad-alert-action {
@@ -916,14 +956,16 @@ const AuditDashboard = () => {
           border-radius: 6px;
           cursor: pointer;
           transition: all 0.2s ease;
-          color: #9ca3af;
+          color: #013E37;
+          opacity: 0.4;
           display: flex;
           align-items: center;
         }
 
         .ad-alert-action:hover {
-          background: #e5e7eb;
-          color: #4b5563;
+          background: #013E37;
+          color: #FFFFFF;
+          opacity: 1;
         }
 
         .ad-alert-action-icon {
@@ -934,13 +976,14 @@ const AuditDashboard = () => {
         .ad-alerts-empty {
           text-align: center;
           padding: 24px;
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.5;
         }
 
         .ad-alerts-empty-icon {
           width: 32px;
           height: 32px;
-          color: #22c55e;
+          color: #013E37;
           margin: 0 auto 8px;
           display: block;
         }
@@ -954,27 +997,38 @@ const AuditDashboard = () => {
           align-items: center;
           justify-content: center;
           min-height: 400px;
+          background: #FFFFFF;
         }
 
         .ad-loading-spinner {
           width: 48px;
           height: 48px;
-          border: 4px solid #dbeafe;
-          border-top-color: #3b82f6;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
         }
 
         .ad-loading-text {
           margin-top: 16px;
-          color: #6b7280;
+          color: #013E37;
           font-size: 14px;
         }
 
         /* ============================================
            RESPONSIVE
            ============================================ */
+        @media (max-width: 1024px) {
+          .ad-charts {
+            grid-template-columns: 1fr;
+          }
+        }
+
         @media (max-width: 768px) {
+          .ad-container {
+            padding: 16px;
+          }
+
           .ad-header {
             flex-direction: column;
             align-items: flex-start;
@@ -1000,6 +1054,10 @@ const AuditDashboard = () => {
         }
 
         @media (max-width: 480px) {
+          .ad-container {
+            padding: 12px;
+          }
+
           .ad-stats {
             grid-template-columns: 1fr;
           }
@@ -1022,6 +1080,22 @@ const AuditDashboard = () => {
           .ad-user-cell {
             flex-direction: column;
             align-items: flex-start;
+          }
+
+          .ad-title {
+            font-size: 20px;
+          }
+
+          .ad-subtitle {
+            font-size: 13px;
+          }
+
+          .ad-chart-container {
+            height: 220px;
+          }
+
+          .ad-trend-container {
+            height: 200px;
           }
         }
       `}</style>

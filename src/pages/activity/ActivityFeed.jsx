@@ -1,6 +1,6 @@
-// pages/activity/ActivityFeed.jsx - COMPLETE WORKING VERSION
+// pages/activity/ActivityFeed.jsx - MODERN DESIGN WITH #013E37, #FFEFB3, WHITE
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom'; // ✅ Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import { 
@@ -9,13 +9,14 @@ import {
   AlertCircle, MessageSquare, FileText,
   Building2, Users, Activity,
   X, ChevronDown, ChevronRight,
-  Eye, Download, Calendar
+  Eye, Download, Calendar, Sparkles,
+  Zap, Award, Crown, TrendingUp
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const ActivityFeed = () => {
   const { token, user } = useAuth();
-  const navigate = useNavigate(); // ✅ Initialize navigate
+  const navigate = useNavigate();
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -27,6 +28,7 @@ const ActivityFeed = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [expandedItems, setExpandedItems] = useState({});
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [hoveredItem, setHoveredItem] = useState(null);
   const feedRef = useRef(null);
   const intervalRef = useRef(null);
 
@@ -122,7 +124,6 @@ const ActivityFeed = () => {
     ];
   };
 
-  // ✅ Navigate to activity details
   const handleViewActivity = (activityId) => {
     navigate(`/activities/${activityId}`);
   };
@@ -175,24 +176,24 @@ const ActivityFeed = () => {
 
   const getEntityColor = (entityType) => {
     const colors = {
-      'lead': '#3b82f6',
-      'client': '#8b5cf6',
-      'project': '#22c55e',
-      'task': '#f59e0b',
-      'goal': '#ec4899',
-      'user': '#6b7280',
-      'team': '#14b8a6',
-      'comment': '#f97316',
-      'risk': '#ef4444',
-      'activity': '#3b82f6',
-      'kpi': '#8b5cf6',
-      'workflow': '#3b82f6',
-      'retainer': '#f59e0b',
-      'partner': '#14b8a6',
-      'report': '#3b82f6',
-      'schedule': '#8b5cf6'
+      'lead': '#013E37',
+      'client': '#0A5C54',
+      'project': '#013E37',
+      'task': '#013E37',
+      'goal': '#013E37',
+      'user': '#013E37',
+      'team': '#013E37',
+      'comment': '#013E37',
+      'risk': '#D32F2F',
+      'activity': '#013E37',
+      'kpi': '#013E37',
+      'workflow': '#013E37',
+      'retainer': '#013E37',
+      'partner': '#013E37',
+      'report': '#013E37',
+      'schedule': '#013E37'
     };
-    return colors[entityType] || '#6b7280';
+    return colors[entityType] || '#013E37';
   };
 
   const getActionColor = (action) => {
@@ -325,7 +326,7 @@ const ActivityFeed = () => {
         <div className="af-header">
           <div className="af-header-left">
             <h1 className="af-title">
-              <Activity className="af-title-icon" />
+              <Activity className="af-title-icon" color="#013E37" />
               Activity Feed
             </h1>
             <p className="af-subtitle">Real-time activity from across the organization</p>
@@ -427,12 +428,12 @@ const ActivityFeed = () => {
         {/* Stats */}
         <div className="af-stats">
           <span className="af-stat">
-            <Activity className="af-stat-icon" />
+            <Activity className="af-stat-icon" color="#013E37" />
             {activities.length} activities
           </span>
           {activities.length > 0 && (
             <span className="af-stat">
-              <Clock className="af-stat-icon" />
+              <Clock className="af-stat-icon" color="#013E37" />
               Last updated: {formatDate(activities[0]?.createdAt)}
             </span>
           )}
@@ -448,8 +449,8 @@ const ActivityFeed = () => {
         <div className="af-feed" ref={feedRef}>
           {activities.length === 0 ? (
             <div className="af-empty">
-              <div className="af-empty-icon-wrapper">
-                <Activity className="af-empty-icon" />
+              <div className="af-empty-icon-wrapper" style={{ backgroundColor: '#FFEFB3' }}>
+                <Activity className="af-empty-icon" color="#013E37" />
               </div>
               <h3 className="af-empty-title">No Activities</h3>
               <p className="af-empty-subtitle">
@@ -467,16 +468,23 @@ const ActivityFeed = () => {
               )}
             </div>
           ) : (
-            activities.map((activity) => {
+            activities.map((activity, index) => {
               const isExpanded = expandedItems[activity._id];
               const entityColor = getEntityColor(activity.entityType);
               const userId = activity.userId || activity.createdBy || {};
               const userName = userId.firstName || userId.name || 'System';
               const userLastName = userId.lastName || '';
               const fullName = userLastName ? `${userName} ${userLastName}` : userName;
+              const isHovered = hoveredItem === activity._id;
               
               return (
-                <div key={activity._id} className="af-item">
+                <div 
+                  key={activity._id} 
+                  className="af-item"
+                  style={{ animationDelay: `${index * 0.03}s` }}
+                  onMouseEnter={() => setHoveredItem(activity._id)}
+                  onMouseLeave={() => setHoveredItem(null)}
+                >
                   <div 
                     className="af-item-main" 
                     onClick={() => handleViewActivity(activity._id)}
@@ -577,8 +585,7 @@ const ActivityFeed = () => {
                           </div>
                         )}
 
-                        {/* View Details Button in Expanded View */}
-                        <div className="af-details-section af-details-action">
+                        <div className="af-details-action">
                           <button
                             onClick={() => handleViewActivity(activity._id)}
                             className="af-details-view-btn"
@@ -616,6 +623,12 @@ const ActivityFeed = () => {
           margin-bottom: 24px;
           flex-wrap: wrap;
           gap: 12px;
+          animation: afFadeInDown 0.6s ease;
+        }
+
+        @keyframes afFadeInDown {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .af-header-left {
@@ -625,24 +638,31 @@ const ActivityFeed = () => {
         }
 
         .af-title {
-          font-size: 24px;
+          font-size: 28px;
           font-weight: 700;
-          color: #111827;
+          color: #013E37;
           display: flex;
           align-items: center;
           gap: 10px;
           margin: 0;
+          letter-spacing: -0.5px;
         }
 
         .af-title-icon {
           width: 28px;
           height: 28px;
-          color: #3b82f6;
+          animation: afPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes afPulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
         }
 
         .af-subtitle {
-          color: #6b7280;
-          font-size: 14px;
+          color: #013E37;
+          opacity: 0.6;
+          font-size: 15px;
           margin: 0;
         }
 
@@ -658,7 +678,7 @@ const ActivityFeed = () => {
           align-items: center;
           gap: 6px;
           padding: 4px 12px;
-          background: #f3f4f6;
+          background: #FFEFB3;
           border-radius: 20px;
           font-size: 12px;
           font-weight: 500;
@@ -672,14 +692,8 @@ const ActivityFeed = () => {
         }
 
         .af-status-active {
-          background: #22c55e;
-          animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-          0% { opacity: 1; }
-          50% { opacity: 0.5; }
-          100% { opacity: 1; }
+          background: #013E37;
+          animation: afPulse 2s infinite;
         }
 
         .af-status-inactive {
@@ -687,40 +701,42 @@ const ActivityFeed = () => {
         }
 
         .af-status-label {
-          color: #6b7280;
+          color: #013E37;
         }
 
         .af-auto-btn {
           padding: 8px 10px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
         .af-auto-btn:hover {
-          background: #f9fafb;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .af-auto-active {
-          border-color: #22c55e;
-          background: #f0fdf4;
+          border-color: #013E37;
+          background: #FFEFB3;
         }
 
         .af-auto-active .af-auto-icon {
-          color: #22c55e;
+          color: #013E37;
         }
 
         .af-auto-inactive {
-          border-color: #d1d5db;
+          border-color: #FFEFB3;
         }
 
         .af-auto-inactive .af-auto-icon {
-          color: #9ca3af;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .af-auto-icon {
@@ -730,11 +746,11 @@ const ActivityFeed = () => {
 
         .af-filter-btn {
           padding: 8px 10px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -742,22 +758,24 @@ const ActivityFeed = () => {
         }
 
         .af-filter-btn:hover {
-          background: #f9fafb;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .af-filter-active {
-          border-color: #3b82f6;
-          background: #eff6ff;
+          border-color: #013E37;
+          background: #FFEFB3;
         }
 
         .af-filter-active .af-filter-icon {
-          color: #3b82f6;
+          color: #013E37;
         }
 
         .af-filter-icon {
           width: 16px;
           height: 16px;
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.6;
         }
 
         .af-filter-dot {
@@ -766,25 +784,26 @@ const ActivityFeed = () => {
           right: 4px;
           width: 8px;
           height: 8px;
-          background: #3b82f6;
+          background: #013E37;
           border-radius: 50%;
           border: 2px solid #ffffff;
         }
 
         .af-refresh-btn {
           padding: 8px 10px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
         .af-refresh-btn:hover:not(:disabled) {
-          background: #f9fafb;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .af-refresh-btn:disabled {
@@ -795,14 +814,14 @@ const ActivityFeed = () => {
         .af-refresh-icon {
           width: 16px;
           height: 16px;
-          color: #6b7280;
+          color: #013E37;
         }
 
         .af-spin {
-          animation: spin 0.8s linear infinite;
+          animation: afSpin 0.8s linear infinite;
         }
 
-        @keyframes spin {
+        @keyframes afSpin {
           to { transform: rotate(360deg); }
         }
 
@@ -811,10 +830,16 @@ const ActivityFeed = () => {
            ============================================ */
         .af-filters {
           background: #ffffff;
-          border: 1px solid #f3f4f6;
+          border: 1px solid #FFEFB3;
           border-radius: 12px;
           padding: 16px 20px;
           margin-bottom: 16px;
+          animation: afSlideDown 0.3s ease;
+        }
+
+        @keyframes afSlideDown {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .af-filters-grid {
@@ -844,26 +869,29 @@ const ActivityFeed = () => {
 
         .af-filter-label {
           font-size: 12px;
-          font-weight: 500;
-          color: #6b7280;
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.7;
           text-transform: uppercase;
           letter-spacing: 0.05em;
         }
 
         .af-filter-select {
           padding: 6px 10px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 6px;
           font-size: 13px;
           outline: none;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           background: #ffffff;
+          color: #013E37;
           width: 100%;
+          cursor: pointer;
         }
 
         .af-filter-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
 
         .af-filter-actions {
@@ -874,22 +902,22 @@ const ActivityFeed = () => {
 
         .af-clear-btn {
           padding: 6px 12px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 6px;
           background: transparent;
-          color: #6b7280;
+          color: #013E37;
           font-size: 13px;
           cursor: pointer;
           display: flex;
           align-items: center;
           gap: 4px;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           white-space: nowrap;
         }
 
         .af-clear-btn:hover {
-          background: #f9fafb;
-          border-color: #9ca3af;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .af-clear-icon {
@@ -899,19 +927,21 @@ const ActivityFeed = () => {
 
         .af-apply-btn {
           padding: 6px 16px;
-          background: #3b82f6;
+          background: #013E37;
           border: none;
           border-radius: 6px;
           color: #ffffff;
           font-weight: 500;
           font-size: 13px;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           white-space: nowrap;
         }
 
         .af-apply-btn:hover {
-          background: #2563eb;
+          background: #0A5C54;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.2);
         }
 
         /* ============================================
@@ -931,7 +961,9 @@ const ActivityFeed = () => {
           align-items: center;
           gap: 6px;
           font-size: 13px;
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.6;
+          font-weight: 500;
         }
 
         .af-stat-icon {
@@ -940,17 +972,18 @@ const ActivityFeed = () => {
         }
 
         .af-stat-live {
-          color: #22c55e;
-          font-weight: 500;
+          color: #013E37;
+          font-weight: 600;
+          opacity: 1;
         }
 
         .af-stat-dot {
           width: 6px;
           height: 6px;
-          background: #22c55e;
+          background: #013E37;
           border-radius: 50%;
           display: inline-block;
-          animation: pulse 2s infinite;
+          animation: afPulse 2s infinite;
         }
 
         /* ============================================
@@ -958,14 +991,21 @@ const ActivityFeed = () => {
            ============================================ */
         .af-feed {
           background: #ffffff;
-          border: 1px solid #f3f4f6;
+          border: 1px solid #FFEFB3;
           border-radius: 12px;
           overflow: hidden;
+          transition: all 0.3s ease;
+        }
+
+        .af-feed:hover {
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
         }
 
         .af-item {
-          border-bottom: 1px solid #f3f4f6;
-          transition: all 0.2s ease;
+          border-bottom: 1px solid #FFEFB3;
+          transition: all 0.3s ease;
+          animation: afSlideInRight 0.4s ease forwards;
+          opacity: 0;
         }
 
         .af-item:last-child {
@@ -973,7 +1013,12 @@ const ActivityFeed = () => {
         }
 
         .af-item:hover {
-          background: #f9fafb;
+          background: #FFEFB3;
+        }
+
+        @keyframes afSlideInRight {
+          from { opacity: 0; transform: translateX(10px); }
+          to { opacity: 1; transform: translateX(0); }
         }
 
         .af-item-main {
@@ -992,12 +1037,17 @@ const ActivityFeed = () => {
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          transition: all 0.3s ease;
+        }
+
+        .af-item:hover .af-item-icon {
+          transform: scale(1.05) rotate(-5deg);
         }
 
         .af-entity-icon {
           width: 18px;
           height: 18px;
-          color: #3b82f6;
+          color: #013E37;
         }
 
         .af-item-content {
@@ -1014,71 +1064,72 @@ const ActivityFeed = () => {
 
         .af-item-user {
           font-weight: 600;
-          color: #111827;
+          color: #013E37;
           font-size: 14px;
         }
 
         .af-item-action {
-          padding: 2px 10px;
+          padding: 2px 12px;
           font-size: 11px;
-          font-weight: 500;
+          font-weight: 600;
           border-radius: 9999px;
         }
 
         .af-action-created {
-          background: #dcfce7;
-          color: #16a34a;
+          background: #013E37;
+          color: #ffffff;
         }
 
         .af-action-updated {
-          background: #dbeafe;
-          color: #1d4ed8;
+          background: #FFEFB3;
+          color: #013E37;
         }
 
         .af-action-deleted {
-          background: #fee2e2;
-          color: #dc2626;
+          background: #FFEBEE;
+          color: #D32F2F;
         }
 
         .af-action-completed {
-          background: #d1fae5;
-          color: #059669;
+          background: #013E37;
+          color: #ffffff;
         }
 
         .af-action-approved {
-          background: #dbeafe;
-          color: #1d4ed8;
+          background: #013E37;
+          color: #ffffff;
         }
 
         .af-action-rejected {
-          background: #fef3c7;
-          color: #d97706;
+          background: #FFEFB3;
+          color: #013E37;
         }
 
         .af-action-login {
-          background: #ede9fe;
-          color: #7c3aed;
+          background: #FFEFB3;
+          color: #013E37;
         }
 
         .af-action-logout {
-          background: #f3f4f6;
-          color: #6b7280;
+          background: #FFEFB3;
+          color: #013E37;
         }
 
         .af-action-default {
-          background: #f3f4f6;
-          color: #6b7280;
+          background: #FFEFB3;
+          color: #013E37;
         }
 
         .af-item-entity {
           font-size: 12px;
-          font-weight: 500;
+          font-weight: 600;
           text-transform: capitalize;
         }
 
         .af-item-time {
           font-size: 12px;
-          color: #9ca3af;
+          color: #013E37;
+          opacity: 0.5;
         }
 
         .af-item-expand {
@@ -1086,15 +1137,17 @@ const ActivityFeed = () => {
           border: none;
           background: transparent;
           cursor: pointer;
-          color: #9ca3af;
-          transition: color 0.2s ease;
+          color: #013E37;
+          opacity: 0.3;
+          transition: all 0.3s ease;
           display: flex;
           align-items: center;
           margin-left: auto;
         }
 
         .af-item-expand:hover {
-          color: #4b5563;
+          opacity: 1;
+          transform: scale(1.2);
         }
 
         .af-item-expand-icon {
@@ -1104,7 +1157,8 @@ const ActivityFeed = () => {
 
         .af-item-desc {
           font-size: 14px;
-          color: #4b5563;
+          color: #013E37;
+          opacity: 0.8;
           margin: 4px 0 0 0;
         }
 
@@ -1113,10 +1167,11 @@ const ActivityFeed = () => {
           align-items: center;
           gap: 4px;
           font-size: 12px;
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.6;
           margin-top: 4px;
-          padding: 2px 8px;
-          background: #f3f4f6;
+          padding: 2px 10px;
+          background: #FFEFB3;
           border-radius: 4px;
         }
 
@@ -1143,21 +1198,22 @@ const ActivityFeed = () => {
           align-items: center;
           gap: 4px;
           font-size: 13px;
-          color: #3b82f6;
+          color: #013E37;
           text-decoration: none;
           font-weight: 500;
-          transition: color 0.2s ease;
+          transition: all 0.3s ease;
           white-space: nowrap;
           background: transparent;
           border: none;
           cursor: pointer;
-          padding: 4px 8px;
+          padding: 4px 12px;
           border-radius: 6px;
         }
 
         .af-item-link:hover {
-          background: #eff6ff;
-          color: #2563eb;
+          background: #013E37;
+          color: #ffffff;
+          transform: scale(1.05);
         }
 
         /* ============================================
@@ -1165,7 +1221,7 @@ const ActivityFeed = () => {
            ============================================ */
         .af-item-details {
           padding: 0 20px 16px 20px;
-          border-top: 1px solid #f3f4f6;
+          border-top: 1px solid #FFEFB3;
         }
 
         .af-details-grid {
@@ -1190,7 +1246,7 @@ const ActivityFeed = () => {
         .af-details-title {
           font-size: 13px;
           font-weight: 600;
-          color: #374151;
+          color: #013E37;
           margin: 0;
         }
 
@@ -1203,19 +1259,21 @@ const ActivityFeed = () => {
         .af-details-item {
           display: flex;
           justify-content: space-between;
-          padding: 4px 8px;
-          background: #f9fafb;
+          padding: 4px 10px;
+          background: #F8FAFC;
           border-radius: 4px;
           font-size: 13px;
+          border: 1px solid #FFEFB3;
         }
 
         .af-details-label {
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.6;
           font-weight: 500;
         }
 
         .af-details-value {
-          color: #111827;
+          color: #013E37;
           font-family: monospace;
           font-size: 12px;
           word-break: break-all;
@@ -1234,21 +1292,21 @@ const ActivityFeed = () => {
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 8px 20px;
-          background: #3b82f6;
+          padding: 8px 24px;
+          background: #013E37;
           color: #ffffff;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .af-details-view-btn:hover {
-          background: #2563eb;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
         }
 
         .af-details-view-icon {
@@ -1267,48 +1325,55 @@ const ActivityFeed = () => {
         .af-empty-icon-wrapper {
           width: 80px;
           height: 80px;
-          background: #f3f4f6;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           margin: 0 auto 16px;
+          animation: afFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes afFloat {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
         }
 
         .af-empty-icon {
           width: 40px;
           height: 40px;
-          color: #9ca3af;
         }
 
         .af-empty-title {
-          font-size: 18px;
+          font-size: 20px;
           font-weight: 600;
-          color: #111827;
+          color: #013E37;
           margin: 0;
         }
 
         .af-empty-subtitle {
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.6;
           margin-top: 4px;
+          font-size: 15px;
         }
 
         .af-empty-btn {
           margin-top: 16px;
           padding: 10px 24px;
-          background: #3b82f6;
+          background: #013E37;
           border: none;
           border-radius: 8px;
           color: #ffffff;
           font-weight: 500;
           font-size: 14px;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .af-empty-btn:hover {
-          background: #2563eb;
-          transform: translateY(-1px);
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
         }
 
         /* ============================================
@@ -1325,15 +1390,16 @@ const ActivityFeed = () => {
         .af-loading-spinner {
           width: 48px;
           height: 48px;
-          border: 4px solid #dbeafe;
-          border-top-color: #3b82f6;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
-          animation: spin 0.8s linear infinite;
+          animation: afSpin 0.8s linear infinite;
         }
 
         .af-loading-text {
           margin-top: 16px;
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.6;
           font-size: 14px;
         }
 
@@ -1366,6 +1432,10 @@ const ActivityFeed = () => {
             padding-left: 0;
             width: 100%;
             justify-content: flex-end;
+          }
+
+          .af-title {
+            font-size: 24px;
           }
         }
 
@@ -1406,6 +1476,19 @@ const ActivityFeed = () => {
           .af-details-view-btn {
             width: 100%;
             justify-content: center;
+          }
+
+          .af-title {
+            font-size: 20px;
+          }
+
+          .af-item-main {
+            padding: 12px 14px;
+          }
+
+          .af-item-link {
+            font-size: 12px;
+            padding: 4px 8px;
           }
         }
       `}</style>

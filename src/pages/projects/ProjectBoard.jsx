@@ -1,4 +1,5 @@
-// pages/projects/ProjectBoard.jsx
+// pages/projects/ProjectBoard.jsx - MODERN DESIGN WITH YOUR COLOR PALETTE
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -82,7 +83,6 @@ const ProjectBoard = () => {
         const projectsData = projectsResponse.data.data || [];
         setProjects(projectsData);
 
-        // Fetch tasks for each project
         const tasksPromises = projectsData.map(project => 
           axios.get(`${API_URL}/projects/${project._id}/tasks`, {
             headers: { Authorization: `Bearer ${token}` }
@@ -186,7 +186,7 @@ const ProjectBoard = () => {
 
   const getPriorityColor = (priority) => {
     const colors = {
-      'urgent': '#EF4444',
+      'urgent': '#013E37',
       'high': '#F59E0B',
       'medium': '#3B82F6',
       'low': '#22C55E'
@@ -211,8 +211,7 @@ const ProjectBoard = () => {
       'In Progress': '#3B82F6',
       'Review': '#8B5CF6',
       'Approved': '#F59E0B',
-      'Completed': '#22C55E',
-      'Done': '#22C55E'
+      'Completed': '#013E37'
     };
     return colors[status] || '#94A3B8';
   };
@@ -224,8 +223,7 @@ const ProjectBoard = () => {
       'In Progress': Zap,
       'Review': AlertCircle,
       'Approved': CheckCircle,
-      'Completed': CheckCircle,
-      'Done': CheckCircle
+      'Completed': CheckCircle
     };
     return icons[status] || Layers;
   };
@@ -237,45 +235,54 @@ const ProjectBoard = () => {
 
   if (loading) {
     return (
-      <div className="pb-loading">
-        <div className="pb-spinner"></div>
-        <p className="pb-loading-text">Loading task board...</p>
+      <div style={styles.loadingContainer}>
+        <div style={styles.spinner} />
+        <p style={styles.loadingText}>Loading task board...</p>
       </div>
     );
   }
 
   return (
-    <div className="pb-container">
+    <div style={styles.container}>
       {/* Header */}
-      <div className="pb-header">
+      <div style={styles.header}>
         <div>
-          <h1 className="pb-title">Task Board</h1>
-          <p className="pb-subtitle">Drag and drop tasks between columns to update their status</p>
+          <h1 style={styles.title}>Task Board</h1>
+          <p style={styles.subtitle}>Drag and drop tasks between columns to update their status</p>
         </div>
-        <div className="pb-actions">
-          <button className="pb-icon-btn" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw size={18} className={refreshing ? 'pb-spin' : ''} />
+        <div style={styles.actions}>
+          <button style={styles.iconBtn} onClick={handleRefresh} disabled={refreshing}>
+            <RefreshCw size={18} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
           </button>
-          <button className="pb-filter-btn" onClick={() => setShowFilters(!showFilters)}>
+          <button style={styles.filterBtn} onClick={() => setShowFilters(!showFilters)}>
             <Filter size={16} />
             Filters
-            <ChevronDown size={14} className={`pb-chevron ${showFilters ? 'pb-chevron-open' : ''}`} />
+            <ChevronDown size={14} style={{
+              transform: showFilters ? 'rotate(180deg)' : 'none',
+              transition: 'transform 0.2s ease'
+            }} />
           </button>
-          <div className="pb-view-toggle">
+          <div style={styles.viewToggle}>
             <button
               onClick={() => setViewMode('board')}
-              className={`pb-view-btn ${viewMode === 'board' ? 'pb-view-active' : 'pb-view-inactive'}`}
+              style={{
+                ...styles.viewBtn,
+                ...(viewMode === 'board' ? styles.viewActive : styles.viewInactive)
+              }}
             >
               <Grid size={16} />
             </button>
             <button
               onClick={() => setViewMode('compact')}
-              className={`pb-view-btn ${viewMode === 'compact' ? 'pb-view-active' : 'pb-view-inactive'}`}
+              style={{
+                ...styles.viewBtn,
+                ...(viewMode === 'compact' ? styles.viewActive : styles.viewInactive)
+              }}
             >
               <List size={16} />
             </button>
           </div>
-          <button className="pb-primary-btn" onClick={() => setShowCreateModal(true)}>
+          <button style={styles.primaryBtn} onClick={() => setShowCreateModal(true)}>
             <Plus size={18} />
             Add Task
           </button>
@@ -283,55 +290,55 @@ const ProjectBoard = () => {
       </div>
 
       {/* Stats */}
-      <div className="pb-stats">
-        <div className="pb-stat">
-          <span className="pb-stat-number">{totalTasks}</span>
-          <span className="pb-stat-label">Total Tasks</span>
+      <div style={styles.stats}>
+        <div style={styles.stat}>
+          <span style={styles.statNumber}>{totalTasks}</span>
+          <span style={styles.statLabel}>Total Tasks</span>
         </div>
-        <div className="pb-stat">
-          <span className="pb-stat-number">{completedTasks}</span>
-          <span className="pb-stat-label">Completed</span>
+        <div style={styles.stat}>
+          <span style={styles.statNumber}>{completedTasks}</span>
+          <span style={styles.statLabel}>Completed</span>
         </div>
-        <div className="pb-stat">
-          <span className="pb-stat-number">
+        <div style={styles.stat}>
+          <span style={styles.statNumber}>
             {totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0}%
           </span>
-          <span className="pb-stat-label">Progress</span>
+          <span style={styles.statLabel}>Progress</span>
         </div>
-        <div className="pb-stat">
-          <span className="pb-stat-number">{Object.keys(board).length}</span>
-          <span className="pb-stat-label">Columns</span>
+        <div style={styles.stat}>
+          <span style={styles.statNumber}>{Object.keys(board).length}</span>
+          <span style={styles.statLabel}>Columns</span>
         </div>
       </div>
 
       {/* Filters */}
       {showFilters && (
-        <div className="pb-filter-panel">
-          <div className="pb-filter-row">
-            <div className="pb-filter-group">
-              <label className="pb-filter-label">Search</label>
-              <div className="pb-search">
-                <Search size={16} className="pb-search-icon" />
+        <div style={styles.filterPanel}>
+          <div style={styles.filterRow}>
+            <div style={styles.filterGroup}>
+              <label style={styles.filterLabel}>Search</label>
+              <div style={styles.search}>
+                <Search size={16} style={styles.searchIcon} />
                 <input
                   type="text"
                   placeholder="Search tasks..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pb-search-input"
+                  style={styles.searchInput}
                 />
                 {searchTerm && (
-                  <button className="pb-search-clear" onClick={() => setSearchTerm('')}>
+                  <button style={styles.searchClear} onClick={() => setSearchTerm('')}>
                     <X size={14} />
                   </button>
                 )}
               </div>
             </div>
-            <div className="pb-filter-group">
-              <label className="pb-filter-label">Priority</label>
+            <div style={styles.filterGroup}>
+              <label style={styles.filterLabel}>Priority</label>
               <select
                 value={filterPriority}
                 onChange={(e) => setFilterPriority(e.target.value)}
-                className="pb-filter-select"
+                style={styles.filterSelect}
               >
                 <option value="">All Priorities</option>
                 <option value="urgent">Urgent</option>
@@ -340,7 +347,7 @@ const ProjectBoard = () => {
                 <option value="low">Low</option>
               </select>
             </div>
-            <button className="pb-clear-filters" onClick={clearFilters}>
+            <button style={styles.clearFilters} onClick={clearFilters}>
               Clear All
             </button>
           </div>
@@ -349,19 +356,19 @@ const ProjectBoard = () => {
 
       {/* Board */}
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="pb-columns">
+        <div style={styles.columns}>
           {statuses.map((status) => {
             const tasks = filteredBoard[status] || [];
             const statusColor = getStatusColor(status);
             const StatusIcon = getStatusIcon(status);
             
             return (
-              <div key={status} className="pb-column">
-                <div className="pb-column-header">
-                  <div className="pb-column-header-left">
-                    <div className="pb-column-dot" style={{ backgroundColor: statusColor }} />
-                    <h3 className="pb-column-title">{status}</h3>
-                    <span className="pb-column-count">{tasks.length}</span>
+              <div key={status} style={styles.column}>
+                <div style={styles.columnHeader}>
+                  <div style={styles.columnHeaderLeft}>
+                    <div style={{...styles.columnDot, backgroundColor: statusColor}} />
+                    <h3 style={styles.columnTitle}>{status}</h3>
+                    <span style={styles.columnCount}>{tasks.length}</span>
                   </div>
                 </div>
 
@@ -370,12 +377,15 @@ const ProjectBoard = () => {
                     <div
                       ref={provided.innerRef}
                       {...provided.droppableProps}
-                      className={`pb-droppable ${snapshot.isDraggingOver ? 'pb-droppable-drag' : ''}`}
+                      style={{
+                        ...styles.droppable,
+                        ...(snapshot.isDraggingOver ? styles.droppableDrag : {})
+                      }}
                     >
                       {tasks.length === 0 ? (
-                        <div className="pb-empty">
-                          <StatusIcon size={24} className="pb-empty-icon" />
-                          <p className="pb-empty-text">No tasks</p>
+                        <div style={styles.empty}>
+                          <StatusIcon size={24} style={styles.emptyIcon} />
+                          <p style={styles.emptyText}>No tasks</p>
                         </div>
                       ) : (
                         tasks.map((task, index) => {
@@ -394,11 +404,15 @@ const ProjectBoard = () => {
                                   ref={provided.innerRef}
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
-                                  className={`pb-task ${snapshot.isDragging ? 'pb-task-dragging' : ''}`}
+                                  style={{
+                                    ...styles.task,
+                                    ...(snapshot.isDragging ? styles.taskDragging : {})
+                                  }}
                                 >
-                                  <div className="pb-task-header">
-                                    <span className="pb-task-title">{task.title}</span>
-                                    <span className="pb-task-priority" style={{
+                                  <div style={styles.taskHeader}>
+                                    <span style={styles.taskTitle}>{task.title}</span>
+                                    <span style={{
+                                      ...styles.taskPriority,
                                       backgroundColor: `${priorityColor}20`,
                                       color: priorityColor,
                                     }}>
@@ -408,40 +422,40 @@ const ProjectBoard = () => {
                                   </div>
                                   
                                   {task.description && (
-                                    <p className="pb-task-desc">
+                                    <p style={styles.taskDesc}>
                                       {task.description.length > 60 
                                         ? `${task.description.substring(0, 60)}...` 
                                         : task.description}
                                     </p>
                                   )}
                                   
-                                  <div className="pb-task-meta">
+                                  <div style={styles.taskMeta}>
                                     {task.projectId && (
-                                      <span className="pb-task-project">
+                                      <span style={styles.taskProject}>
                                         <Briefcase size={12} />
                                         {typeof task.projectId === 'object' ? task.projectId.projectName : 'Project'}
                                       </span>
                                     )}
                                     {task.assignedTo && (
-                                      <span className="pb-task-assignee">
+                                      <span style={styles.taskAssignee}>
                                         <User size={12} />
                                         {typeof task.assignedTo === 'object' ? task.assignedTo.firstName : 'User'}
                                       </span>
                                     )}
                                   </div>
                                   
-                                  <div className="pb-task-footer">
+                                  <div style={styles.taskFooter}>
                                     {task.deadline && (
-                                      <span className="pb-task-deadline">
+                                      <span style={styles.taskDeadline}>
                                         <Calendar size={12} />
                                         {formatDate(task.deadline)}
                                       </span>
                                     )}
-                                    <div className="pb-task-actions">
-                                      <button className="pb-task-action" title="View">
+                                    <div style={styles.taskActions}>
+                                      <button style={styles.taskAction} title="View">
                                         <Eye size={14} />
                                       </button>
-                                      <button className="pb-task-action" title="Edit">
+                                      <button style={styles.taskAction} title="Edit">
                                         <Edit size={14} />
                                       </button>
                                     </div>
@@ -464,23 +478,23 @@ const ProjectBoard = () => {
 
       {/* Modal */}
       {showCreateModal && (
-        <div className="pb-modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="pb-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="pb-modal-header">
-              <h3 className="pb-modal-title">Create New Task</h3>
-              <button className="pb-modal-close" onClick={() => setShowCreateModal(false)}>
+        <div style={styles.modalOverlay} onClick={() => setShowCreateModal(false)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h3 style={styles.modalTitle}>Create New Task</h3>
+              <button style={styles.modalClose} onClick={() => setShowCreateModal(false)}>
                 <X size={20} />
               </button>
             </div>
-            <div className="pb-modal-body">
-              <p className="pb-modal-text">Task creation form would go here.</p>
-              <p className="pb-modal-hint">Please implement TaskForm component or use the projects API.</p>
+            <div style={styles.modalBody}>
+              <p style={styles.modalText}>Task creation form would go here.</p>
+              <p style={styles.modalHint}>Please implement TaskForm component or use the projects API.</p>
             </div>
-            <div className="pb-modal-footer">
-              <button className="pb-modal-cancel" onClick={() => setShowCreateModal(false)}>
+            <div style={styles.modalFooter}>
+              <button style={styles.modalCancel} onClick={() => setShowCreateModal(false)}>
                 Cancel
               </button>
-              <button className="pb-modal-submit" onClick={() => {
+              <button style={styles.modalSubmit} onClick={() => {
                 setShowCreateModal(false);
                 toast.success('Task created successfully!');
                 fetchProjectsAndTasks(true);
@@ -493,662 +507,618 @@ const ProjectBoard = () => {
       )}
 
       <style>{`
-        .pb-container {
-          padding: 24px 32px;
-          max-width: 1400px;
-          margin: 0 auto;
-          width: 100%;
-          background: #f8fafc;
-          min-height: 100vh;
-        }
-
-        .pb-loading {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 64vh;
-          gap: 16px;
-        }
-
-        .pb-loading-text {
-          color: #64748b;
-          font-size: 14px;
-          font-weight: 500;
-        }
-
-        .pb-spinner {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          border: 3px solid #e5e7eb;
-          border-top-color: #3b82f6;
-          animation: spin 0.8s linear infinite;
-        }
-
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
-        }
-
-        .pb-spin {
-          animation: spin 1s linear infinite;
-        }
-
-        .pb-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 20px;
-          flex-wrap: wrap;
-          gap: 16px;
-        }
-
-        .pb-title {
-          font-size: 28px;
-          font-weight: 700;
-          color: #0f172a;
-          margin: 0;
-          letter-spacing: -0.5px;
-        }
-
-        .pb-subtitle {
-          font-size: 15px;
-          color: #64748b;
-          margin-top: 4px;
-          margin: 4px 0 0 0;
-        }
-
-        .pb-actions {
-          display: flex;
-          gap: 10px;
-          flex-wrap: wrap;
-        }
-
-        .pb-icon-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 10px;
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
-          color: #64748b;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .pb-icon-btn:hover {
-          background: #f1f5f9;
-        }
-
-        .pb-filter-btn {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 10px 16px;
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
-          font-size: 14px;
-          font-weight: 500;
-          color: #475569;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          white-space: nowrap;
-        }
-
-        .pb-filter-btn:hover {
-          background: #f1f5f9;
-        }
-
-        .pb-chevron {
-          transition: transform 0.2s ease;
-        }
-
-        .pb-chevron-open {
-          transform: rotate(180deg);
-        }
-
-        .pb-view-toggle {
-          display: flex;
-          border-radius: 10px;
-          overflow: hidden;
-          border: 1px solid #e2e8f0;
-          background: #ffffff;
-        }
-
-        .pb-view-btn {
-          padding: 10px 12px;
-          border: none;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s ease;
-        }
-
-        .pb-view-active {
-          background: #3b82f6;
-          color: #ffffff;
-        }
-
-        .pb-view-inactive {
-          background: #ffffff;
-          color: #94a3b8;
-        }
-
-        .pb-view-inactive:hover {
-          background: #f1f5f9;
-        }
-
-        .pb-primary-btn {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 10px 24px;
-          background: #3b82f6;
-          color: #ffffff;
-          border: none;
-          border-radius: 10px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
-        }
-
-        .pb-primary-btn:hover {
-          background: #2563eb;
-          box-shadow: 0 4px 8px rgba(59, 130, 246, 0.35);
-          transform: translateY(-1px);
-        }
-
-        .pb-stats {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-          gap: 12px;
-          margin-bottom: 20px;
-        }
-
-        .pb-stat {
-          background: #ffffff;
-          border-radius: 10px;
-          padding: 12px 16px;
-          border: 1px solid #e2e8f0;
-          text-align: center;
-        }
-
-        .pb-stat:hover {
-          background: #f8fafc;
-        }
-
-        .pb-stat-number {
-          font-size: 20px;
-          font-weight: 700;
-          color: #0f172a;
-          display: block;
-        }
-
-        .pb-stat-label {
-          font-size: 12px;
-          color: #64748b;
-          font-weight: 500;
-        }
-
-        .pb-filter-panel {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
-          padding: 16px 20px;
-          margin-bottom: 16px;
-        }
-
-        .pb-filter-row {
-          display: flex;
-          align-items: flex-end;
-          gap: 16px;
-          flex-wrap: wrap;
-        }
-
-        .pb-filter-group {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-          flex: 1;
-          min-width: 150px;
-        }
-
-        .pb-filter-label {
-          font-size: 12px;
-          font-weight: 600;
-          color: #64748b;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .pb-search {
-          display: flex;
-          align-items: center;
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          padding: 0 12px;
-        }
-
-        .pb-search:focus-within {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .pb-search-icon {
-          color: #94a3b8;
-          flex-shrink: 0;
-        }
-
-        .pb-search-input {
-          flex: 1;
-          padding: 8px 10px;
-          border: none;
-          outline: none;
-          font-size: 14px;
-          background: transparent;
-          color: #0f172a;
-        }
-
-        .pb-search-clear {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 4px;
-          background: none;
-          border: none;
-          color: #94a3b8;
-          cursor: pointer;
-          border-radius: 4px;
-        }
-
-        .pb-search-clear:hover {
-          background: #f1f5f9;
-        }
-
-        .pb-filter-select {
-          padding: 8px 12px;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          font-size: 14px;
-          background: #ffffff;
-          color: #0f172a;
-          outline: none;
-          cursor: pointer;
-        }
-
-        .pb-filter-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .pb-clear-filters {
-          padding: 8px 16px;
-          background: #f1f5f9;
-          border: none;
-          border-radius: 8px;
-          font-size: 13px;
-          font-weight: 500;
-          color: #475569;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          white-space: nowrap;
-          align-self: center;
-        }
-
-        .pb-clear-filters:hover {
-          background: #e2e8f0;
-        }
-
-        .pb-columns {
-          display: grid;
-          grid-template-columns: repeat(6, 1fr);
-          gap: 16px;
-          overflow-x: auto;
-          padding-bottom: 16px;
-        }
-
-        .pb-column {
-          min-width: 220px;
-        }
-
-        .pb-column-header {
-          background: #ffffff;
-          border-radius: 10px;
-          padding: 12px 16px;
-          margin-bottom: 8px;
-          border: 1px solid #e2e8f0;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .pb-column-header-left {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .pb-column-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          flex-shrink: 0;
-        }
-
-        .pb-column-title {
-          font-size: 13px;
-          font-weight: 600;
-          color: #0f172a;
-          margin: 0;
-        }
-
-        .pb-column-count {
-          font-size: 11px;
-          font-weight: 600;
-          color: #64748b;
-          background: #f1f5f9;
-          padding: 1px 8px;
-          border-radius: 12px;
-        }
-
-        .pb-droppable {
-          min-height: 200px;
-          padding: 6px;
-          border-radius: 10px;
-          border: 2px dashed #e2e8f0;
-          transition: all 0.2s ease;
-        }
-
-        .pb-droppable-drag {
-          background: #f1f5f9;
-          border-color: #3b82f6;
-        }
-
-        .pb-task {
-          background: #ffffff;
-          padding: 12px 14px;
-          border-radius: 8px;
-          border: 1px solid #e2e8f0;
-          margin-bottom: 8px;
-          transition: all 0.2s ease;
-          cursor: grab;
-        }
-
-        .pb-task:hover {
-          border-color: #94a3b8;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        }
-
-        .pb-task:active {
-          cursor: grabbing;
-        }
-
-        .pb-task-dragging {
-          border-color: #3b82f6;
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-          transform: scale(1.02);
-        }
-
-        .pb-task-header {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 8px;
-          margin-bottom: 6px;
-        }
-
-        .pb-task-title {
-          font-size: 13px;
-          font-weight: 500;
-          color: #0f172a;
-          flex: 1;
-        }
-
-        .pb-task-priority {
-          display: inline-flex;
-          align-items: center;
-          gap: 3px;
-          padding: 2px 8px;
-          border-radius: 4px;
-          font-size: 10px;
-          font-weight: 600;
-          flex-shrink: 0;
-        }
-
-        .pb-task-desc {
-          font-size: 12px;
-          color: #64748b;
-          margin: 0 0 8px 0;
-          line-height: 1.4;
-        }
-
-        .pb-task-meta {
-          display: flex;
-          gap: 12px;
-          margin-bottom: 8px;
-          flex-wrap: wrap;
-        }
-
-        .pb-task-project {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 11px;
-          color: #64748b;
-        }
-
-        .pb-task-assignee {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 11px;
-          color: #64748b;
-        }
-
-        .pb-task-footer {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding-top: 8px;
-          border-top: 1px solid #f1f5f9;
-        }
-
-        .pb-task-deadline {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 11px;
-          color: #94a3b8;
-        }
-
-        .pb-task-actions {
-          display: flex;
-          gap: 4px;
-        }
-
-        .pb-task-action {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 2px;
-          background: transparent;
-          border: none;
-          color: #94a3b8;
-          cursor: pointer;
-          border-radius: 4px;
-        }
-
-        .pb-task-action:hover {
-          background: #f1f5f9;
-          color: #475569;
-        }
-
-        .pb-empty {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 24px 0;
-          color: #94a3b8;
-        }
-
-        .pb-empty-icon {
-          color: #d1d5db;
-          margin-bottom: 4px;
-        }
-
-        .pb-empty-text {
-          font-size: 12px;
-          color: #94a3b8;
-          margin: 0;
-        }
-
-        .pb-modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-        }
-
-        .pb-modal {
-          background: #ffffff;
-          border-radius: 12px;
-          padding: 24px;
-          max-width: 500px;
-          width: 90%;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-        }
-
-        .pb-modal-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 16px;
-        }
-
-        .pb-modal-title {
-          font-size: 20px;
-          font-weight: 600;
-          color: #0f172a;
-          margin: 0;
-        }
-
-        .pb-modal-close {
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: #94a3b8;
-          padding: 4px;
-          border-radius: 4px;
-        }
-
-        .pb-modal-close:hover {
-          background: #f1f5f9;
-        }
-
-        .pb-modal-body {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .pb-modal-text {
-          font-size: 14px;
-          color: #475569;
-          margin: 0;
-        }
-
-        .pb-modal-hint {
-          font-size: 13px;
-          color: #94a3b8;
-          margin: 0;
-        }
-
-        .pb-modal-footer {
-          display: flex;
-          justify-content: flex-end;
-          gap: 8px;
-          margin-top: 16px;
-          padding-top: 16px;
-          border-top: 1px solid #e2e8f0;
-        }
-
-        .pb-modal-cancel {
-          padding: 8px 16px;
-          background: #f1f5f9;
-          color: #475569;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          cursor: pointer;
-          font-size: 14px;
-          font-weight: 500;
-        }
-
-        .pb-modal-cancel:hover {
-          background: #e2e8f0;
-        }
-
-        .pb-modal-submit {
-          padding: 8px 16px;
-          background: #3b82f6;
-          color: #ffffff;
-          border: none;
-          border-radius: 8px;
-          cursor: pointer;
-          font-size: 14px;
-          font-weight: 500;
-        }
-
-        .pb-modal-submit:hover {
-          background: #2563eb;
-        }
-
-        @media (max-width: 1400px) {
-          .pb-columns { grid-template-columns: repeat(3, 1fr); }
-        }
-
-        @media (max-width: 1024px) {
-          .pb-columns { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (max-width: 768px) {
-          .pb-container { padding: 16px; }
-          .pb-header { flex-direction: column; align-items: stretch; }
-          .pb-actions { width: 100%; }
-          .pb-primary-btn { flex: 1; justify-content: center; }
-          .pb-filter-btn { flex: 1; justify-content: center; }
-          .pb-filter-row { flex-direction: column; align-items: stretch; }
-          .pb-filter-group { min-width: unset; }
-          .pb-clear-filters { align-self: stretch; }
-          .pb-columns { grid-template-columns: 1fr; }
-          .pb-stats { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (max-width: 480px) {
-          .pb-container { padding: 12px; }
-          .pb-title { font-size: 22px; }
-          .pb-actions { flex-wrap: wrap; }
-          .pb-view-toggle { flex: 0; }
-          .pb-stats { grid-template-columns: 1fr; }
-          .pb-stat { padding: 10px; }
-          .pb-stat-number { font-size: 18px; }
         }
       `}</style>
     </div>
   );
 };
+
+const styles = {
+  container: {
+    padding: '24px 32px',
+    maxWidth: '1400px',
+    margin: '0 auto',
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    minHeight: '100vh',
+    borderRadius: '24px',
+    boxShadow: '0 2px 12px rgba(1, 62, 55, 0.04)',
+  },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '64vh',
+    gap: '16px',
+  },
+  loadingText: {
+    color: '#013E37',
+    fontSize: '14px',
+    fontWeight: '500',
+  },
+  spinner: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    border: '3px solid #FFEFB3',
+    borderTopColor: '#013E37',
+    animation: 'spin 0.8s linear infinite',
+  },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '20px',
+    flexWrap: 'wrap',
+    gap: '16px',
+  },
+  title: {
+    fontSize: '28px',
+    fontWeight: '700',
+    color: '#013E37',
+    margin: 0,
+    letterSpacing: '-0.5px',
+  },
+  subtitle: {
+    fontSize: '15px',
+    color: '#013E37',
+    opacity: 0.7,
+    marginTop: '4px',
+    margin: '4px 0 0 0',
+  },
+  actions: {
+    display: 'flex',
+    gap: '10px',
+    flexWrap: 'wrap',
+  },
+  iconBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '10px',
+    background: '#FFFFFF',
+    border: '1px solid #FFEFB3',
+    borderRadius: '10px',
+    color: '#013E37',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  filterBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '10px 16px',
+    background: '#FFFFFF',
+    border: '1px solid #FFEFB3',
+    borderRadius: '10px',
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#013E37',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    whiteSpace: 'nowrap',
+  },
+  viewToggle: {
+    display: 'flex',
+    borderRadius: '10px',
+    overflow: 'hidden',
+    border: '1px solid #FFEFB3',
+    background: '#FFFFFF',
+  },
+  viewBtn: {
+    padding: '10px 12px',
+    border: 'none',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s ease',
+  },
+  viewActive: {
+    backgroundColor: '#013E37',
+    color: '#FFFFFF',
+  },
+  viewInactive: {
+    backgroundColor: '#FFFFFF',
+    color: '#013E37',
+    opacity: 0.5,
+  },
+  primaryBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '10px 24px',
+    background: '#013E37',
+    color: '#FFFFFF',
+    border: 'none',
+    borderRadius: '10px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 4px 12px rgba(1, 62, 55, 0.2)',
+  },
+  stats: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+    gap: '12px',
+    marginBottom: '20px',
+  },
+  stat: {
+    background: '#FFFFFF',
+    borderRadius: '12px',
+    padding: '12px 16px',
+    border: '1px solid #FFEFB3',
+    textAlign: 'center',
+    transition: 'all 0.2s ease',
+  },
+  statNumber: {
+    fontSize: '20px',
+    fontWeight: '700',
+    color: '#013E37',
+    display: 'block',
+  },
+  statLabel: {
+    fontSize: '12px',
+    color: '#013E37',
+    opacity: 0.6,
+    fontWeight: '500',
+  },
+  filterPanel: {
+    background: '#FFFFFF',
+    border: '1px solid #FFEFB3',
+    borderRadius: '12px',
+    padding: '16px 20px',
+    marginBottom: '16px',
+  },
+  filterRow: {
+    display: 'flex',
+    alignItems: 'flex-end',
+    gap: '16px',
+    flexWrap: 'wrap',
+  },
+  filterGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+    flex: 1,
+    minWidth: '150px',
+  },
+  filterLabel: {
+    fontSize: '12px',
+    fontWeight: '600',
+    color: '#013E37',
+    opacity: 0.7,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+  },
+  search: {
+    display: 'flex',
+    alignItems: 'center',
+    background: '#FFFFFF',
+    border: '1px solid #FFEFB3',
+    borderRadius: '8px',
+    padding: '0 12px',
+  },
+  searchIcon: {
+    color: '#013E37',
+    opacity: 0.5,
+    flexShrink: 0,
+  },
+  searchInput: {
+    flex: 1,
+    padding: '8px 10px',
+    border: 'none',
+    outline: 'none',
+    fontSize: '14px',
+    background: 'transparent',
+    color: '#013E37',
+  },
+  searchClear: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '4px',
+    background: 'none',
+    border: 'none',
+    color: '#013E37',
+    opacity: 0.5,
+    cursor: 'pointer',
+    borderRadius: '4px',
+  },
+  filterSelect: {
+    padding: '8px 12px',
+    border: '1px solid #FFEFB3',
+    borderRadius: '8px',
+    fontSize: '14px',
+    background: '#FFFFFF',
+    color: '#013E37',
+    outline: 'none',
+    cursor: 'pointer',
+  },
+  clearFilters: {
+    padding: '8px 16px',
+    background: '#FFEFB3',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '13px',
+    fontWeight: '500',
+    color: '#013E37',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    whiteSpace: 'nowrap',
+    alignSelf: 'center',
+  },
+  columns: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(6, 1fr)',
+    gap: '16px',
+    overflowX: 'auto',
+    paddingBottom: '16px',
+  },
+  column: {
+    minWidth: '220px',
+  },
+  columnHeader: {
+    background: '#FFFFFF',
+    borderRadius: '12px',
+    padding: '12px 16px',
+    marginBottom: '8px',
+    border: '1px solid #FFEFB3',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  columnHeaderLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  columnDot: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    flexShrink: 0,
+  },
+  columnTitle: {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#013E37',
+    margin: 0,
+  },
+  columnCount: {
+    fontSize: '11px',
+    fontWeight: '600',
+    color: '#013E37',
+    opacity: 0.6,
+    background: '#FFEFB3',
+    padding: '1px 8px',
+    borderRadius: '12px',
+  },
+  droppable: {
+    minHeight: '200px',
+    padding: '6px',
+    borderRadius: '12px',
+    border: '2px dashed #FFEFB3',
+    transition: 'all 0.2s ease',
+  },
+  droppableDrag: {
+    background: '#FFEFB3',
+    borderColor: '#013E37',
+  },
+  task: {
+    background: '#FFFFFF',
+    padding: '12px 14px',
+    borderRadius: '10px',
+    border: '1px solid #FFEFB3',
+    marginBottom: '8px',
+    transition: 'all 0.2s ease',
+    cursor: 'grab',
+  },
+  taskDragging: {
+    borderColor: '#013E37',
+    boxShadow: '0 8px 25px rgba(1, 62, 55, 0.12)',
+    transform: 'scale(1.02)',
+  },
+  taskHeader: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: '8px',
+    marginBottom: '6px',
+  },
+  taskTitle: {
+    fontSize: '13px',
+    fontWeight: '500',
+    color: '#013E37',
+    flex: 1,
+  },
+  taskPriority: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '3px',
+    padding: '2px 8px',
+    borderRadius: '6px',
+    fontSize: '10px',
+    fontWeight: '600',
+    flexShrink: 0,
+  },
+  taskDesc: {
+    fontSize: '12px',
+    color: '#013E37',
+    opacity: 0.7,
+    margin: '0 0 8px 0',
+    lineHeight: '1.4',
+  },
+  taskMeta: {
+    display: 'flex',
+    gap: '12px',
+    marginBottom: '8px',
+    flexWrap: 'wrap',
+  },
+  taskProject: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    fontSize: '11px',
+    color: '#013E37',
+    opacity: 0.6,
+  },
+  taskAssignee: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    fontSize: '11px',
+    color: '#013E37',
+    opacity: 0.6,
+  },
+  taskFooter: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: '8px',
+    borderTop: '1px solid #FFEFB3',
+  },
+  taskDeadline: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    fontSize: '11px',
+    color: '#013E37',
+    opacity: 0.5,
+  },
+  taskActions: {
+    display: 'flex',
+    gap: '4px',
+  },
+  taskAction: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '2px',
+    background: 'transparent',
+    border: 'none',
+    color: '#013E37',
+    opacity: 0.4,
+    cursor: 'pointer',
+    borderRadius: '4px',
+  },
+  empty: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '24px 0',
+    color: '#013E37',
+    opacity: 0.4,
+  },
+  emptyIcon: {
+    color: '#013E37',
+    opacity: 0.3,
+    marginBottom: '4px',
+  },
+  emptyText: {
+    fontSize: '12px',
+    color: '#013E37',
+    opacity: 0.4,
+    margin: 0,
+  },
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(1, 62, 55, 0.4)',
+    backdropFilter: 'blur(4px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  modal: {
+    background: '#FFFFFF',
+    borderRadius: '16px',
+    padding: '24px',
+    maxWidth: '500px',
+    width: '90%',
+    boxShadow: '0 20px 60px rgba(1, 62, 55, 0.15)',
+  },
+  modalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '16px',
+  },
+  modalTitle: {
+    fontSize: '20px',
+    fontWeight: '600',
+    color: '#013E37',
+    margin: 0,
+  },
+  modalClose: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: '#013E37',
+    opacity: 0.5,
+    padding: '4px',
+    borderRadius: '4px',
+  },
+  modalBody: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  },
+  modalText: {
+    fontSize: '14px',
+    color: '#013E37',
+    opacity: 0.8,
+    margin: 0,
+  },
+  modalHint: {
+    fontSize: '13px',
+    color: '#013E37',
+    opacity: 0.5,
+    margin: 0,
+  },
+  modalFooter: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '8px',
+    marginTop: '16px',
+    paddingTop: '16px',
+    borderTop: '1px solid #FFEFB3',
+  },
+  modalCancel: {
+    padding: '8px 16px',
+    background: '#FFFFFF',
+    color: '#013E37',
+    border: '1px solid #FFEFB3',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '500',
+  },
+  modalSubmit: {
+    padding: '8px 16px',
+    background: '#013E37',
+    color: '#FFFFFF',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '500',
+  },
+};
+
+// Add keyframe animations and hover styles
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .icon-btn:hover:not(:disabled) {
+    background-color: #FFEFB3 !important;
+  }
+
+  .filter-btn:hover:not(:disabled) {
+    background-color: #FFEFB3 !important;
+  }
+
+  .primary-btn:hover:not(:disabled) {
+    background-color: #025a50 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(1, 62, 55, 0.25) !important;
+  }
+
+  .view-inactive:hover:not(:disabled) {
+    background-color: #FFEFB3 !important;
+  }
+
+  .search:focus-within {
+    border-color: #013E37 !important;
+    box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.08) !important;
+  }
+
+  .filter-select:focus {
+    border-color: #013E37 !important;
+    box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.08) !important;
+  }
+
+  .clear-filters:hover:not(:disabled) {
+    background-color: #e6d69e !important;
+  }
+
+  .search-clear:hover {
+    background-color: #FFEFB3 !important;
+  }
+
+  .task:hover {
+    border-color: #013E37 !important;
+    box-shadow: 0 2px 8px rgba(1, 62, 55, 0.06) !important;
+  }
+
+  .task-action:hover {
+    background-color: #FFEFB3 !important;
+    opacity: 1 !important;
+  }
+
+  .stat:hover {
+    background-color: #FFFDF5 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(1, 62, 55, 0.06) !important;
+  }
+
+  .modal-cancel:hover:not(:disabled) {
+    background-color: #FFEFB3 !important;
+  }
+
+  .modal-submit:hover:not(:disabled) {
+    background-color: #025a50 !important;
+  }
+
+  .modal-close:hover {
+    background-color: #FFEFB3 !important;
+  }
+
+  @media (max-width: 1400px) {
+    .columns { grid-template-columns: repeat(3, 1fr) !important; }
+  }
+
+  @media (max-width: 1024px) {
+    .columns { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+
+  @media (max-width: 768px) {
+    .container { padding: 16px !important; }
+    .header { flex-direction: column; align-items: stretch; }
+    .actions { width: 100%; }
+    .primary-btn { flex: 1; justify-content: center; }
+    .filter-btn { flex: 1; justify-content: center; }
+    .filter-row { flex-direction: column; align-items: stretch; }
+    .filter-group { min-width: unset; }
+    .clear-filters { align-self: stretch; }
+    .columns { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 480px) {
+    .container { padding: 12px !important; }
+    .title { font-size: 22px; }
+    .actions { flex-wrap: wrap; }
+    .view-toggle { flex: 0; }
+    .stats { grid-template-columns: 1fr; }
+    .stat { padding: 10px; }
+    .stat-number { font-size: 18px; }
+  }
+`;
+document.head.appendChild(styleSheet);
 
 export default ProjectBoard;

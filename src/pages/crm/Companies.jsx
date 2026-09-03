@@ -19,7 +19,11 @@ import {
   Briefcase,
   UserCheck,
   UserX,
-  Clock
+  Clock,
+  Award,
+  TrendingUp,
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import Button from '../../components/common/Button';
 import Card, { CardContent } from '../../components/common/Card';
@@ -54,6 +58,7 @@ const Companies = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [actionLoading, setActionLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [hoveredRow, setHoveredRow] = useState(null);
 
   // API base URL
   const API_URL =  'https://crmserver-production-4a42.up.railway.app/api';
@@ -162,28 +167,32 @@ const Companies = () => {
   const getStatusStyle = (status) => {
     const statusStyles = {
       active: {
-        backgroundColor: '#D1FAE5',
-        color: '#065F46',
+        backgroundColor: '#013E37',
+        color: '#FFFFFF',
         icon: UserCheck,
-        label: 'Active'
+        label: 'Active',
+        dotColor: '#FFFFFF'
       },
       inactive: {
-        backgroundColor: '#FEE2E2',
-        color: '#991B1B',
+        backgroundColor: '#FFEFB3',
+        color: '#013E37',
         icon: UserX,
-        label: 'Inactive'
+        label: 'Inactive',
+        dotColor: '#013E37'
       },
       customer: {
-        backgroundColor: '#DBEAFE',
-        color: '#1E40AF',
+        backgroundColor: '#013E37',
+        color: '#FFFFFF',
         icon: Users,
-        label: 'Customer'
+        label: 'Customer',
+        dotColor: '#FFFFFF'
       },
       prospect: {
-        backgroundColor: '#FEF3C7',
-        color: '#92400E',
+        backgroundColor: '#FFEFB3',
+        color: '#013E37',
         icon: Clock,
-        label: 'Prospect'
+        label: 'Prospect',
+        dotColor: '#013E37'
       },
     };
     return statusStyles[status] || statusStyles.active;
@@ -191,14 +200,14 @@ const Companies = () => {
 
   const getIndustryColor = (industry) => {
     const colors = {
-      'Technology': '#3B82F6',
-      'Healthcare': '#10B981',
-      'Finance': '#8B5CF6',
-      'Education': '#F59E0B',
-      'Retail': '#EC4899',
-      'Manufacturing': '#EF4444',
+      'Technology': '#013E37',
+      'Healthcare': '#0A5C54',
+      'Finance': '#013E37',
+      'Education': '#013E37',
+      'Retail': '#013E37',
+      'Manufacturing': '#013E37',
     };
-    return colors[industry] || '#6B7280';
+    return colors[industry] || '#013E37';
   };
 
   const handleSearch = (e) => {
@@ -238,931 +247,1139 @@ const Companies = () => {
 
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.spinner} />
-        <p style={styles.loadingText}>Loading companies...</p>
+      <div className="companies-loading">
+        <div className="companies-loading-spinner"></div>
+        <p className="companies-loading-text">Loading companies...</p>
       </div>
     );
   }
 
   return (
-    <div style={styles.container}>
-      {/* Page Header */}
-      <div style={styles.pageHeader}>
-        <div>
-          <h1 style={styles.pageTitle}>Companies</h1>
-          <p style={styles.pageSubtitle}>Manage and track your company relationships</p>
-        </div>
-        <Link to="/crm/companies/new" style={styles.addButtonLink}>
-          <button style={styles.primaryButton}>
-            <Plus size={18} />
-            Add Company
-          </button>
-        </Link>
-      </div>
-
-      {/* Stats Cards */}
-      <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
-          <div style={styles.statIconWrapperBlue}>
-            <Building2 size={18} style={styles.statIconBlue} />
-          </div>
+    <>
+      <div className="companies-container">
+        {/* Page Header */}
+        <div className="companies-header">
           <div>
-            <p style={styles.statNumber}>{stats.total}</p>
-            <p style={styles.statLabel}>Total Companies</p>
+            <h1 className="companies-title">
+              <Building2 className="companies-title-icon" color="#013E37" />
+              Companies
+            </h1>
+            <p className="companies-subtitle">Manage and track your company relationships</p>
           </div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statIconWrapperGreen}>
-            <UserCheck size={18} style={styles.statIconGreen} />
-          </div>
-          <div>
-            <p style={styles.statNumber}>{stats.active}</p>
-            <p style={styles.statLabel}>Active</p>
-          </div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statIconWrapperPurple}>
-            <Users size={18} style={styles.statIconPurple} />
-          </div>
-          <div>
-            <p style={styles.statNumber}>{stats.customers}</p>
-            <p style={styles.statLabel}>Customers</p>
-          </div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statIconWrapperYellow}>
-            <Clock size={18} style={styles.statIconYellow} />
-          </div>
-          <div>
-            <p style={styles.statNumber}>{stats.prospects}</p>
-            <p style={styles.statLabel}>Prospects</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Search and Filters */}
-      <div style={styles.searchSection}>
-        <div style={styles.searchBar}>
-          <Search size={18} style={styles.searchIcon} />
-          <input
-            type="text"
-            placeholder="Search companies by name, industry, or location..."
-            value={searchTerm}
-            onChange={handleSearch}
-            style={styles.searchInput}
-          />
-          {searchTerm && (
-            <button 
-              style={styles.clearSearch}
-              onClick={() => setSearchTerm('')}
-            >
-              <X size={16} />
+          <Link to="/crm/companies/new" className="companies-add-link">
+            <button className="companies-add-btn">
+              <Plus size={18} />
+              Add Company
             </button>
-          )}
+          </Link>
         </div>
-        <div style={styles.actionButtons}>
-          <button 
-            style={styles.filterToggle}
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <Filter size={16} />
-            Filters
-            <ChevronDown size={14} style={{
-              transform: showFilters ? 'rotate(180deg)' : 'none',
-              transition: 'transform 0.2s ease'
-            }} />
-          </button>
-          <button 
-            style={styles.refreshButton}
-            onClick={handleRefresh}
-            disabled={refreshing}
-          >
-            <RefreshCw size={16} style={{ 
-              animation: refreshing ? 'spin 1s linear infinite' : 'none' 
-            }} />
-          </button>
-        </div>
-      </div>
 
-      {/* Filter Panel */}
-      {showFilters && (
-        <div style={styles.filterPanel}>
-          <div style={styles.filterRow}>
-            <div style={styles.filterGroup}>
-              <label style={styles.filterLabel}>Industry</label>
-              <select
-                value={filterIndustry}
-                onChange={handleIndustryFilter}
-                style={styles.filterSelect}
-              >
-                <option value="">All Industries</option>
-                <option value="Technology">Technology</option>
-                <option value="Healthcare">Healthcare</option>
-                <option value="Finance">Finance</option>
-                <option value="Education">Education</option>
-                <option value="Retail">Retail</option>
-                <option value="Manufacturing">Manufacturing</option>
-              </select>
+        {/* Stats Cards */}
+        <div className="companies-stats">
+          <div className="companies-stat-card">
+            <div className="companies-stat-icon" style={{ backgroundColor: '#FFEFB3' }}>
+              <Building2 size={20} color="#013E37" />
             </div>
-            <div style={styles.filterGroup}>
-              <label style={styles.filterLabel}>Status</label>
-              <select
-                value={filterStatus}
-                onChange={handleStatusFilter}
-                style={styles.filterSelect}
-              >
-                <option value="">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="prospect">Prospect</option>
-                <option value="customer">Customer</option>
-              </select>
+            <div>
+              <p className="companies-stat-number">{stats.total}</p>
+              <p className="companies-stat-label">Total Companies</p>
             </div>
+          </div>
+          <div className="companies-stat-card">
+            <div className="companies-stat-icon" style={{ backgroundColor: '#FFEFB3' }}>
+              <UserCheck size={20} color="#013E37" />
+            </div>
+            <div>
+              <p className="companies-stat-number">{stats.active}</p>
+              <p className="companies-stat-label">Active</p>
+            </div>
+          </div>
+          <div className="companies-stat-card">
+            <div className="companies-stat-icon" style={{ backgroundColor: '#FFEFB3' }}>
+              <Users size={20} color="#013E37" />
+            </div>
+            <div>
+              <p className="companies-stat-number">{stats.customers}</p>
+              <p className="companies-stat-label">Customers</p>
+            </div>
+          </div>
+          <div className="companies-stat-card">
+            <div className="companies-stat-icon" style={{ backgroundColor: '#FFEFB3' }}>
+              <Clock size={20} color="#013E37" />
+            </div>
+            <div>
+              <p className="companies-stat-number">{stats.prospects}</p>
+              <p className="companies-stat-label">Prospects</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="companies-search-section">
+          <div className="companies-search-bar">
+            <Search size={18} className="companies-search-icon" />
+            <input
+              type="text"
+              placeholder="Search companies by name, industry, or location..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className="companies-search-input"
+            />
+            {searchTerm && (
+              <button 
+                className="companies-search-clear"
+                onClick={() => setSearchTerm('')}
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+          <div className="companies-actions">
             <button 
-              style={styles.clearFiltersButton}
-              onClick={clearFilters}
+              className="companies-filter-toggle"
+              onClick={() => setShowFilters(!showFilters)}
             >
-              Clear Filters
+              <Filter size={16} />
+              Filters
+              <ChevronDown size={14} className={showFilters ? 'companies-rotate' : ''} />
+            </button>
+            <button 
+              className="companies-refresh-btn"
+              onClick={handleRefresh}
+              disabled={refreshing}
+            >
+              <RefreshCw size={16} className={refreshing ? 'companies-spin' : ''} />
             </button>
           </div>
         </div>
-      )}
 
-      {/* Companies Table */}
-      <div style={styles.tableWrapper}>
-        <div style={styles.tableContainer}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableHeadCell>Company</TableHeadCell>
-                <TableHeadCell>Industry</TableHeadCell>
-                <TableHeadCell>Size</TableHeadCell>
-                <TableHeadCell>Status</TableHeadCell>
-                <TableHeadCell>Contacts</TableHeadCell>
-                <TableHeadCell>Created</TableHeadCell>
-                <TableHeadCell style={{ textAlign: 'center' }}>Actions</TableHeadCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {companies.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan="7" style={styles.emptyState}>
-                    <div style={styles.emptyContent}>
-                      <Building2 size={48} style={styles.emptyIcon} />
-                      <p style={styles.emptyText}>No companies found</p>
-                      <p style={styles.emptySubtext}>Add your first company to get started</p>
-                      <Link to="/crm/companies/new" style={styles.emptyButton}>
-                        <Plus size={16} />
-                        Add Company
-                      </Link>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                companies.map((company) => {
-                  const statusStyle = getStatusStyle(company.status);
-                  const StatusIcon = statusStyle.icon;
-                  const industryColor = getIndustryColor(company.industry);
-                  
-                  return (
-                    <TableRow key={company._id} style={styles.tableRow}>
-                      <TableCell style={styles.companyCell}>
-                        <div style={styles.companyInfo}>
-                          <div style={{
-                            ...styles.companyAvatar,
-                            backgroundColor: industryColor
-                          }}>
-                            {company.companyName?.charAt(0) || '?'}
+        {/* Filter Panel */}
+        {showFilters && (
+          <div className="companies-filter-panel">
+            <div className="companies-filter-row">
+              <div className="companies-filter-group">
+                <label className="companies-filter-label">Industry</label>
+                <select
+                  value={filterIndustry}
+                  onChange={handleIndustryFilter}
+                  className="companies-filter-select"
+                >
+                  <option value="">All Industries</option>
+                  <option value="Technology">Technology</option>
+                  <option value="Healthcare">Healthcare</option>
+                  <option value="Finance">Finance</option>
+                  <option value="Education">Education</option>
+                  <option value="Retail">Retail</option>
+                  <option value="Manufacturing">Manufacturing</option>
+                </select>
+              </div>
+              <div className="companies-filter-group">
+                <label className="companies-filter-label">Status</label>
+                <select
+                  value={filterStatus}
+                  onChange={handleStatusFilter}
+                  className="companies-filter-select"
+                >
+                  <option value="">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="prospect">Prospect</option>
+                  <option value="customer">Customer</option>
+                </select>
+              </div>
+              <button 
+                className="companies-clear-filters"
+                onClick={clearFilters}
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Companies Table */}
+        <div className="companies-table-wrapper">
+          <div className="companies-table-container">
+            <table className="companies-table">
+              <thead>
+                <tr>
+                  <th className="companies-table-header">Company</th>
+                  <th className="companies-table-header">Industry</th>
+                  <th className="companies-table-header">Size</th>
+                  <th className="companies-table-header">Status</th>
+                  <th className="companies-table-header">Contacts</th>
+                  <th className="companies-table-header">Created</th>
+                  <th className="companies-table-header companies-text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {companies.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="companies-empty-state">
+                      <div className="companies-empty-content">
+                        <div className="companies-empty-icon-wrapper" style={{ backgroundColor: '#FFEFB3' }}>
+                          <Building2 size={40} color="#013E37" />
+                        </div>
+                        <p className="companies-empty-text">No companies found</p>
+                        <p className="companies-empty-subtext">Add your first company to get started</p>
+                        <Link to="/crm/companies/new" className="companies-empty-btn">
+                          <Plus size={16} />
+                          Add Company
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  companies.map((company, index) => {
+                    const statusStyle = getStatusStyle(company.status);
+                    const StatusIcon = statusStyle.icon;
+                    const industryColor = getIndustryColor(company.industry);
+                    const isHovered = hoveredRow === company._id;
+                    
+                    return (
+                      <tr 
+                        key={company._id} 
+                        className="companies-table-row"
+                        style={{ animationDelay: `${index * 0.05}s` }}
+                        onMouseEnter={() => setHoveredRow(company._id)}
+                        onMouseLeave={() => setHoveredRow(null)}
+                      >
+                        <td className="companies-company-cell">
+                          <div className="companies-company-info">
+                            <div className="companies-company-avatar" style={{ backgroundColor: industryColor }}>
+                              {company.companyName?.charAt(0) || '?'}
+                            </div>
+                            <Link
+                              to={`/crm/companies/${company._id}`}
+                              className="companies-company-link"
+                            >
+                              <span className="companies-company-name">{company.companyName}</span>
+                              {company.website && (
+                                <span className="companies-company-website">
+                                  <Globe size={12} />
+                                  {company.website.replace(/^https?:\/\//, '')}
+                                </span>
+                              )}
+                            </Link>
                           </div>
-                          <Link
-                            to={`/crm/companies/${company._id}`}
-                            style={styles.companyLink}
-                          >
-                            <span style={styles.companyName}>{company.companyName}</span>
-                            {company.website && (
-                              <span style={styles.companyWebsite}>
-                                <Globe size={12} />
-                                {company.website.replace(/^https?:\/\//, '')}
-                              </span>
-                            )}
-                          </Link>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span style={{
-                          ...styles.industryBadge,
-                          backgroundColor: `${industryColor}20`,
-                          color: industryColor,
-                        }}>
-                          {company.industry || 'N/A'}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span style={styles.sizeText}>
-                          {company.companySize || 'N/A'}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span style={{
-                          ...styles.statusBadge,
-                          backgroundColor: statusStyle.backgroundColor,
-                          color: statusStyle.color,
-                        }}>
-                          <StatusIcon size={12} style={styles.statusIcon} />
-                          {statusStyle.label}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span style={styles.contactCount}>
-                          {company.contacts?.length || 0}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span style={styles.dateText}>{formatDate(company.createdAt)}</span>
-                      </TableCell>
-                      <TableCell style={{ textAlign: 'center' }}>
-                        <div style={styles.actionButtonsGroup}>
-                          <Link
-                            to={`/crm/companies/${company._id}`}
-                            style={styles.actionButtonView}
-                            title="View Company"
-                          >
-                            <Eye size={15} />
-                          </Link>
-                          <Link
-                            to={`/crm/companies/${company._id}/edit`}
-                            style={styles.actionButtonEdit}
-                            title="Edit Company"
-                          >
-                            <Edit size={15} />
-                          </Link>
-                          <button
-                            style={styles.actionButtonDelete}
-                            onClick={() => handleDelete(company)}
-                            disabled={actionLoading}
-                            title="Delete Company"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+                        </td>
+                        <td>
+                          <span className="companies-industry-badge" style={{
+                            backgroundColor: `${industryColor}20`,
+                            color: industryColor,
+                          }}>
+                            {company.industry || 'N/A'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="companies-size-text">
+                            {company.companySize || 'N/A'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="companies-status-badge" style={{
+                            backgroundColor: statusStyle.backgroundColor,
+                            color: statusStyle.color,
+                          }}>
+                            <span className="companies-status-dot" style={{ 
+                              backgroundColor: statusStyle.dotColor || statusStyle.color 
+                            }}></span>
+                            <StatusIcon size={12} className="companies-status-icon" />
+                            {statusStyle.label}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="companies-contact-count">
+                            {company.contacts?.length || 0}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="companies-date-text">{formatDate(company.createdAt)}</span>
+                        </td>
+                        <td className="companies-text-center">
+                          <div className="companies-action-group">
+                            <Link
+                              to={`/crm/companies/${company._id}`}
+                              className="companies-action-view"
+                              title="View Company"
+                            >
+                              <Eye size={15} />
+                            </Link>
+                            <Link
+                              to={`/crm/companies/${company._id}/edit`}
+                              className="companies-action-edit"
+                              title="Edit Company"
+                            >
+                              <Edit size={15} />
+                            </Link>
+                            <button
+                              className="companies-action-delete"
+                              onClick={() => handleDelete(company)}
+                              disabled={actionLoading}
+                              title="Delete Company"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
+
+        {/* Pagination */}
+        {pagination.totalPages > 1 && (
+          <div className="companies-pagination">
+            <Pagination
+              currentPage={pagination.page || currentPage}
+              totalPages={pagination.totalPages || 1}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
       </div>
 
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div style={styles.paginationWrapper}>
-          <Pagination
-            currentPage={pagination.page || currentPage}
-            totalPages={pagination.totalPages || 1}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-      )}
-    </div>
+      <style>{`
+        /* ============================================
+           CONTAINER
+           ============================================ */
+        .companies-container {
+          padding: 24px 32px;
+          max-width: 1400px;
+          margin: 0 auto;
+          width: 100%;
+          background: #FFFFFF;
+          min-height: 100vh;
+        }
+
+        /* ============================================
+           LOADING
+           ============================================ */
+        .companies-loading {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 64vh;
+          gap: 16px;
+        }
+
+        .companies-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+
+        .companies-loading-text {
+          color: #013E37;
+          opacity: 0.6;
+          font-size: 14px;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
+        .companies-spin {
+          animation: spin 1s linear infinite;
+        }
+
+        .companies-rotate {
+          transform: rotate(180deg);
+        }
+
+        /* ============================================
+           HEADER
+           ============================================ */
+        .companies-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 24px;
+          flex-wrap: wrap;
+          gap: 16px;
+          animation: fadeInDown 0.6s ease;
+        }
+
+        .companies-title {
+          font-size: 28px;
+          font-weight: 700;
+          color: #013E37;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin: 0;
+          letter-spacing: -0.5px;
+        }
+
+        .companies-title-icon {
+          width: 28px;
+          height: 28px;
+          animation: pulse 2s ease-in-out infinite;
+        }
+
+        .companies-subtitle {
+          font-size: 15px;
+          color: #013E37;
+          opacity: 0.6;
+          margin-top: 4px;
+        }
+
+        .companies-add-link {
+          text-decoration: none;
+        }
+
+        .companies-add-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 24px;
+          background: #013E37;
+          color: #FFFFFF;
+          border: none;
+          border-radius: 10px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(1, 62, 55, 0.25);
+        }
+
+        .companies-add-btn:hover {
+          background: #0A5C54;
+          transform: translateY(-2px) scale(1.02);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
+        }
+
+        .companies-add-btn:active {
+          transform: scale(0.95);
+        }
+
+        /* ============================================
+           STATS
+           ============================================ */
+        .companies-stats {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 16px;
+          margin-bottom: 24px;
+          animation: fadeInUp 0.8s ease;
+        }
+
+        .companies-stat-card {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          background: #FFFFFF;
+          border-radius: 12px;
+          padding: 16px 20px;
+          border: 1px solid #FFEFB3;
+          transition: all 0.3s ease;
+        }
+
+        .companies-stat-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
+          border-color: #013E37;
+        }
+
+        .companies-stat-icon {
+          width: 44px;
+          height: 44px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          transition: all 0.3s ease;
+        }
+
+        .companies-stat-card:hover .companies-stat-icon {
+          transform: scale(1.05);
+        }
+
+        .companies-stat-number {
+          font-size: 24px;
+          font-weight: 700;
+          color: #013E37;
+          margin: 0;
+          line-height: 1.2;
+        }
+
+        .companies-stat-label {
+          font-size: 13px;
+          color: #013E37;
+          opacity: 0.6;
+          margin: 0;
+          font-weight: 500;
+        }
+
+        /* ============================================
+           SEARCH & FILTERS
+           ============================================ */
+        .companies-search-section {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 16px;
+          flex-wrap: wrap;
+        }
+
+        .companies-search-bar {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          background: #FFFFFF;
+          border: 1px solid #FFEFB3;
+          border-radius: 10px;
+          padding: 0 14px;
+          transition: all 0.3s ease;
+          min-width: 200px;
+        }
+
+        .companies-search-bar:focus-within {
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+
+        .companies-search-icon {
+          color: #013E37;
+          opacity: 0.5;
+          flex-shrink: 0;
+        }
+
+        .companies-search-input {
+          flex: 1;
+          padding: 10px 12px;
+          border: none;
+          outline: none;
+          font-size: 14px;
+          background: transparent;
+          color: #013E37;
+          min-width: 120px;
+        }
+
+        .companies-search-input::placeholder {
+          color: #013E37;
+          opacity: 0.4;
+        }
+
+        .companies-search-clear {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 4px;
+          background: none;
+          border: none;
+          color: #013E37;
+          opacity: 0.4;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          border-radius: 4px;
+        }
+
+        .companies-search-clear:hover {
+          opacity: 0.8;
+          transform: scale(1.2);
+        }
+
+        .companies-actions {
+          display: flex;
+          gap: 8px;
+        }
+
+        .companies-filter-toggle {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 10px 16px;
+          background: #FFFFFF;
+          border: 1px solid #FFEFB3;
+          border-radius: 10px;
+          font-size: 14px;
+          font-weight: 500;
+          color: #013E37;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          white-space: nowrap;
+        }
+
+        .companies-filter-toggle:hover {
+          background: #FFEFB3;
+          border-color: #013E37;
+        }
+
+        .companies-refresh-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 10px;
+          background: #FFFFFF;
+          border: 1px solid #FFEFB3;
+          border-radius: 10px;
+          color: #013E37;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .companies-refresh-btn:hover:not(:disabled) {
+          background: #FFEFB3;
+          border-color: #013E37;
+        }
+
+        /* ============================================
+           FILTER PANEL
+           ============================================ */
+        .companies-filter-panel {
+          background: #FFFFFF;
+          border: 1px solid #FFEFB3;
+          border-radius: 10px;
+          padding: 16px 20px;
+          margin-bottom: 16px;
+          animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .companies-filter-row {
+          display: flex;
+          align-items: flex-end;
+          gap: 16px;
+          flex-wrap: wrap;
+        }
+
+        .companies-filter-group {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          flex: 1;
+          min-width: 150px;
+        }
+
+        .companies-filter-label {
+          font-size: 12px;
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.7;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .companies-filter-select {
+          padding: 8px 12px;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          font-size: 14px;
+          background: #FFFFFF;
+          color: #013E37;
+          outline: none;
+          transition: all 0.3s ease;
+          cursor: pointer;
+        }
+
+        .companies-filter-select:focus {
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+
+        .companies-clear-filters {
+          padding: 8px 16px;
+          background: #FFEFB3;
+          border: none;
+          border-radius: 8px;
+          font-size: 13px;
+          font-weight: 500;
+          color: #013E37;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          white-space: nowrap;
+          align-self: center;
+        }
+
+        .companies-clear-filters:hover {
+          background: #013E37;
+          color: #FFFFFF;
+        }
+
+        /* ============================================
+           TABLE
+           ============================================ */
+        .companies-table-wrapper {
+          background: #FFFFFF;
+          border-radius: 12px;
+          border: 1px solid #FFEFB3;
+          overflow: hidden;
+          transition: all 0.3s ease;
+        }
+
+        .companies-table-wrapper:hover {
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
+        }
+
+        .companies-table-container {
+          overflow-x: auto;
+        }
+
+        .companies-table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        .companies-table-header {
+          padding: 12px 16px;
+          text-align: left;
+          font-size: 12px;
+          font-weight: 600;
+          color: #013E37;
+          text-transform: uppercase;
+          border-bottom: 2px solid #013E37;
+          background: #FFEFB3;
+        }
+
+        .companies-text-center {
+          text-align: center;
+        }
+
+        .companies-table-row {
+          border-bottom: 1px solid #FFEFB3;
+          transition: all 0.3s ease;
+          animation: slideInRight 0.4s ease forwards;
+          opacity: 0;
+        }
+
+        .companies-table-row:hover {
+          background: #FFEFB3;
+        }
+
+        .companies-company-cell {
+          padding: 12px 16px;
+        }
+
+        .companies-company-info {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .companies-company-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #FFFFFF;
+          font-weight: 700;
+          font-size: 16px;
+          flex-shrink: 0;
+          transition: all 0.3s ease;
+        }
+
+        .companies-table-row:hover .companies-company-avatar {
+          transform: scale(1.05);
+        }
+
+        .companies-company-link {
+          text-decoration: none;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .companies-company-name {
+          color: #013E37;
+          font-weight: 600;
+          font-size: 14px;
+          transition: color 0.3s ease;
+        }
+
+        .companies-company-link:hover .companies-company-name {
+          color: #0A5C54;
+        }
+
+        .companies-company-website {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          color: #013E37;
+          opacity: 0.5;
+          font-size: 12px;
+        }
+
+        .companies-industry-badge {
+          display: inline-flex;
+          padding: 4px 10px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 500;
+        }
+
+        .companies-size-text {
+          color: #013E37;
+          opacity: 0.7;
+          font-size: 13px;
+        }
+
+        .companies-status-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 4px 12px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 500;
+          border: 1px solid transparent;
+          transition: all 0.3s ease;
+        }
+
+        .companies-status-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          display: inline-block;
+          animation: pulse 2s ease-in-out infinite;
+        }
+
+        .companies-status-icon {
+          margin-right: 2px;
+        }
+
+        .companies-contact-count {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 28px;
+          padding: 2px 8px;
+          border-radius: 12px;
+          background: #FFEFB3;
+          color: #013E37;
+          font-size: 13px;
+          font-weight: 600;
+        }
+
+        .companies-date-text {
+          color: #013E37;
+          opacity: 0.6;
+          font-size: 13px;
+        }
+
+        .companies-action-group {
+          display: flex;
+          gap: 4px;
+          justify-content: center;
+        }
+
+        .companies-action-view {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px 8px;
+          border-radius: 6px;
+          border: none;
+          background: #FFEFB3;
+          color: #013E37;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          text-decoration: none;
+        }
+
+        .companies-action-view:hover {
+          background: #013E37;
+          color: #FFFFFF;
+          transform: scale(1.1);
+        }
+
+        .companies-action-edit {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px 8px;
+          border-radius: 6px;
+          border: none;
+          background: #FFEFB3;
+          color: #013E37;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          text-decoration: none;
+        }
+
+        .companies-action-edit:hover {
+          background: #013E37;
+          color: #FFFFFF;
+          transform: scale(1.1);
+        }
+
+        .companies-action-delete {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px 8px;
+          border-radius: 6px;
+          border: none;
+          background: #FFEBEE;
+          color: #D32F2F;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .companies-action-delete:hover:not(:disabled) {
+          background: #D32F2F;
+          color: #FFFFFF;
+          transform: scale(1.1);
+        }
+
+        .companies-action-delete:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        /* ============================================
+           PAGINATION
+           ============================================ */
+        .companies-pagination {
+          margin-top: 16px;
+        }
+
+        /* ============================================
+           EMPTY STATE
+           ============================================ */
+        .companies-empty-state {
+          text-align: center;
+          padding: 48px 16px;
+        }
+
+        .companies-empty-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .companies-empty-icon-wrapper {
+          width: 80px;
+          height: 80px;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 8px;
+          animation: float 3s ease-in-out infinite;
+        }
+
+        .companies-empty-text {
+          font-size: 20px;
+          font-weight: 600;
+          color: #013E37;
+          margin: 0;
+        }
+
+        .companies-empty-subtext {
+          font-size: 15px;
+          color: #013E37;
+          opacity: 0.6;
+          margin: 0;
+        }
+
+        .companies-empty-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 24px;
+          background: #013E37;
+          color: #FFFFFF;
+          border: none;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          text-decoration: none;
+          transition: all 0.3s ease;
+          margin-top: 8px;
+        }
+
+        .companies-empty-btn:hover {
+          background: #0A5C54;
+          transform: translateY(-2px) scale(1.02);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.3);
+        }
+
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 1024px) {
+          .companies-stats {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (max-width: 768px) {
+          .companies-container {
+            padding: 16px;
+          }
+
+          .companies-header {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .companies-add-btn {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .companies-stats {
+            grid-template-columns: 1fr 1fr;
+          }
+
+          .companies-search-section {
+            flex-direction: column;
+          }
+
+          .companies-search-bar {
+            width: 100%;
+          }
+
+          .companies-actions {
+            width: 100%;
+          }
+
+          .companies-filter-toggle {
+            flex: 1;
+            justify-content: center;
+          }
+
+          .companies-filter-row {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .companies-filter-group {
+            min-width: unset;
+          }
+
+          .companies-clear-filters {
+            align-self: stretch;
+          }
+
+          .companies-action-group {
+            flex-wrap: wrap;
+            justify-content: center;
+          }
+
+          .companies-title {
+            font-size: 24px;
+          }
+
+          .companies-stat-number {
+            font-size: 20px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .companies-container {
+            padding: 12px;
+          }
+
+          .companies-stats {
+            grid-template-columns: 1fr;
+          }
+
+          .companies-stat-card {
+            padding: 12px 16px;
+          }
+
+          .companies-title {
+            font-size: 20px;
+          }
+
+          .companies-company-info {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .companies-company-avatar {
+            width: 32px;
+            height: 32px;
+            font-size: 12px;
+          }
+
+          .companies-action-group {
+            flex-direction: column;
+            gap: 4px;
+          }
+
+          .companies-action-view,
+          .companies-action-edit,
+          .companies-action-delete {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
+    </>
   );
 };
-
-const styles = {
-  container: {
-    padding: '24px 32px',
-    maxWidth: '1400px',
-    margin: '0 auto',
-    width: '100%',
-    backgroundColor: '#F8FAFC',
-    minHeight: '100vh',
-  },
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '64vh',
-    gap: '16px',
-  },
-  loadingText: {
-    color: '#64748B',
-    fontSize: '14px',
-    fontWeight: '500',
-  },
-  spinner: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    border: '3px solid #E5E7EB',
-    borderTopColor: '#3B82F6',
-    animation: 'spin 0.8s linear infinite',
-  },
-  pageHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '24px',
-    flexWrap: 'wrap',
-    gap: '16px',
-  },
-  pageTitle: {
-    fontSize: '28px',
-    fontWeight: '700',
-    color: '#0F172A',
-    margin: 0,
-    letterSpacing: '-0.5px',
-  },
-  pageSubtitle: {
-    fontSize: '15px',
-    color: '#64748B',
-    marginTop: '4px',
-    margin: '4px 0 0 0',
-  },
-  primaryButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 24px',
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: '10px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)',
-  },
-  addButtonLink: {
-    textDecoration: 'none',
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-    gap: '16px',
-    marginBottom: '24px',
-  },
-  statCard: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '14px',
-    backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    padding: '16px 20px',
-    border: '1px solid #E2E8F0',
-    transition: 'all 0.2s ease',
-  },
-  statIconWrapperBlue: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '10px',
-    backgroundColor: '#EFF6FF',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  statIconWrapperGreen: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '10px',
-    backgroundColor: '#ECFDF5',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  statIconWrapperPurple: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '10px',
-    backgroundColor: '#F5F3FF',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  statIconWrapperYellow: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '10px',
-    backgroundColor: '#FFFBEB',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  statIconBlue: {
-    color: '#3B82F6',
-  },
-  statIconGreen: {
-    color: '#10B981',
-  },
-  statIconPurple: {
-    color: '#8B5CF6',
-  },
-  statIconYellow: {
-    color: '#F59E0B',
-  },
-  statNumber: {
-    fontSize: '22px',
-    fontWeight: '700',
-    color: '#0F172A',
-    margin: 0,
-    lineHeight: 1.2,
-  },
-  statLabel: {
-    fontSize: '13px',
-    color: '#64748B',
-    margin: 0,
-    fontWeight: '500',
-  },
-  searchSection: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    marginBottom: '16px',
-    flexWrap: 'wrap',
-  },
-  searchBar: {
-    flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderRadius: '10px',
-    padding: '0 14px',
-    transition: 'all 0.2s ease',
-    minWidth: '200px',
-  },
-  searchIcon: {
-    color: '#94A3B8',
-    flexShrink: 0,
-  },
-  searchInput: {
-    flex: 1,
-    padding: '10px 12px',
-    border: 'none',
-    outline: 'none',
-    fontSize: '14px',
-    backgroundColor: 'transparent',
-    color: '#0F172A',
-    minWidth: '120px',
-  },
-  clearSearch: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '4px',
-    background: 'none',
-    border: 'none',
-    color: '#94A3B8',
-    cursor: 'pointer',
-    borderRadius: '4px',
-    transition: 'all 0.2s ease',
-  },
-  actionButtons: {
-    display: 'flex',
-    gap: '8px',
-  },
-  filterToggle: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '10px 16px',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderRadius: '10px',
-    fontSize: '14px',
-    fontWeight: '500',
-    color: '#475569',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    whiteSpace: 'nowrap',
-  },
-  refreshButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '10px',
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderRadius: '10px',
-    color: '#64748B',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  filterPanel: {
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderRadius: '10px',
-    padding: '16px 20px',
-    marginBottom: '16px',
-  },
-  filterRow: {
-    display: 'flex',
-    alignItems: 'flex-end',
-    gap: '16px',
-    flexWrap: 'wrap',
-  },
-  filterGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-    flex: 1,
-    minWidth: '150px',
-  },
-  filterLabel: {
-    fontSize: '12px',
-    fontWeight: '600',
-    color: '#64748B',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  filterSelect: {
-    padding: '8px 12px',
-    border: '1px solid #E2E8F0',
-    borderRadius: '8px',
-    fontSize: '14px',
-    backgroundColor: '#FFFFFF',
-    color: '#0F172A',
-    outline: 'none',
-    transition: 'all 0.2s ease',
-    cursor: 'pointer',
-  },
-  clearFiltersButton: {
-    padding: '8px 16px',
-    backgroundColor: '#F1F5F9',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '13px',
-    fontWeight: '500',
-    color: '#475569',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    whiteSpace: 'nowrap',
-    alignSelf: 'center',
-  },
-  tableWrapper: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    border: '1px solid #E2E8F0',
-    overflow: 'hidden',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-  },
-  tableContainer: {
-    overflowX: 'auto',
-  },
-  tableRow: {
-    transition: 'background-color 0.2s ease',
-  },
-  companyCell: {
-    padding: '12px 16px',
-  },
-  companyInfo: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-  },
-  companyAvatar: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '10px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: '16px',
-    flexShrink: 0,
-  },
-  companyLink: {
-    textDecoration: 'none',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-  },
-  companyName: {
-    color: '#0F172A',
-    fontWeight: '600',
-    fontSize: '14px',
-  },
-  companyWebsite: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    color: '#94A3B8',
-    fontSize: '12px',
-  },
-  industryBadge: {
-    display: 'inline-flex',
-    padding: '4px 10px',
-    borderRadius: '6px',
-    fontSize: '12px',
-    fontWeight: '500',
-  },
-  sizeText: {
-    color: '#475569',
-    fontSize: '13px',
-  },
-  statusBadge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '4px',
-    padding: '4px 10px',
-    borderRadius: '6px',
-    fontSize: '12px',
-    fontWeight: '500',
-  },
-  statusIcon: {
-    marginRight: '2px',
-  },
-  contactCount: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: '28px',
-    padding: '2px 8px',
-    borderRadius: '12px',
-    backgroundColor: '#F1F5F9',
-    color: '#475569',
-    fontSize: '13px',
-    fontWeight: '500',
-  },
-  dateText: {
-    color: '#64748B',
-    fontSize: '13px',
-  },
-  actionButtonsGroup: {
-    display: 'flex',
-    gap: '4px',
-    justifyContent: 'center',
-  },
-  actionButtonView: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '6px 8px',
-    borderRadius: '6px',
-    border: 'none',
-    backgroundColor: '#EFF6FF',
-    color: '#3B82F6',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    textDecoration: 'none',
-  },
-  actionButtonEdit: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '6px 8px',
-    borderRadius: '6px',
-    border: 'none',
-    backgroundColor: '#FEF3C7',
-    color: '#F59E0B',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    textDecoration: 'none',
-  },
-  actionButtonDelete: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '6px 8px',
-    borderRadius: '6px',
-    border: 'none',
-    backgroundColor: '#FEF2F2',
-    color: '#EF4444',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  paginationWrapper: {
-    marginTop: '16px',
-  },
-  emptyState: {
-    textAlign: 'center',
-    padding: '48px 16px',
-  },
-  emptyContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '12px',
-  },
-  emptyIcon: {
-    color: '#94A3B8',
-  },
-  emptyText: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#0F172A',
-    margin: 0,
-  },
-  emptySubtext: {
-    fontSize: '14px',
-    color: '#94A3B8',
-    margin: 0,
-  },
-  emptyButton: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '8px 20px',
-    backgroundColor: '#3B82F6',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    textDecoration: 'none',
-    transition: 'all 0.2s ease',
-    marginTop: '8px',
-  },
-};
-
-// Add keyframe and hover styles
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  .primary-button:hover:not(:disabled) {
-    background-color: #2563EB !important;
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.35) !important;
-    transform: translateY(-1px);
-  }
-
-  .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
-  }
-
-  .filter-toggle:hover:not(:disabled) {
-    background-color: #F1F5F9 !important;
-  }
-
-  .refresh-button:hover:not(:disabled) {
-    background-color: #F1F5F9 !important;
-  }
-
-  .clear-filters-button:hover:not(:disabled) {
-    background-color: #E2E8F0 !important;
-  }
-
-  .search-bar:focus-within {
-    border-color: #3B82F6 !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-  }
-
-  .filter-select:focus {
-    border-color: #3B82F6 !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-  }
-
-  .table-row:hover {
-    background-color: #F8FAFC !important;
-  }
-
-  .company-link:hover .company-name {
-    color: #3B82F6 !important;
-  }
-
-  .action-button-view:hover:not(:disabled) {
-    background-color: #DBEAFE !important;
-  }
-
-  .action-button-edit:hover:not(:disabled) {
-    background-color: #FDE68A !important;
-  }
-
-  .action-button-delete:hover:not(:disabled) {
-    background-color: #FEE2E2 !important;
-  }
-
-  .clear-search:hover {
-    background-color: #F1F5F9 !important;
-  }
-
-  .empty-button:hover {
-    background-color: #2563EB !important;
-  }
-
-  @media (max-width: 1024px) {
-    .stats-grid {
-      grid-template-columns: repeat(2, 1fr) !important;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .container {
-      padding: 16px !important;
-    }
-
-    .page-header {
-      flex-direction: column !important;
-      align-items: stretch !important;
-    }
-
-    .primary-button {
-      width: 100% !important;
-      justify-content: center !important;
-    }
-
-    .stats-grid {
-      grid-template-columns: 1fr 1fr !important;
-    }
-
-    .search-section {
-      flex-direction: column !important;
-    }
-
-    .search-bar {
-      width: 100% !important;
-    }
-
-    .action-buttons {
-      width: 100% !important;
-    }
-
-    .filter-toggle {
-      flex: 1 !important;
-      justify-content: center !important;
-    }
-
-    .refresh-button {
-      flex: 0 !important;
-    }
-
-    .filter-row {
-      flex-direction: column !important;
-      align-items: stretch !important;
-    }
-
-    .filter-group {
-      min-width: unset !important;
-    }
-
-    .clear-filters-button {
-      align-self: stretch !important;
-    }
-
-    .action-buttons-group {
-      flex-wrap: wrap !important;
-      justify-content: center !important;
-    }
-
-    .company-info {
-      flex-direction: column !important;
-      align-items: flex-start !important;
-    }
-
-    .company-avatar {
-      width: 32px !important;
-      height: 32px !important;
-      font-size: 12px !important;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .container {
-      padding: 12px !important;
-    }
-
-    .stats-grid {
-      grid-template-columns: 1fr !important;
-    }
-
-    .stat-card {
-      padding: 12px 16px !important;
-    }
-
-    .stat-number {
-      font-size: 18px !important;
-    }
-
-    .page-title {
-      font-size: 22px !important;
-    }
-
-    .action-buttons-group {
-      flex-direction: column !important;
-      gap: 4px !important;
-    }
-
-    .action-button-view,
-    .action-button-edit,
-    .action-button-delete {
-      width: 100% !important;
-      justify-content: center !important;
-    }
-  }
-`;
-document.head.appendChild(styleSheet);
 
 export default Companies;

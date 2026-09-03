@@ -26,33 +26,21 @@ export const OrganizationProvider = ({ children, token }) => {
   // ============================================
   const fetchCompany = async () => {
     try {
-      // FIX: Use /companies (plural) to match backend routes
       const response = await axios.get(`${API_URL}/organization/companies`, getHeaders());
-      
-      // Handle different response formats
       const data = response.data.data || response.data;
       
-      // If it's an array, get the first company
       if (Array.isArray(data) && data.length > 0) {
         setCompany(data[0]);
         return data[0];
-      } 
-      // If it's a single object
-      else if (data && !Array.isArray(data)) {
+      } else if (data && !Array.isArray(data)) {
         setCompany(data);
         return data;
-      } 
-      // No company found
-      else {
+      } else {
         setCompany(null);
         return null;
       }
     } catch (error) {
       console.error('Error fetching company:', error);
-      // Don't show toast error if it's just not found - it might be a new company
-      if (error.response?.status !== 404) {
-        toast.error('Failed to load company');
-      }
       return null;
     }
   };
@@ -60,8 +48,6 @@ export const OrganizationProvider = ({ children, token }) => {
   const updateCompany = async (data) => {
     try {
       setLoading(true);
-      
-      // FIX: Use the correct endpoint with company ID
       if (!company || !company._id) {
         toast.error('No company found to update');
         return null;
@@ -87,14 +73,16 @@ export const OrganizationProvider = ({ children, token }) => {
   // ============================================
   // SEGMENT OPERATIONS
   // ============================================
-  const fetchSegments = async () => {
+  const fetchSegments = async (companyId = null) => {
     try {
-      const response = await axios.get(`${API_URL}/organization/segments`, getHeaders());
-      setSegments(response.data.data);
-      return response.data.data;
+      const url = companyId 
+        ? `${API_URL}/organization/segments?companyId=${companyId}`
+        : `${API_URL}/organization/segments`;
+      const response = await axios.get(url, getHeaders());
+      setSegments(response.data.data || []);
+      return response.data.data || [];
     } catch (error) {
       console.error('Error fetching segments:', error);
-      toast.error('Failed to load segments');
       return [];
     }
   };
@@ -103,13 +91,17 @@ export const OrganizationProvider = ({ children, token }) => {
     try {
       setLoading(true);
       const response = await axios.post(`${API_URL}/organization/segments`, data, getHeaders());
-      setSegments(prev => [...prev, response.data.data]);
-      toast.success('Segment created successfully');
-      await fetchHierarchy();
-      return response.data.data;
+      if (response.data.success) {
+        const newSegment = response.data.data;
+        setSegments(prev => [...prev, newSegment]);
+        toast.success('Segment created successfully');
+        await fetchHierarchy();
+        return newSegment;
+      }
+      return null;
     } catch (error) {
       console.error('Error creating segment:', error);
-      toast.error('Failed to create segment');
+      toast.error(error.response?.data?.message || 'Failed to create segment');
       return null;
     } finally {
       setLoading(false);
@@ -120,13 +112,17 @@ export const OrganizationProvider = ({ children, token }) => {
     try {
       setLoading(true);
       const response = await axios.put(`${API_URL}/organization/segments/${id}`, data, getHeaders());
-      setSegments(prev => prev.map(s => s._id === id ? response.data.data : s));
-      toast.success('Segment updated successfully');
-      await fetchHierarchy();
-      return response.data.data;
+      if (response.data.success) {
+        const updated = response.data.data;
+        setSegments(prev => prev.map(s => s._id === id ? updated : s));
+        toast.success('Segment updated successfully');
+        await fetchHierarchy();
+        return updated;
+      }
+      return null;
     } catch (error) {
       console.error('Error updating segment:', error);
-      toast.error('Failed to update segment');
+      toast.error(error.response?.data?.message || 'Failed to update segment');
       return null;
     } finally {
       setLoading(false);
@@ -144,7 +140,7 @@ export const OrganizationProvider = ({ children, token }) => {
       return true;
     } catch (error) {
       console.error('Error deleting segment:', error);
-      toast.error('Failed to delete segment');
+      toast.error(error.response?.data?.message || 'Failed to delete segment');
       return false;
     } finally {
       setLoading(false);
@@ -160,11 +156,10 @@ export const OrganizationProvider = ({ children, token }) => {
         ? `${API_URL}/organization/departments?segmentId=${segmentId}`
         : `${API_URL}/organization/departments`;
       const response = await axios.get(url, getHeaders());
-      setDepartments(response.data.data);
-      return response.data.data;
+      setDepartments(response.data.data || []);
+      return response.data.data || [];
     } catch (error) {
       console.error('Error fetching departments:', error);
-      toast.error('Failed to load departments');
       return [];
     }
   };
@@ -173,13 +168,17 @@ export const OrganizationProvider = ({ children, token }) => {
     try {
       setLoading(true);
       const response = await axios.post(`${API_URL}/organization/departments`, data, getHeaders());
-      setDepartments(prev => [...prev, response.data.data]);
-      toast.success('Department created successfully');
-      await fetchHierarchy();
-      return response.data.data;
+      if (response.data.success) {
+        const newDept = response.data.data;
+        setDepartments(prev => [...prev, newDept]);
+        toast.success('Department created successfully');
+        await fetchHierarchy();
+        return newDept;
+      }
+      return null;
     } catch (error) {
       console.error('Error creating department:', error);
-      toast.error('Failed to create department');
+      toast.error(error.response?.data?.message || 'Failed to create department');
       return null;
     } finally {
       setLoading(false);
@@ -190,13 +189,17 @@ export const OrganizationProvider = ({ children, token }) => {
     try {
       setLoading(true);
       const response = await axios.put(`${API_URL}/organization/departments/${id}`, data, getHeaders());
-      setDepartments(prev => prev.map(d => d._id === id ? response.data.data : d));
-      toast.success('Department updated successfully');
-      await fetchHierarchy();
-      return response.data.data;
+      if (response.data.success) {
+        const updated = response.data.data;
+        setDepartments(prev => prev.map(d => d._id === id ? updated : d));
+        toast.success('Department updated successfully');
+        await fetchHierarchy();
+        return updated;
+      }
+      return null;
     } catch (error) {
       console.error('Error updating department:', error);
-      toast.error('Failed to update department');
+      toast.error(error.response?.data?.message || 'Failed to update department');
       return null;
     } finally {
       setLoading(false);
@@ -214,7 +217,7 @@ export const OrganizationProvider = ({ children, token }) => {
       return true;
     } catch (error) {
       console.error('Error deleting department:', error);
-      toast.error('Failed to delete department');
+      toast.error(error.response?.data?.message || 'Failed to delete department');
       return false;
     } finally {
       setLoading(false);
@@ -230,11 +233,10 @@ export const OrganizationProvider = ({ children, token }) => {
         ? `${API_URL}/organization/teams?departmentId=${departmentId}`
         : `${API_URL}/organization/teams`;
       const response = await axios.get(url, getHeaders());
-      setTeams(response.data.data);
-      return response.data.data;
+      setTeams(response.data.data || []);
+      return response.data.data || [];
     } catch (error) {
       console.error('Error fetching teams:', error);
-      toast.error('Failed to load teams');
       return [];
     }
   };
@@ -243,13 +245,17 @@ export const OrganizationProvider = ({ children, token }) => {
     try {
       setLoading(true);
       const response = await axios.post(`${API_URL}/organization/teams`, data, getHeaders());
-      setTeams(prev => [...prev, response.data.data]);
-      toast.success('Team created successfully');
-      await fetchHierarchy();
-      return response.data.data;
+      if (response.data.success) {
+        const newTeam = response.data.data;
+        setTeams(prev => [...prev, newTeam]);
+        toast.success('Team created successfully');
+        await fetchHierarchy();
+        return newTeam;
+      }
+      return null;
     } catch (error) {
       console.error('Error creating team:', error);
-      toast.error('Failed to create team');
+      toast.error(error.response?.data?.message || 'Failed to create team');
       return null;
     } finally {
       setLoading(false);
@@ -260,13 +266,17 @@ export const OrganizationProvider = ({ children, token }) => {
     try {
       setLoading(true);
       const response = await axios.put(`${API_URL}/organization/teams/${id}`, data, getHeaders());
-      setTeams(prev => prev.map(t => t._id === id ? response.data.data : t));
-      toast.success('Team updated successfully');
-      await fetchHierarchy();
-      return response.data.data;
+      if (response.data.success) {
+        const updated = response.data.data;
+        setTeams(prev => prev.map(t => t._id === id ? updated : t));
+        toast.success('Team updated successfully');
+        await fetchHierarchy();
+        return updated;
+      }
+      return null;
     } catch (error) {
       console.error('Error updating team:', error);
-      toast.error('Failed to update team');
+      toast.error(error.response?.data?.message || 'Failed to update team');
       return null;
     } finally {
       setLoading(false);
@@ -284,7 +294,7 @@ export const OrganizationProvider = ({ children, token }) => {
       return true;
     } catch (error) {
       console.error('Error deleting team:', error);
-      toast.error('Failed to delete team');
+      toast.error(error.response?.data?.message || 'Failed to delete team');
       return false;
     } finally {
       setLoading(false);
@@ -297,8 +307,23 @@ export const OrganizationProvider = ({ children, token }) => {
   const fetchHierarchy = async () => {
     try {
       const response = await axios.get(`${API_URL}/organization/hierarchy`, getHeaders());
-      setHierarchy(response.data.data);
-      return response.data.data;
+      const data = response.data.data || response.data;
+      
+      // If data is an array with multiple companies, wrap in a virtual root
+      if (Array.isArray(data) && data.length > 0) {
+        setHierarchy({
+          _id: 'virtual-root',
+          name: 'All Companies',
+          type: 'root',
+          children: data,
+          members: []
+        });
+      } else if (data && !Array.isArray(data)) {
+        setHierarchy(data);
+      } else {
+        setHierarchy(null);
+      }
+      return data;
     } catch (error) {
       console.error('Error fetching hierarchy:', error);
       return null;
@@ -311,13 +336,16 @@ export const OrganizationProvider = ({ children, token }) => {
   const loadAllData = async () => {
     setLoading(true);
     try {
-      await Promise.all([
-        fetchCompany(),
-        fetchSegments(),
-        fetchDepartments(),
-        fetchTeams(),
-        fetchHierarchy()
-      ]);
+      const companyData = await fetchCompany();
+      const segmentsData = await fetchSegments(companyData?._id || null);
+      await fetchDepartments();
+      await fetchTeams();
+      await fetchHierarchy();
+      
+      // Set selected segment if available
+      if (segmentsData && segmentsData.length > 0) {
+        setSelectedSegment(segmentsData[0]);
+      }
     } catch (error) {
       console.error('Error loading all data:', error);
     } finally {

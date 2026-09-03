@@ -1,11 +1,12 @@
-// pages/partners/Partners.jsx - COMPLETE FIXED VERSION
+// pages/partners/Partners.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Plus, Search, Filter, Users, Building2, 
   GraduationCap, Briefcase, Star, Edit, Trash2,
   X, RefreshCw, Download, Eye, Mail, Phone,
-  Calendar, MapPin, Award, Zap, Layers
+  Calendar, MapPin, Award, Zap, Layers,
+  CheckCircle, Clock, AlertCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -134,6 +135,39 @@ const Partners = () => {
     ];
   };
 
+  // Helper function to safely render location
+  const getLocationDisplay = (location) => {
+    if (!location) return null;
+    
+    // If location is a string, return it
+    if (typeof location === 'string') {
+      return location;
+    }
+    
+    // If location is an object with address properties
+    if (typeof location === 'object') {
+      // Try to build a display string
+      const parts = [];
+      if (location.address) parts.push(location.address);
+      if (location.city) parts.push(location.city);
+      if (location.state) parts.push(location.state);
+      if (location.country) parts.push(location.country);
+      
+      if (parts.length > 0) {
+        return parts.join(', ');
+      }
+      
+      // If it has a 'display' or 'name' property
+      if (location.display) return location.display;
+      if (location.name) return location.name;
+      
+      // Fallback: return a string representation
+      return JSON.stringify(location);
+    }
+    
+    return null;
+  };
+
   const handleRefresh = () => {
     fetchPartners(true);
   };
@@ -221,7 +255,7 @@ const Partners = () => {
         assignedTo: partner.assignedTo?._id || partner.assignedTo || '',
         description: partner.description || '',
         website: partner.website || '',
-        location: partner.location || ''
+        location: typeof partner.location === 'string' ? partner.location : (partner.location?.display || partner.location?.city || '')
       });
     } else {
       setEditingPartner(null);
@@ -317,165 +351,173 @@ const Partners = () => {
   if (loading) {
     return (
       <div className="pr-loading">
-        <div className="pr-spinner"></div>
+        <div className="pr-loading-spinner"></div>
         <p className="pr-loading-text">Loading partners...</p>
       </div>
     );
   }
 
   return (
-    <div className="pr-container">
-      {/* Header */}
-      <div className="pr-header">
-        <div className="pr-header-left">
-          <div className="pr-title-wrapper">
-            <div className="pr-title-icon">
-              <Users className="pr-title-svg" />
+    <>
+      <div className="pr-container">
+        {/* Header */}
+        <div className="pr-header">
+          <div className="pr-header-left">
+            <div className="pr-title-wrapper">
+              <div className="pr-title-icon">
+                <Layers className="pr-title-svg" />
+              </div>
+              <div>
+                <h1 className="pr-title">Partners</h1>
+                <p className="pr-subtitle">Manage all your business partners</p>
+              </div>
             </div>
-            <div>
-              <h1 className="pr-title">Partners</h1>
-              <p className="pr-subtitle">Manage all your business partners</p>
-            </div>
+            <span className="pr-count">{partners.length} partners</span>
           </div>
-          <span className="pr-count">{partners.length} partners</span>
-        </div>
-        <div className="pr-header-right">
-          <button className="pr-icon-btn" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw className={`pr-refresh-icon ${refreshing ? 'pr-spin' : ''}`} />
-          </button>
-          <button className="pr-icon-btn">
-            <Download className="pr-btn-icon" />
-          </button>
-          <button 
-            onClick={() => openModal()}
-            className="pr-add-btn"
-          >
-            <Plus className="pr-btn-icon" />
-            Add Partner
-          </button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="pr-filters">
-        <div className="pr-search-wrapper">
-          <Search className="pr-search-icon" />
-          <input
-            type="text"
-            placeholder="Search partners..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pr-search-input"
-          />
-          {search && (
-            <button className="pr-search-clear" onClick={() => setSearch('')}>
-              <X className="pr-search-clear-icon" />
+          <div className="pr-header-right">
+            <button className="pr-icon-btn" onClick={handleRefresh} disabled={refreshing}>
+              <RefreshCw className={`pr-refresh-icon ${refreshing ? 'pr-spin' : ''}`} />
             </button>
-          )}
+            <button className="pr-icon-btn">
+              <Download className="pr-btn-icon" />
+            </button>
+            <button 
+              onClick={() => openModal()}
+              className="pr-add-btn"
+            >
+              <Plus className="pr-btn-icon" />
+              Add Partner
+            </button>
+          </div>
         </div>
-        <select
-          value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
-          className="pr-filter-select"
-        >
-          {filterOptions.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-        <button className="pr-filter-btn">
-          <Filter className="pr-btn-icon" />
-          Filters
-        </button>
-      </div>
 
-      {/* Partners Grid */}
-      <div className="pr-grid">
-        {partners.map((partner) => (
-          <div key={partner._id} className="pr-card">
-            <div className="pr-card-header">
-              <div className="pr-card-left">
-                <div className={`pr-card-icon pr-card-icon-${partner.type}`}>
-                  {getTypeIcon(partner.type)}
-                </div>
-                <div className="pr-card-info">
-                  <h3 className="pr-card-title">{partner.name}</h3>
-                  <p className="pr-card-type">{getTypeLabel(partner.type)}</p>
-                </div>
-              </div>
-              <span className={`pr-card-status ${getStatusColor(partner.status)}`}>
-                {getStatusLabel(partner.status)}
-              </span>
-            </div>
-            
-            {(partner.email || partner.phone) && (
-              <div className="pr-card-contact">
-                {partner.email && (
-                  <span className="pr-card-contact-item">
-                    <Mail className="pr-contact-icon" />
-                    {partner.email}
-                  </span>
-                )}
-                {partner.phone && (
-                  <span className="pr-card-contact-item">
-                    <Phone className="pr-contact-icon" />
-                    {partner.phone}
-                  </span>
-                )}
-              </div>
+        {/* Filters */}
+        <div className="pr-filters">
+          <div className="pr-search-wrapper">
+            <Search className="pr-search-icon" />
+            <input
+              type="text"
+              placeholder="Search partners..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pr-search-input"
+            />
+            {search && (
+              <button className="pr-search-clear" onClick={() => setSearch('')}>
+                <X className="pr-search-clear-icon" />
+              </button>
             )}
-            
-            {partner.description && (
-              <p className="pr-card-desc">{partner.description}</p>
-            )}
-            
-            {partner.location && (
-              <div className="pr-card-location">
-                <MapPin className="pr-location-icon" />
-                <span className="pr-location-text">{partner.location}</span>
-              </div>
-            )}
-            
-            <div className="pr-card-footer">
-              <div className="pr-card-assignee">
-                <span className="pr-assignee-label">Assigned to:</span>
-                <span className="pr-assignee-name">
-                  {partner.assignedTo?.firstName} {partner.assignedTo?.lastName || 'Unassigned'}
-                </span>
-              </div>
-              <div className="pr-card-actions">
-                <button 
-                  className="pr-action-btn pr-action-edit"
-                  onClick={() => openModal(partner)}
-                  title="Edit"
-                >
-                  <Edit className="pr-action-icon" />
-                </button>
-                <button 
-                  className="pr-action-btn pr-action-delete"
-                  onClick={() => handleDelete(partner._id)}
-                  title="Delete"
-                >
-                  <Trash2 className="pr-action-icon" />
-                </button>
-              </div>
-            </div>
           </div>
-        ))}
-      </div>
-
-      {partners.length === 0 && (
-        <div className="pr-empty">
-          <div className="pr-empty-icon-wrapper">
-            <Users className="pr-empty-icon" />
-          </div>
-          <h3 className="pr-empty-title">No partners found</h3>
-          <p className="pr-empty-subtitle">Start by adding your first partner</p>
-          <button className="pr-empty-btn" onClick={() => openModal()}>
-            <Plus className="pr-btn-icon" />
-            Add Partner
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="pr-filter-select"
+          >
+            {filterOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          <button className="pr-filter-btn">
+            <Filter className="pr-btn-icon" />
+            Filters
           </button>
         </div>
-      )}
+
+        {/* Partners Grid */}
+        <div className="pr-grid">
+          {partners.map((partner, index) => {
+            // Safely get location display string
+            const locationDisplay = getLocationDisplay(partner.location);
+            
+            return (
+              <div key={partner._id} className="pr-card" style={{ animationDelay: `${index * 0.05}s` }}>
+                <div className="pr-card-header">
+                  <div className="pr-card-left">
+                    <div className={`pr-card-icon pr-card-icon-${partner.type}`}>
+                      {getTypeIcon(partner.type)}
+                    </div>
+                    <div className="pr-card-info">
+                      <h3 className="pr-card-title">{partner.name}</h3>
+                      <p className="pr-card-type">{getTypeLabel(partner.type)}</p>
+                    </div>
+                  </div>
+                  <span className={`pr-card-status ${getStatusColor(partner.status)}`}>
+                    {getStatusLabel(partner.status)}
+                  </span>
+                </div>
+                
+                {(partner.email || partner.phone) && (
+                  <div className="pr-card-contact">
+                    {partner.email && (
+                      <span className="pr-card-contact-item">
+                        <Mail className="pr-contact-icon" />
+                        {partner.email}
+                      </span>
+                    )}
+                    {partner.phone && (
+                      <span className="pr-card-contact-item">
+                        <Phone className="pr-contact-icon" />
+                        {partner.phone}
+                      </span>
+                    )}
+                  </div>
+                )}
+                
+                {partner.description && (
+                  <p className="pr-card-desc">{partner.description}</p>
+                )}
+                
+                {/* Safely render location - only if it's a string or we can convert it */}
+                {locationDisplay && (
+                  <div className="pr-card-location">
+                    <MapPin className="pr-location-icon" />
+                    <span className="pr-location-text">{locationDisplay}</span>
+                  </div>
+                )}
+                
+                <div className="pr-card-footer">
+                  <div className="pr-card-assignee">
+                    <span className="pr-assignee-label">Assigned to:</span>
+                    <span className="pr-assignee-name">
+                      {partner.assignedTo?.firstName} {partner.assignedTo?.lastName || 'Unassigned'}
+                    </span>
+                  </div>
+                  <div className="pr-card-actions">
+                    <button 
+                      className="pr-action-btn pr-action-edit"
+                      onClick={() => openModal(partner)}
+                      title="Edit"
+                    >
+                      <Edit className="pr-action-icon" />
+                    </button>
+                    <button 
+                      className="pr-action-btn pr-action-delete"
+                      onClick={() => handleDelete(partner._id)}
+                      title="Delete"
+                    >
+                      <Trash2 className="pr-action-icon" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {partners.length === 0 && (
+          <div className="pr-empty">
+            <div className="pr-empty-icon-wrapper">
+              <Users className="pr-empty-icon" />
+            </div>
+            <h3 className="pr-empty-title">No partners found</h3>
+            <p className="pr-empty-subtitle">Start by adding your first partner</p>
+            <button className="pr-empty-btn" onClick={() => openModal()}>
+              <Plus className="pr-btn-icon" />
+              Add Partner
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Create/Edit Modal */}
       {showModal && (
@@ -624,23 +666,13 @@ const Partners = () => {
         </div>
       )}
 
-      {/* Custom CSS */}
       <style>{`
         /* ============================================
            CONTAINER
            ============================================ */
         .pr-container {
-          padding: 24px 32px;
-          max-width: 1400px;
-          margin: 0 auto;
-          background: #f8fafc;
-          min-height: 100vh;
-          animation: prFadeIn 0.4s ease;
-        }
-
-        @keyframes prFadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+          padding: 0 0 24px 0;
+          max-width: 100%;
         }
 
         /* ============================================
@@ -651,31 +683,21 @@ const Partners = () => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          min-height: 60vh;
-          gap: 16px;
+          min-height: 400px;
         }
-
-        .pr-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #3b82f6;
+        .pr-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
-          animation: prSpin 0.8s linear infinite;
+          animation: spin 0.8s linear infinite;
         }
-
         .pr-loading-text {
-          color: #64748b;
+          margin-top: 16px;
+          color: #013E37;
+          opacity: 0.6;
           font-size: 14px;
-          font-weight: 500;
-        }
-
-        @keyframes prSpin {
-          to { transform: rotate(360deg); }
-        }
-
-        .pr-spin {
-          animation: prSpin 1s linear infinite;
         }
 
         /* ============================================
@@ -688,113 +710,110 @@ const Partners = () => {
           margin-bottom: 24px;
           flex-wrap: wrap;
           gap: 16px;
+          animation: fadeInDown 0.6s ease;
         }
-
         .pr-header-left {
           display: flex;
           align-items: center;
           gap: 14px;
         }
-
         .pr-title-wrapper {
           display: flex;
           align-items: center;
           gap: 14px;
         }
-
         .pr-title-icon {
           width: 48px;
           height: 48px;
-          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+          background: #013E37;
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.25);
         }
-
         .pr-title-svg {
           width: 24px;
           height: 24px;
-          color: #ffffff;
+          color: #FFEFB3;
         }
-
         .pr-title {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
           letter-spacing: -0.5px;
         }
-
         .pr-subtitle {
           font-size: 15px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
-
         .pr-count {
           font-size: 14px;
           font-weight: 500;
-          color: #64748b;
-          background: #f1f5f9;
+          color: #013E37;
+          background: #FFEFB3;
           padding: 2px 14px;
           border-radius: 12px;
         }
-
         .pr-header-right {
           display: flex;
           align-items: center;
           gap: 10px;
           flex-wrap: wrap;
         }
-
         .pr-icon-btn {
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 8px 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s ease;
+          color: #013E37;
         }
-
         .pr-icon-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
-
         .pr-refresh-icon {
           width: 16px;
           height: 16px;
+          transition: transform 0.3s ease;
         }
-
+        .pr-spin {
+          animation: spin 1s linear infinite;
+        }
         .pr-btn-icon {
           width: 16px;
           height: 16px;
         }
-
         .pr-add-btn {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 8px 20px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.3);
         }
-
         .pr-add-btn:hover {
+          background: #0A5C54;
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.4);
+        }
+        .pr-add-btn:active {
+          transform: scale(0.95);
         }
 
         /* ============================================
@@ -807,13 +826,11 @@ const Partners = () => {
           margin-bottom: 24px;
           flex-wrap: wrap;
         }
-
         .pr-search-wrapper {
           position: relative;
           flex: 1;
           min-width: 200px;
         }
-
         .pr-search-icon {
           position: absolute;
           left: 12px;
@@ -821,26 +838,28 @@ const Partners = () => {
           transform: translateY(-50%);
           width: 16px;
           height: 16px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
-
         .pr-search-input {
           width: 100%;
           padding: 8px 36px 8px 36px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           outline: none;
           background: #ffffff;
-          color: #0f172a;
-          transition: all 0.2s ease;
+          color: #013E37;
+          transition: all 0.3s ease;
         }
-
         .pr-search-input:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
-
+        .pr-search-input::placeholder {
+          color: #013E37;
+          opacity: 0.4;
+        }
         .pr-search-clear {
           position: absolute;
           right: 8px;
@@ -849,57 +868,58 @@ const Partners = () => {
           padding: 4px;
           background: none;
           border: none;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
           cursor: pointer;
           border-radius: 4px;
           display: flex;
           align-items: center;
+          transition: all 0.3s ease;
         }
-
         .pr-search-clear:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          opacity: 1;
         }
-
         .pr-search-clear-icon {
           width: 14px;
           height: 14px;
         }
-
         .pr-filter-select {
           padding: 8px 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           background: #ffffff;
-          color: #0f172a;
+          color: #013E37;
           outline: none;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           min-width: 140px;
         }
-
         .pr-filter-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
-
+        .pr-filter-select:hover {
+          border-color: #013E37;
+        }
         .pr-filter-btn {
           display: flex;
           align-items: center;
           gap: 6px;
           padding: 8px 16px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
-          color: #475569;
+          color: #013E37;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
-
         .pr-filter-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         /* ============================================
@@ -910,31 +930,42 @@ const Partners = () => {
           grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
           gap: 20px;
         }
-
         .pr-card {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           padding: 20px;
-          transition: all 0.3s ease;
-          animation: prSlideUp 0.4s ease both;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          animation: fadeInUp 0.5s ease both;
+          opacity: 0;
+          position: relative;
+          overflow: hidden;
         }
-
+        .pr-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, #013E37, #0A5C54, #013E37);
+          transform: scaleX(0);
+          transition: transform 0.4s ease;
+          transform-origin: left;
+        }
+        .pr-card:hover::before {
+          transform: scaleX(1);
+        }
+        .pr-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 24px rgba(1, 62, 55, 0.1);
+          border-color: #013E37;
+        }
         .pr-card:nth-child(1) { animation-delay: 0.05s; }
         .pr-card:nth-child(2) { animation-delay: 0.1s; }
         .pr-card:nth-child(3) { animation-delay: 0.15s; }
         .pr-card:nth-child(4) { animation-delay: 0.2s; }
-
-        @keyframes prSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .pr-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-          border-color: #d1d5db;
-        }
+        .pr-card:nth-child(5) { animation-delay: 0.25s; }
 
         .pr-card-header {
           display: flex;
@@ -942,7 +973,6 @@ const Partners = () => {
           justify-content: space-between;
           margin-bottom: 12px;
         }
-
         .pr-card-left {
           display: flex;
           align-items: center;
@@ -950,7 +980,6 @@ const Partners = () => {
           flex: 1;
           min-width: 0;
         }
-
         .pr-card-icon {
           width: 44px;
           height: 44px;
@@ -959,49 +988,51 @@ const Partners = () => {
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          transition: all 0.3s ease;
         }
-
-        .pr-card-icon-brand { background: #dbeafe; color: #3b82f6; }
-        .pr-card-icon-university { background: #f3e8ff; color: #8b5cf6; }
-        .pr-card-icon-employer { background: #d1fae5; color: #10b981; }
-        .pr-card-icon-influencer { background: #fef3c7; color: #f59e0b; }
-
+        .pr-card:hover .pr-card-icon {
+          transform: scale(1.05) rotate(-5deg);
+        }
+        .pr-card-icon-brand { background: #FFEFB3; color: #013E37; }
+        .pr-card-icon-university { background: #FFEFB3; color: #013E37; }
+        .pr-card-icon-employer { background: #FFEFB3; color: #013E37; }
+        .pr-card-icon-influencer { background: #FFEFB3; color: #013E37; }
         .pr-icon {
           width: 20px;
           height: 20px;
         }
-
         .pr-card-info {
           flex: 1;
           min-width: 0;
         }
-
         .pr-card-title {
           font-size: 16px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
-
         .pr-card-type {
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
-
         .pr-card-status {
           padding: 4px 10px;
           font-size: 11px;
           font-weight: 500;
           border-radius: 9999px;
           flex-shrink: 0;
+          transition: all 0.3s ease;
         }
-
-        .pr-status-active { background: #d1fae5; color: #065f46; }
-        .pr-status-onboarded { background: #dbeafe; color: #1d4ed8; }
-        .pr-status-interested { background: #fef3c7; color: #92400e; }
-        .pr-status-negotiating { background: #f3e8ff; color: #6d28d9; }
-        .pr-status-prospect { background: #f1f5f9; color: #475569; }
+        .pr-card-status:hover {
+          transform: scale(1.05);
+        }
+        .pr-status-active { background: #013E37; color: #FFEFB3; }
+        .pr-status-onboarded { background: #0A5C54; color: #FFEFB3; }
+        .pr-status-interested { background: #FFEFB3; color: #013E37; }
+        .pr-status-negotiating { background: #FFEFB3; color: #013E37; }
+        .pr-status-prospect { background: #FFEFB3; color: #013E37; }
 
         .pr-card-contact {
           display: flex;
@@ -1009,107 +1040,102 @@ const Partners = () => {
           gap: 4px;
           margin: 8px 0 4px 0;
         }
-
         .pr-card-contact-item {
           display: flex;
           align-items: center;
           gap: 6px;
           font-size: 13px;
-          color: #475569;
+          color: #013E37;
+          opacity: 0.7;
         }
-
         .pr-contact-icon {
           width: 14px;
           height: 14px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
-
         .pr-card-desc {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.7;
           margin: 8px 0 0 0;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
-
         .pr-card-location {
           display: flex;
           align-items: center;
           gap: 4px;
           margin: 6px 0 0 0;
           font-size: 13px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
         }
-
         .pr-location-icon {
           width: 14px;
           height: 14px;
         }
-
         .pr-location-text {
           font-size: 13px;
         }
-
         .pr-card-footer {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding-top: 12px;
           margin-top: 12px;
-          border-top: 1px solid #f1f5f9;
+          border-top: 1px solid #FFEFB3;
+          transition: border-color 0.3s ease;
         }
-
+        .pr-card:hover .pr-card-footer {
+          border-color: #013E37;
+        }
         .pr-card-assignee {
           display: flex;
           align-items: center;
           gap: 4px;
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
         }
-
         .pr-assignee-label {
-          color: #94a3b8;
+          opacity: 0.5;
         }
-
         .pr-assignee-name {
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
         }
-
         .pr-card-actions {
           display: flex;
           gap: 4px;
         }
-
         .pr-action-btn {
           padding: 4px;
           border: none;
           background: transparent;
           border-radius: 6px;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #94a3b8;
+          transition: all 0.3s ease;
+          color: #013E37;
+          opacity: 0.4;
           display: flex;
           align-items: center;
         }
-
         .pr-action-btn:hover {
-          background: #f1f5f9;
-          color: #475569;
+          background: #FFEFB3;
+          opacity: 1;
+          transform: scale(1.1);
         }
-
         .pr-action-edit:hover {
-          background: #eff6ff;
-          color: #3b82f6;
+          background: #FFEFB3;
+          color: #013E37;
         }
-
         .pr-action-delete:hover {
-          background: #fef2f2;
-          color: #ef4444;
+          background: #FEE2E2;
+          color: #EF4444;
         }
-
         .pr-action-icon {
           width: 16px;
           height: 16px;
@@ -1125,59 +1151,56 @@ const Partners = () => {
           padding: 60px 20px;
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 2px dashed #FFEFB3;
           text-align: center;
         }
-
         .pr-empty-icon-wrapper {
           width: 80px;
           height: 80px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           margin-bottom: 16px;
+          animation: float 3s ease-in-out infinite;
         }
-
         .pr-empty-icon {
           width: 36px;
           height: 36px;
-          color: #94a3b8;
+          color: #013E37;
         }
-
         .pr-empty-title {
           font-size: 18px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
-
         .pr-empty-subtitle {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 4px 0 16px 0;
         }
-
         .pr-empty-btn {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 8px 24px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
-
         .pr-empty-btn:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
 
         /* ============================================
@@ -1186,320 +1209,342 @@ const Partners = () => {
         .pr-modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.5);
-          backdrop-filter: blur(8px);
+          background: rgba(1, 62, 55, 0.5);
+          backdrop-filter: blur(4px);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 9999;
           padding: 16px;
-          animation: prFadeIn 0.3s ease;
+          animation: fadeIn 0.3s ease;
         }
-
         .pr-modal {
           background: #ffffff;
           border-radius: 16px;
+          border: 1px solid #FFEFB3;
           max-width: 560px;
           width: 100%;
           max-height: 90vh;
           overflow-y: auto;
-          box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
-          animation: prModalIn 0.3s ease;
+          box-shadow: 0 24px 64px rgba(1, 62, 55, 0.2);
+          animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-
-        @keyframes prModalIn {
-          from { opacity: 0; transform: scale(0.95) translateY(20px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
+        @keyframes modalIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
         }
-
         .pr-modal-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 20px 24px;
-          border-bottom: 1px solid #f1f5f9;
+          border-bottom: 1px solid #FFEFB3;
+          background: #FFEFB3;
+          border-radius: 16px 16px 0 0;
         }
-
         .pr-modal-title-wrapper {
           display: flex;
           align-items: center;
           gap: 12px;
         }
-
         .pr-modal-icon {
           width: 28px;
           height: 28px;
-          color: #3b82f6;
+          color: #013E37;
         }
-
         .pr-modal-title {
           font-size: 20px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
-
         .pr-modal-close {
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 8px;
           border: none;
-          background: #f1f5f9;
+          background: transparent;
           border-radius: 8px;
-          color: #64748b;
+          color: #013E37;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
+          opacity: 0.5;
         }
-
         .pr-modal-close:hover {
-          background: #e2e8f0;
+          background: rgba(1, 62, 55, 0.1);
+          opacity: 1;
           transform: rotate(90deg);
         }
-
         .pr-modal-close-icon {
           width: 18px;
           height: 18px;
         }
-
         .pr-modal-form {
           padding: 24px;
           display: flex;
           flex-direction: column;
           gap: 16px;
         }
-
         .pr-form-group {
           display: flex;
           flex-direction: column;
           gap: 4px;
+          animation: fadeInUp 0.4s ease forwards;
+          opacity: 0;
         }
-
+        .pr-form-group:nth-child(1) { animation-delay: 0.05s; }
+        .pr-form-group:nth-child(2) { animation-delay: 0.1s; }
+        .pr-form-group:nth-child(3) { animation-delay: 0.15s; }
+        .pr-form-group:nth-child(4) { animation-delay: 0.2s; }
+        .pr-form-group:nth-child(5) { animation-delay: 0.25s; }
+        .pr-form-group:nth-child(6) { animation-delay: 0.3s; }
+        .pr-form-group:nth-child(7) { animation-delay: 0.35s; }
         .pr-form-label {
           font-size: 14px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
         }
-
         .pr-form-required {
-          color: #ef4444;
+          color: #EF4444;
         }
-
         .pr-form-input,
         .pr-form-select,
         .pr-form-textarea {
           padding: 10px 14px;
-          border: 1.5px solid #e2e8f0;
+          border: 1.5px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           outline: none;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           width: 100%;
           font-family: inherit;
           background: #ffffff;
-          color: #0f172a;
+          color: #013E37;
         }
-
         .pr-form-input:focus,
         .pr-form-select:focus,
         .pr-form-textarea:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
-
+        .pr-form-input::placeholder,
+        .pr-form-textarea::placeholder {
+          color: #013E37;
+          opacity: 0.4;
+        }
         .pr-form-textarea {
           resize: vertical;
           min-height: 60px;
         }
-
         .pr-form-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 16px;
         }
-
         .pr-form-actions {
           display: flex;
           justify-content: flex-end;
           gap: 12px;
           padding-top: 16px;
-          border-top: 1px solid #f1f5f9;
+          border-top: 1px solid #FFEFB3;
           margin-top: 4px;
         }
-
         .pr-form-cancel {
           padding: 10px 24px;
-          background: #f1f5f9;
-          color: #475569;
-          border: 1px solid #e2e8f0;
+          background: transparent;
+          color: #013E37;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
-
         .pr-form-cancel:hover:not(:disabled) {
-          background: #e2e8f0;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
-
         .pr-form-cancel:disabled {
           opacity: 0.5;
           cursor: not-allowed;
         }
-
         .pr-form-submit {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 10px 24px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
-
         .pr-form-submit:hover:not(:disabled) {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
-
         .pr-form-submit:disabled {
           opacity: 0.6;
           cursor: not-allowed;
           transform: none;
         }
-
         .pr-form-spinner {
           width: 18px;
           height: 18px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-top-color: #ffffff;
+          border: 2px solid rgba(255, 239, 179, 0.3);
+          border-top-color: #FFEFB3;
           border-radius: 50%;
-          animation: prSpin 0.8s linear infinite;
+          animation: spin 0.8s linear infinite;
+        }
+
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
         }
 
         /* ============================================
            RESPONSIVE
            ============================================ */
         @media (max-width: 768px) {
-          .pr-container {
-            padding: 16px;
-          }
-
           .pr-header {
             flex-direction: column;
             align-items: stretch;
           }
-
           .pr-header-right {
             flex-wrap: wrap;
           }
-
           .pr-add-btn {
             flex: 1;
             justify-content: center;
           }
-
           .pr-filters {
             flex-direction: column;
           }
-
           .pr-search-wrapper {
             width: 100%;
           }
-
           .pr-filter-select {
             width: 100%;
           }
-
           .pr-filter-btn {
             width: 100%;
             justify-content: center;
           }
-
           .pr-grid {
             grid-template-columns: 1fr;
           }
-
           .pr-title {
             font-size: 22px;
           }
-
           .pr-title-icon {
             width: 40px;
             height: 40px;
           }
-
           .pr-title-svg {
             width: 20px;
             height: 20px;
           }
-
           .pr-form-grid {
             grid-template-columns: 1fr;
           }
-
           .pr-modal {
             margin: 16px;
             max-height: 95vh;
           }
+          .pr-header-left {
+            flex-wrap: wrap;
+          }
         }
 
         @media (max-width: 480px) {
-          .pr-container {
-            padding: 12px;
-          }
-
           .pr-header-right {
             flex-direction: column;
           }
-
           .pr-add-btn {
             width: 100%;
           }
-
           .pr-icon-btn {
             align-self: flex-end;
           }
-
           .pr-title-wrapper {
             gap: 10px;
           }
-
           .pr-title {
             font-size: 20px;
           }
-
           .pr-subtitle {
             font-size: 13px;
           }
-
           .pr-modal {
             padding: 0;
           }
-
           .pr-modal-header {
             padding: 16px 18px;
           }
-
           .pr-modal-form {
             padding: 18px;
           }
-
           .pr-form-actions {
             flex-direction: column;
           }
-
           .pr-form-cancel,
           .pr-form-submit {
             width: 100%;
             justify-content: center;
+          }
+          .pr-card {
+            padding: 16px;
+          }
+          .pr-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
           }
         }
 
@@ -1507,22 +1552,19 @@ const Partners = () => {
         .pr-modal::-webkit-scrollbar {
           width: 6px;
         }
-
         .pr-modal::-webkit-scrollbar-track {
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 8px;
         }
-
         .pr-modal::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
+          background: #013E37;
           border-radius: 8px;
         }
-
         .pr-modal::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
+          background: #0A5C54;
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

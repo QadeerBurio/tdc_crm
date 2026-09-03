@@ -1,4 +1,4 @@
-// pages/projects/Projects.jsx - COMPLETE FIXED VERSION
+// pages/projects/Projects.jsx - MODERN DESIGN WITH YOUR COLOR PALETTE
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
@@ -69,9 +69,6 @@ const Projects = () => {
         limit: 10
       };
 
-      console.log('🔍 Fetching projects with params:', params);
-      console.log('👤 User role:', user?.role);
-
       const response = await axios.get(`${API_URL}/projects`, {
         params,
         headers: {
@@ -79,9 +76,6 @@ const Projects = () => {
         }
       });
 
-      console.log('📊 Projects response:', response.data);
-
-      // Handle different response structures
       let projectsData = [];
       let paginationData = {};
 
@@ -108,7 +102,6 @@ const Projects = () => {
         }
       }
 
-      console.log('📋 Projects found:', projectsData.length);
       setProjects(projectsData);
       setPagination({
         page: paginationData.page || currentPage,
@@ -208,13 +201,13 @@ const Projects = () => {
   const getStatusStyle = (status) => {
     const statusStyles = {
       'Active': {
-        backgroundColor: '#D1FAE5',
-        color: '#065F46',
+        backgroundColor: '#FFEFB3',
+        color: '#013E37',
         icon: CheckCircle,
         label: 'Active'
       },
       'Planning': {
-        backgroundColor: '#DBEAFE',
+        backgroundColor: '#E8F0FE',
         color: '#1E40AF',
         icon: Clock,
         label: 'Planning'
@@ -226,8 +219,8 @@ const Projects = () => {
         label: 'On Hold'
       },
       'Completed': {
-        backgroundColor: '#EDE9FE',
-        color: '#5B21B6',
+        backgroundColor: '#D1FAE5',
+        color: '#065F46',
         icon: CheckCircle,
         label: 'Completed'
       },
@@ -243,13 +236,13 @@ const Projects = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      'Active': '#10B981',
+      'Active': '#013E37',
       'Planning': '#3B82F6',
       'On Hold': '#F59E0B',
-      'Completed': '#8B5CF6',
+      'Completed': '#10B981',
       'Archived': '#6B7280',
     };
-    return colors[status] || '#10B981';
+    return colors[status] || '#013E37';
   };
 
   const formatDate = (date) => {
@@ -262,7 +255,6 @@ const Projects = () => {
     });
   };
 
-  // Stats
   const stats = {
     total: projects.length,
     active: projects.filter(p => p.status === 'Active').length,
@@ -385,8 +377,8 @@ const Projects = () => {
       {/* Stats Cards */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <div style={styles.statIconWrapperBlue}>
-            <FolderKanban size={18} style={styles.statIconBlue} />
+          <div style={{...styles.statIconWrapper, backgroundColor: '#FFEFB3'}}>
+            <FolderKanban size={18} style={{...styles.statIcon, color: '#013E37'}} />
           </div>
           <div>
             <p style={styles.statNumber}>{stats.total}</p>
@@ -394,8 +386,8 @@ const Projects = () => {
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIconWrapperGreen}>
-            <CheckCircle size={18} style={styles.statIconGreen} />
+          <div style={{...styles.statIconWrapper, backgroundColor: '#FFEFB3'}}>
+            <CheckCircle size={18} style={{...styles.statIcon, color: '#013E37'}} />
           </div>
           <div>
             <p style={styles.statNumber}>{stats.active}</p>
@@ -403,8 +395,8 @@ const Projects = () => {
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIconWrapperBlue}>
-            <Clock size={18} style={styles.statIconBlue} />
+          <div style={{...styles.statIconWrapper, backgroundColor: '#FFEFB3'}}>
+            <Clock size={18} style={{...styles.statIcon, color: '#013E37'}} />
           </div>
           <div>
             <p style={styles.statNumber}>{stats.planning}</p>
@@ -412,8 +404,8 @@ const Projects = () => {
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIconWrapperPurple}>
-            <CheckCircle size={18} style={styles.statIconPurple} />
+          <div style={{...styles.statIconWrapper, backgroundColor: '#FFEFB3'}}>
+            <CheckCircle size={18} style={{...styles.statIcon, color: '#013E37'}} />
           </div>
           <div>
             <p style={styles.statNumber}>{stats.completed}</p>
@@ -683,8 +675,10 @@ const styles = {
     maxWidth: '1400px',
     margin: '0 auto',
     width: '100%',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     minHeight: '100vh',
+    borderRadius: '24px',
+    boxShadow: '0 2px 12px rgba(1, 62, 55, 0.04)',
   },
   loadingContainer: {
     display: 'flex',
@@ -695,7 +689,7 @@ const styles = {
     gap: '16px',
   },
   loadingText: {
-    color: '#64748B',
+    color: '#013E37',
     fontSize: '14px',
     fontWeight: '500',
   },
@@ -703,28 +697,29 @@ const styles = {
     width: '40px',
     height: '40px',
     borderRadius: '50%',
-    border: '3px solid #E5E7EB',
-    borderTopColor: '#3B82F6',
+    border: '3px solid #FFEFB3',
+    borderTopColor: '#013E37',
     animation: 'spin 0.8s linear infinite',
   },
   pageHeader: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: '24px',
+    marginBottom: '28px',
     flexWrap: 'wrap',
     gap: '16px',
   },
   pageTitle: {
     fontSize: '28px',
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#013E37',
     margin: 0,
     letterSpacing: '-0.5px',
   },
   pageSubtitle: {
     fontSize: '15px',
-    color: '#64748B',
+    color: '#013E37',
+    opacity: 0.7,
     marginTop: '4px',
     margin: '4px 0 0 0',
   },
@@ -733,15 +728,15 @@ const styles = {
     alignItems: 'center',
     gap: '8px',
     padding: '10px 24px',
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#013E37',
     color: '#FFFFFF',
     border: 'none',
-    borderRadius: '10px',
+    borderRadius: '12px',
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)',
+    transition: 'all 0.25s cubic-bezier(0.2, 0, 0, 1)',
+    boxShadow: '0 4px 12px rgba(1, 62, 55, 0.25)',
   },
   addButtonLink: {
     textDecoration: 'none',
@@ -750,61 +745,42 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
     gap: '16px',
-    marginBottom: '24px',
+    marginBottom: '28px',
   },
   statCard: {
     display: 'flex',
     alignItems: 'center',
     gap: '14px',
     backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
+    borderRadius: '16px',
     padding: '16px 20px',
-    border: '1px solid #E2E8F0',
-    transition: 'all 0.2s ease',
+    border: '1px solid #FFEFB3',
+    transition: 'all 0.25s cubic-bezier(0.2, 0, 0, 1)',
+    boxShadow: '0 2px 8px rgba(1, 62, 55, 0.04)',
   },
-  statIconWrapperBlue: {
+  statIconWrapper: {
     width: '40px',
     height: '40px',
-    borderRadius: '10px',
-    backgroundColor: '#EFF6FF',
+    borderRadius: '12px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
   },
-  statIconWrapperGreen: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '10px',
-    backgroundColor: '#ECFDF5',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
+  statIcon: {
+    color: '#013E37',
   },
-  statIconWrapperPurple: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '10px',
-    backgroundColor: '#F5F3FF',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  statIconBlue: { color: '#3B82F6' },
-  statIconGreen: { color: '#10B981' },
-  statIconPurple: { color: '#8B5CF6' },
   statNumber: {
     fontSize: '22px',
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#013E37',
     margin: 0,
     lineHeight: 1.2,
   },
   statLabel: {
     fontSize: '13px',
-    color: '#64748B',
+    color: '#013E37',
+    opacity: 0.7,
     margin: 0,
     fontWeight: '500',
   },
@@ -812,7 +788,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    marginBottom: '16px',
+    marginBottom: '20px',
     flexWrap: 'wrap',
   },
   searchBar: {
@@ -820,13 +796,13 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderRadius: '10px',
+    border: '1px solid #FFEFB3',
+    borderRadius: '12px',
     padding: '0 14px',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
     minWidth: '200px',
   },
-  searchIcon: { color: '#94A3B8', flexShrink: 0 },
+  searchIcon: { color: '#013E37', opacity: 0.5, flexShrink: 0 },
   searchInput: {
     flex: 1,
     padding: '10px 12px',
@@ -834,7 +810,7 @@ const styles = {
     outline: 'none',
     fontSize: '14px',
     backgroundColor: 'transparent',
-    color: '#0F172A',
+    color: '#013E37',
     minWidth: '120px',
   },
   clearSearch: {
@@ -844,7 +820,8 @@ const styles = {
     padding: '4px',
     background: 'none',
     border: 'none',
-    color: '#94A3B8',
+    color: '#013E37',
+    opacity: 0.5,
     cursor: 'pointer',
     borderRadius: '4px',
     transition: 'all 0.2s ease',
@@ -860,20 +837,20 @@ const styles = {
     gap: '6px',
     padding: '10px 16px',
     backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderRadius: '10px',
+    border: '1px solid #FFEFB3',
+    borderRadius: '12px',
     fontSize: '14px',
     fontWeight: '500',
-    color: '#475569',
+    color: '#013E37',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
     whiteSpace: 'nowrap',
   },
   viewToggle: {
     display: 'flex',
-    borderRadius: '10px',
+    borderRadius: '12px',
     overflow: 'hidden',
-    border: '1px solid #E2E8F0',
+    border: '1px solid #FFEFB3',
     backgroundColor: '#FFFFFF',
   },
   viewButton: {
@@ -883,15 +860,16 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
   },
   viewButtonActive: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#013E37',
     color: '#FFFFFF',
   },
   viewButtonInactive: {
     backgroundColor: '#FFFFFF',
-    color: '#94A3B8',
+    color: '#013E37',
+    opacity: 0.5,
   },
   refreshButton: {
     display: 'flex',
@@ -899,18 +877,18 @@ const styles = {
     justifyContent: 'center',
     padding: '10px',
     backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderRadius: '10px',
-    color: '#64748B',
+    border: '1px solid #FFEFB3',
+    borderRadius: '12px',
+    color: '#013E37',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
   },
   filterPanel: {
     backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    borderRadius: '10px',
+    border: '1px solid #FFEFB3',
+    borderRadius: '16px',
     padding: '16px 20px',
-    marginBottom: '16px',
+    marginBottom: '20px',
   },
   filterRow: {
     display: 'flex',
@@ -928,31 +906,32 @@ const styles = {
   filterLabel: {
     fontSize: '12px',
     fontWeight: '600',
-    color: '#64748B',
+    color: '#013E37',
+    opacity: 0.7,
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
   },
   filterSelect: {
     padding: '8px 12px',
-    border: '1px solid #E2E8F0',
-    borderRadius: '8px',
+    border: '1px solid #FFEFB3',
+    borderRadius: '10px',
     fontSize: '14px',
     backgroundColor: '#FFFFFF',
-    color: '#0F172A',
+    color: '#013E37',
     outline: 'none',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
     cursor: 'pointer',
   },
   clearFiltersButton: {
     padding: '8px 16px',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#FFEFB3',
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '10px',
     fontSize: '13px',
     fontWeight: '500',
-    color: '#475569',
+    color: '#013E37',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
     whiteSpace: 'nowrap',
     alignSelf: 'center',
   },
@@ -964,16 +943,17 @@ const styles = {
   },
   cardWrapper: {
     backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    border: '1px solid #E2E8F0',
+    borderRadius: '16px',
+    border: '1px solid #FFEFB3',
     overflow: 'hidden',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)',
     display: 'flex',
     flexDirection: 'column',
+    boxShadow: '0 2px 8px rgba(1, 62, 55, 0.04)',
   },
   cardTop: {
     padding: '16px 20px',
-    borderBottom: '1px solid #F1F5F9',
+    borderBottom: '1px solid #FFEFB3',
   },
   cardHeader: {
     display: 'flex',
@@ -984,19 +964,19 @@ const styles = {
   cardIconWrapper: {
     width: '32px',
     height: '32px',
-    borderRadius: '8px',
-    backgroundColor: '#EFF6FF',
+    borderRadius: '10px',
+    backgroundColor: '#FFEFB3',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardIcon: { color: '#3B82F6' },
+  cardIcon: { color: '#013E37' },
   cardStatus: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '4px',
-    padding: '4px 10px',
-    borderRadius: '6px',
+    padding: '4px 12px',
+    borderRadius: '8px',
     fontSize: '11px',
     fontWeight: '600',
   },
@@ -1005,13 +985,14 @@ const styles = {
   cardTitle: {
     fontSize: '16px',
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#013E37',
     margin: '0 0 6px 0',
     lineHeight: 1.3,
   },
   cardDescription: {
     fontSize: '14px',
-    color: '#64748B',
+    color: '#013E37',
+    opacity: 0.7,
     margin: 0,
     display: '-webkit-box',
     WebkitLineClamp: 2,
@@ -1034,9 +1015,10 @@ const styles = {
     alignItems: 'center',
     gap: '4px',
     fontSize: '12px',
-    color: '#64748B',
+    color: '#013E37',
+    opacity: 0.7,
   },
-  cardMetaIcon: { color: '#94A3B8' },
+  cardMetaIcon: { color: '#013E37', opacity: 0.5 },
   cardProgress: { marginBottom: '12px' },
   cardProgressHeader: {
     display: 'flex',
@@ -1044,41 +1026,42 @@ const styles = {
     fontSize: '13px',
     marginBottom: '4px',
   },
-  cardProgressLabel: { color: '#64748B' },
-  cardProgressValue: { fontWeight: '600', color: '#0F172A' },
+  cardProgressLabel: { color: '#013E37', opacity: 0.7 },
+  cardProgressValue: { fontWeight: '600', color: '#013E37' },
   cardProgressBar: {
     width: '100%',
     height: '6px',
-    backgroundColor: '#E2E8F0',
-    borderRadius: '3px',
+    backgroundColor: '#FFEFB3',
+    borderRadius: '4px',
     overflow: 'hidden',
   },
   cardProgressFill: {
     height: '100%',
-    borderRadius: '3px',
+    borderRadius: '4px',
     transition: 'width 0.6s ease',
   },
   cardFooter: {
     padding: '12px 20px',
-    borderTop: '1px solid #F1F5F9',
+    borderTop: '1px solid #FFEFB3',
     display: 'flex',
     gap: '8px',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFEFB3',
+    opacity: 0.9,
   },
   cardButtonView: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '4px',
     padding: '6px 12px',
-    backgroundColor: '#EFF6FF',
-    color: '#3B82F6',
+    backgroundColor: '#013E37',
+    color: '#FFFFFF',
     border: 'none',
-    borderRadius: '6px',
+    borderRadius: '8px',
     fontSize: '13px',
     fontWeight: '500',
     cursor: 'pointer',
     textDecoration: 'none',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
     flex: 1,
     justifyContent: 'center',
   },
@@ -1087,15 +1070,15 @@ const styles = {
     alignItems: 'center',
     gap: '4px',
     padding: '6px 12px',
-    backgroundColor: '#FEF3C7',
-    color: '#F59E0B',
-    border: 'none',
-    borderRadius: '6px',
+    backgroundColor: '#FFFFFF',
+    color: '#013E37',
+    border: '1px solid #013E37',
+    borderRadius: '8px',
     fontSize: '13px',
     fontWeight: '500',
     cursor: 'pointer',
     textDecoration: 'none',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
     flex: 1,
     justifyContent: 'center',
   },
@@ -1104,21 +1087,21 @@ const styles = {
     alignItems: 'center',
     gap: '4px',
     padding: '6px 12px',
-    backgroundColor: '#FEF2F2',
-    color: '#EF4444',
-    border: 'none',
-    borderRadius: '6px',
+    backgroundColor: '#FFFFFF',
+    color: '#013E37',
+    border: '1px solid #013E37',
+    borderRadius: '8px',
     fontSize: '13px',
     fontWeight: '500',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
     flex: 1,
     justifyContent: 'center',
   },
   listWrapper: {
     backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    border: '1px solid #E2E8F0',
+    borderRadius: '16px',
+    border: '1px solid #FFEFB3',
     overflow: 'hidden',
     marginTop: '8px',
   },
@@ -1126,16 +1109,16 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 0.8fr',
     padding: '12px 16px',
-    backgroundColor: '#F8FAFC',
-    borderBottom: '1px solid #E2E8F0',
+    backgroundColor: '#FFEFB3',
+    borderBottom: '1px solid #FFEFB3',
     fontWeight: '600',
     fontSize: '12px',
-    color: '#64748B',
+    color: '#013E37',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
   },
   listHeaderText: { display: 'flex', alignItems: 'center' },
-  listItem: { borderBottom: '1px solid #F1F5F9', transition: 'background-color 0.2s ease' },
+  listItem: { borderBottom: '1px solid #FFEFB3', transition: 'background-color 0.2s ease' },
   listItemContent: {
     display: 'grid',
     gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 0.8fr',
@@ -1145,19 +1128,19 @@ const styles = {
   },
   listItemName: { fontWeight: '500' },
   listItemLink: {
-    color: '#0F172A',
+    color: '#013E37',
     textDecoration: 'none',
     fontSize: '14px',
     fontWeight: '500',
   },
-  listItemClient: { fontSize: '13px', color: '#64748B' },
+  listItemClient: { fontSize: '13px', color: '#013E37', opacity: 0.7 },
   listItemStatus: { display: 'flex', alignItems: 'center' },
   listStatusBadge: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '4px',
     padding: '4px 10px',
-    borderRadius: '6px',
+    borderRadius: '8px',
     fontSize: '12px',
     fontWeight: '500',
   },
@@ -1170,24 +1153,24 @@ const styles = {
   listProgressBar: {
     flex: 1,
     height: '6px',
-    backgroundColor: '#E2E8F0',
-    borderRadius: '3px',
+    backgroundColor: '#FFEFB3',
+    borderRadius: '4px',
     overflow: 'hidden',
     minWidth: '40px',
   },
   listProgressFill: {
     height: '100%',
-    borderRadius: '3px',
+    borderRadius: '4px',
     transition: 'width 0.6s ease',
   },
   listProgressText: {
     fontSize: '12px',
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#013E37',
     minWidth: '32px',
     textAlign: 'right',
   },
-  listItemDeadline: { fontSize: '13px', color: '#64748B' },
+  listItemDeadline: { fontSize: '13px', color: '#013E37', opacity: 0.7 },
   listItemActions: {
     display: 'flex',
     gap: '4px',
@@ -1198,38 +1181,38 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '6px 8px',
-    borderRadius: '6px',
+    borderRadius: '8px',
     border: 'none',
-    backgroundColor: '#EFF6FF',
-    color: '#3B82F6',
+    backgroundColor: '#013E37',
+    color: '#FFFFFF',
     cursor: 'pointer',
     textDecoration: 'none',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
   },
   listActionEdit: {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
     padding: '6px 8px',
-    borderRadius: '6px',
-    border: 'none',
-    backgroundColor: '#FEF3C7',
-    color: '#F59E0B',
+    borderRadius: '8px',
+    border: '1px solid #013E37',
+    backgroundColor: '#FFFFFF',
+    color: '#013E37',
     cursor: 'pointer',
     textDecoration: 'none',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
   },
   listActionDelete: {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
     padding: '6px 8px',
-    borderRadius: '6px',
-    border: 'none',
-    backgroundColor: '#FEF2F2',
-    color: '#EF4444',
+    borderRadius: '8px',
+    border: '1px solid #013E37',
+    backgroundColor: '#FFFFFF',
+    color: '#013E37',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
   },
   emptyState: {
     display: 'flex',
@@ -1237,24 +1220,25 @@ const styles = {
     justifyContent: 'center',
     minHeight: '400px',
     backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    border: '1px solid #E2E8F0',
+    borderRadius: '16px',
+    border: '1px solid #FFEFB3',
     marginTop: '8px',
   },
   emptyContent: {
     textAlign: 'center',
     padding: '48px',
   },
-  emptyIcon: { color: '#94A3B8', marginBottom: '16px' },
+  emptyIcon: { color: '#013E37', opacity: 0.3, marginBottom: '16px' },
   emptyTitle: {
     fontSize: '20px',
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#013E37',
     margin: '0 0 8px 0',
   },
   emptySubtext: {
     fontSize: '14px',
-    color: '#64748B',
+    color: '#013E37',
+    opacity: 0.7,
     margin: '0 0 20px 0',
   },
   emptyButton: {
@@ -1262,15 +1246,15 @@ const styles = {
     alignItems: 'center',
     gap: '8px',
     padding: '10px 24px',
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#013E37',
     color: '#FFFFFF',
     border: 'none',
-    borderRadius: '10px',
+    borderRadius: '12px',
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
     textDecoration: 'none',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
   },
   modalOverlay: {
     position: 'fixed',
@@ -1278,7 +1262,8 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(1, 62, 55, 0.4)',
+    backdropFilter: 'blur(4px)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1286,11 +1271,12 @@ const styles = {
   },
   modalContainer: {
     backgroundColor: '#FFFFFF',
-    borderRadius: '16px',
+    borderRadius: '20px',
     maxWidth: '500px',
     width: '90%',
     maxHeight: '90vh',
     overflow: 'auto',
+    boxShadow: '0 20px 60px rgba(1, 62, 55, 0.15)',
   },
   modalContent: {
     display: 'flex',
@@ -1303,27 +1289,29 @@ const styles = {
     width: '64px',
     height: '64px',
     borderRadius: '50%',
-    backgroundColor: '#FEF2F2',
+    backgroundColor: '#FFEFB3',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  modalIcon: { color: '#EF4444' },
+  modalIcon: { color: '#013E37' },
   modalTitle: {
     fontSize: '18px',
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#013E37',
     margin: '0',
   },
   modalText: {
     fontSize: '15px',
-    color: '#475569',
+    color: '#013E37',
+    opacity: 0.8,
     margin: '0',
     textAlign: 'center',
   },
   modalSubtext: {
     fontSize: '13px',
-    color: '#94A3B8',
+    color: '#013E37',
+    opacity: 0.6,
     margin: '0',
     textAlign: 'center',
   },
@@ -1336,32 +1324,32 @@ const styles = {
   },
   modalCancelButton: {
     padding: '8px 20px',
-    backgroundColor: '#F1F5F9',
-    color: '#475569',
-    border: '1px solid #E2E8F0',
-    borderRadius: '8px',
+    backgroundColor: '#FFEFB3',
+    color: '#013E37',
+    border: 'none',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '500',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
   },
   modalDeleteButton: {
     padding: '8px 20px',
-    backgroundColor: '#EF4444',
+    backgroundColor: '#013E37',
     color: '#FFFFFF',
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '500',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
   },
 };
 
-// Add keyframe animations
+// Keyframe animations
 const styleSheet = document.createElement('style');
 styleSheet.textContent = `
   @keyframes spin {
@@ -1370,56 +1358,56 @@ styleSheet.textContent = `
   }
 
   .primary-button:hover:not(:disabled) {
-    background-color: #2563EB !important;
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.35) !important;
-    transform: translateY(-1px);
+    background-color: #025a50 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(1, 62, 55, 0.3) !important;
   }
 
   .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(1, 62, 55, 0.08) !important;
   }
 
   .filter-toggle:hover:not(:disabled) {
-    background-color: #F1F5F9 !important;
+    background-color: #FFEFB3 !important;
   }
 
   .refresh-button:hover:not(:disabled) {
-    background-color: #F1F5F9 !important;
+    background-color: #FFEFB3 !important;
   }
 
   .clear-filters-button:hover:not(:disabled) {
-    background-color: #E2E8F0 !important;
+    background-color: #e6d69e !important;
   }
 
   .search-bar:focus-within {
-    border-color: #3B82F6 !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    border-color: #013E37 !important;
+    box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.08) !important;
   }
 
   .filter-select:focus {
-    border-color: #3B82F6 !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    border-color: #013E37 !important;
+    box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.08) !important;
   }
 
   .view-button-inactive:hover:not(:disabled) {
-    background-color: #F1F5F9 !important;
+    background-color: #FFEFB3 !important;
   }
 
   .clear-search:hover {
-    background-color: #F1F5F9 !important;
+    background-color: #FFEFB3 !important;
   }
 
   .empty-button:hover {
-    background-color: #2563EB !important;
+    background-color: #025a50 !important;
   }
 
   .modal-cancel-button:hover:not(:disabled) {
-    background-color: #E2E8F0 !important;
+    background-color: #e6d69e !important;
   }
 
   .modal-delete-button:hover:not(:disabled) {
-    background-color: #DC2626 !important;
+    background-color: #025a50 !important;
   }
 
   .modal-delete-button:disabled {
@@ -1428,44 +1416,44 @@ styleSheet.textContent = `
   }
 
   .list-item:hover {
-    background-color: #F8FAFC !important;
+    background-color: #FFFDF5 !important;
   }
 
   .list-item-link:hover {
-    color: #3B82F6 !important;
+    color: #025a50 !important;
   }
 
   .list-action-view:hover:not(:disabled) {
-    background-color: #DBEAFE !important;
+    background-color: #025a50 !important;
   }
 
   .list-action-edit:hover:not(:disabled) {
-    background-color: #FDE68A !important;
+    background-color: #FFEFB3 !important;
   }
 
   .list-action-delete:hover:not(:disabled) {
-    background-color: #FEE2E2 !important;
+    background-color: #FFEFB3 !important;
   }
 
   .card-wrapper:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08) !important;
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(1, 62, 55, 0.10) !important;
   }
 
   .card-title-link:hover .card-title {
-    color: #3B82F6 !important;
+    color: #025a50 !important;
   }
 
   .card-button-view:hover:not(:disabled) {
-    background-color: #DBEAFE !important;
+    background-color: #025a50 !important;
   }
 
   .card-button-edit:hover:not(:disabled) {
-    background-color: #FDE68A !important;
+    background-color: #e6d69e !important;
   }
 
   .card-button-delete:hover:not(:disabled) {
-    background-color: #FEE2E2 !important;
+    background-color: #e6d69e !important;
   }
 
   @media (max-width: 1024px) {

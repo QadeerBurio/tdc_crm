@@ -1,4 +1,4 @@
-// pages/partners/Brands.jsx - COMPLETE FIXED VERSION
+// pages/partners/Brands.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -362,186 +362,188 @@ const Brands = () => {
   if (loading) {
     return (
       <div className="br-loading">
-        <div className="br-spinner"></div>
+        <div className="br-loading-spinner"></div>
         <p className="br-loading-text">Loading brands...</p>
       </div>
     );
   }
 
   return (
-    <div className="br-container">
-      {/* Header */}
-      <div className="br-header">
-        <div className="br-header-left">
-          <div className="br-title-wrapper">
-            <div className="br-title-icon">
-              <Building2 className="br-title-svg" />
+    <>
+      <div className="br-container">
+        {/* Header */}
+        <div className="br-header">
+          <div className="br-header-left">
+            <div className="br-title-wrapper">
+              <div className="br-title-icon">
+                <Layers className="br-title-svg" />
+              </div>
+              <div>
+                <h1 className="br-title">Brands</h1>
+                <p className="br-subtitle">Manage brand partnerships</p>
+              </div>
             </div>
-            <div>
-              <h1 className="br-title">Brands</h1>
-              <p className="br-subtitle">Manage brand partnerships</p>
-            </div>
+            <span className="br-count">{brands.length} brands</span>
           </div>
-          <span className="br-count">{brands.length} brands</span>
-        </div>
-        <div className="br-header-right">
-          <button className="br-icon-btn" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw className={`br-refresh-icon ${refreshing ? 'br-spin' : ''}`} />
-          </button>
-          <button className="br-export-btn">
-            <Download className="br-btn-icon" />
-            Export
-          </button>
-          <button 
-            onClick={() => openModal()}
-            className="br-add-btn"
-          >
-            <Plus className="br-btn-icon" />
-            Add Brand
-          </button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="br-filters">
-        <div className="br-search-wrapper">
-          <Search className="br-search-icon" />
-          <input
-            type="text"
-            placeholder="Search brands..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="br-search-input"
-          />
-          {search && (
-            <button className="br-search-clear" onClick={() => setSearch('')}>
-              <X className="br-search-clear-icon" />
+          <div className="br-header-right">
+            <button className="br-icon-btn" onClick={handleRefresh} disabled={refreshing}>
+              <RefreshCw className={`br-refresh-icon ${refreshing ? 'br-spin' : ''}`} />
             </button>
-          )}
-        </div>
-        <select
-          value={filters.status}
-          onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-          className="br-filter-select"
-        >
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="onboarded">Onboarded</option>
-          <option value="interested">Interested</option>
-          <option value="negotiating">Negotiating</option>
-          <option value="prospect">Prospect</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </div>
-
-      {/* Brands Grid */}
-      <div className="br-grid">
-        {brands.map((brand) => (
-          <div key={brand._id} className="br-card">
-            <div className="br-card-header">
-              <div className="br-card-left">
-                <div className="br-card-icon">
-                  <Building2 className="br-card-icon-svg" />
-                </div>
-                <div className="br-card-info">
-                  <h3 className="br-card-title">{brand.name}</h3>
-                  <p className="br-card-industry">{brand.industry || 'No industry'}</p>
-                </div>
-              </div>
-              <span className={`br-card-status ${getStatusColor(brand.status)}`}>
-                {getStatusLabel(brand.status)}
-              </span>
-            </div>
-            
-            {brand.description && (
-              <p className="br-card-desc">{brand.description}</p>
-            )}
-            
-            <div className="br-card-badges">
-              {brand.partnershipType && (
-                <span className="br-badge br-badge-purple">
-                  {getPartnershipTypeLabel(brand.partnershipType)}
-                </span>
-              )}
-              {brand.partnershipValue && (
-                <span className="br-badge br-badge-green">
-                  ${Number(brand.partnershipValue).toLocaleString()}
-                </span>
-              )}
-            </div>
-            
-            {brand.contactPerson && brand.contactPerson.name && (
-              <div className="br-card-contact">
-                <Users className="br-contact-icon" />
-                <span className="br-contact-text">
-                  {brand.contactPerson.name}
-                  {brand.contactPerson.email && (
-                    <>
-                      <span className="br-contact-separator">•</span>
-                      <span className="br-contact-email">{brand.contactPerson.email}</span>
-                    </>
-                  )}
-                </span>
-              </div>
-            )}
-            
-            {brand.location && (
-              <div className="br-card-location">
-                <MapPin className="br-location-icon" />
-                <span className="br-location-text">{brand.location}</span>
-              </div>
-            )}
-            
-            <div className="br-card-footer">
-              <div className="br-card-assignee">
-                <span className="br-assignee-label">Assigned:</span>
-                <span className="br-assignee-name">
-                  {brand.assignedTo?.firstName} {brand.assignedTo?.lastName || 'Unassigned'}
-                </span>
-              </div>
-              <div className="br-card-actions">
-                <button 
-                  className="br-action-btn br-action-view"
-                  onClick={() => {
-                    toast.info('View details coming soon');
-                  }}
-                  title="View"
-                >
-                  <Eye className="br-action-icon" />
-                </button>
-                <button 
-                  className="br-action-btn br-action-edit"
-                  onClick={() => openModal(brand)}
-                  title="Edit"
-                >
-                  <Edit className="br-action-icon" />
-                </button>
-                <button 
-                  className="br-action-btn br-action-delete"
-                  onClick={() => handleDelete(brand._id)}
-                  title="Delete"
-                >
-                  <Trash2 className="br-action-icon" />
-                </button>
-              </div>
-            </div>
+            <button className="br-export-btn">
+              <Download className="br-btn-icon" />
+              Export
+            </button>
+            <button 
+              onClick={() => openModal()}
+              className="br-add-btn"
+            >
+              <Plus className="br-btn-icon" />
+              Add Brand
+            </button>
           </div>
-        ))}
-      </div>
-
-      {brands.length === 0 && (
-        <div className="br-empty">
-          <div className="br-empty-icon-wrapper">
-            <Building2 className="br-empty-icon" />
-          </div>
-          <h3 className="br-empty-title">No brands found</h3>
-          <p className="br-empty-subtitle">Start by adding your first brand partner</p>
-          <button className="br-empty-btn" onClick={() => openModal()}>
-            <Plus className="br-btn-icon" />
-            Add Brand
-          </button>
         </div>
-      )}
+
+        {/* Filters */}
+        <div className="br-filters">
+          <div className="br-search-wrapper">
+            <Search className="br-search-icon" />
+            <input
+              type="text"
+              placeholder="Search brands..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="br-search-input"
+            />
+            {search && (
+              <button className="br-search-clear" onClick={() => setSearch('')}>
+                <X className="br-search-clear-icon" />
+              </button>
+            )}
+          </div>
+          <select
+            value={filters.status}
+            onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+            className="br-filter-select"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="onboarded">Onboarded</option>
+            <option value="interested">Interested</option>
+            <option value="negotiating">Negotiating</option>
+            <option value="prospect">Prospect</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
+        {/* Brands Grid */}
+        <div className="br-grid">
+          {brands.map((brand, index) => (
+            <div key={brand._id} className="br-card" style={{ animationDelay: `${index * 0.05}s` }}>
+              <div className="br-card-header">
+                <div className="br-card-left">
+                  <div className="br-card-icon">
+                    <Building2 className="br-card-icon-svg" />
+                  </div>
+                  <div className="br-card-info">
+                    <h3 className="br-card-title">{brand.name}</h3>
+                    <p className="br-card-industry">{brand.industry || 'No industry'}</p>
+                  </div>
+                </div>
+                <span className={`br-card-status ${getStatusColor(brand.status)}`}>
+                  {getStatusLabel(brand.status)}
+                </span>
+              </div>
+              
+              {brand.description && (
+                <p className="br-card-desc">{brand.description}</p>
+              )}
+              
+              <div className="br-card-badges">
+                {brand.partnershipType && (
+                  <span className="br-badge br-badge-purple">
+                    {getPartnershipTypeLabel(brand.partnershipType)}
+                  </span>
+                )}
+                {brand.partnershipValue && (
+                  <span className="br-badge br-badge-green">
+                    ${Number(brand.partnershipValue).toLocaleString()}
+                  </span>
+                )}
+              </div>
+              
+              {brand.contactPerson && brand.contactPerson.name && (
+                <div className="br-card-contact">
+                  <Users className="br-contact-icon" />
+                  <span className="br-contact-text">
+                    {brand.contactPerson.name}
+                    {brand.contactPerson.email && (
+                      <>
+                        <span className="br-contact-separator">•</span>
+                        <span className="br-contact-email">{brand.contactPerson.email}</span>
+                      </>
+                    )}
+                  </span>
+                </div>
+              )}
+              
+              {brand.location && (
+                <div className="br-card-location">
+                  <MapPin className="br-location-icon" />
+                  <span className="br-location-text">{brand.location}</span>
+                </div>
+              )}
+              
+              <div className="br-card-footer">
+                <div className="br-card-assignee">
+                  <span className="br-assignee-label">Assigned:</span>
+                  <span className="br-assignee-name">
+                    {brand.assignedTo?.firstName} {brand.assignedTo?.lastName || 'Unassigned'}
+                  </span>
+                </div>
+                <div className="br-card-actions">
+                  <button 
+                    className="br-action-btn br-action-view"
+                    onClick={() => {
+                      toast.info('View details coming soon');
+                    }}
+                    title="View"
+                  >
+                    <Eye className="br-action-icon" />
+                  </button>
+                  <button 
+                    className="br-action-btn br-action-edit"
+                    onClick={() => openModal(brand)}
+                    title="Edit"
+                  >
+                    <Edit className="br-action-icon" />
+                  </button>
+                  <button 
+                    className="br-action-btn br-action-delete"
+                    onClick={() => handleDelete(brand._id)}
+                    title="Delete"
+                  >
+                    <Trash2 className="br-action-icon" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {brands.length === 0 && (
+          <div className="br-empty">
+            <div className="br-empty-icon-wrapper">
+              <Building2 className="br-empty-icon" />
+            </div>
+            <h3 className="br-empty-title">No brands found</h3>
+            <p className="br-empty-subtitle">Start by adding your first brand partner</p>
+            <button className="br-empty-btn" onClick={() => openModal()}>
+              <Plus className="br-btn-icon" />
+              Add Brand
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Create/Edit Modal */}
       {showModal && (
@@ -749,23 +751,13 @@ const Brands = () => {
         </div>
       )}
 
-      {/* Custom CSS */}
       <style>{`
         /* ============================================
            CONTAINER
            ============================================ */
         .br-container {
-          padding: 24px 32px;
-          max-width: 1400px;
-          margin: 0 auto;
-          background: #f8fafc;
-          min-height: 100vh;
-          animation: brFadeIn 0.4s ease;
-        }
-
-        @keyframes brFadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+          padding: 0 0 24px 0;
+          max-width: 100%;
         }
 
         /* ============================================
@@ -776,31 +768,21 @@ const Brands = () => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          min-height: 60vh;
-          gap: 16px;
+          min-height: 400px;
         }
-
-        .br-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #3b82f6;
+        .br-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
-          animation: brSpin 0.8s linear infinite;
+          animation: spin 0.8s linear infinite;
         }
-
         .br-loading-text {
-          color: #64748b;
+          margin-top: 16px;
+          color: #013E37;
+          opacity: 0.6;
           font-size: 14px;
-          font-weight: 500;
-        }
-
-        @keyframes brSpin {
-          to { transform: rotate(360deg); }
-        }
-
-        .br-spin {
-          animation: brSpin 1s linear infinite;
         }
 
         /* ============================================
@@ -813,132 +795,128 @@ const Brands = () => {
           margin-bottom: 24px;
           flex-wrap: wrap;
           gap: 16px;
+          animation: fadeInDown 0.6s ease;
         }
-
         .br-header-left {
           display: flex;
           align-items: center;
           gap: 14px;
         }
-
         .br-title-wrapper {
           display: flex;
           align-items: center;
           gap: 14px;
         }
-
         .br-title-icon {
           width: 48px;
           height: 48px;
-          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+          background: #013E37;
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.25);
         }
-
         .br-title-svg {
           width: 24px;
           height: 24px;
-          color: #ffffff;
+          color: #FFEFB3;
         }
-
         .br-title {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
           letter-spacing: -0.5px;
         }
-
         .br-subtitle {
           font-size: 15px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
-
         .br-count {
           font-size: 14px;
           font-weight: 500;
-          color: #64748b;
-          background: #f1f5f9;
+          color: #013E37;
+          background: #FFEFB3;
           padding: 2px 14px;
           border-radius: 12px;
         }
-
         .br-header-right {
           display: flex;
           align-items: center;
           gap: 10px;
           flex-wrap: wrap;
         }
-
         .br-icon-btn {
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 8px 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s ease;
+          color: #013E37;
         }
-
         .br-icon-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
-
         .br-refresh-icon {
           width: 16px;
           height: 16px;
+          transition: transform 0.3s ease;
         }
-
+        .br-spin {
+          animation: spin 1s linear infinite;
+        }
         .br-btn-icon {
           width: 16px;
           height: 16px;
         }
-
         .br-export-btn {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 8px 16px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
-          color: #475569;
+          color: #013E37;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
-
         .br-export-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
-
         .br-add-btn {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 8px 20px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.3);
         }
-
         .br-add-btn:hover {
+          background: #0A5C54;
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.4);
+        }
+        .br-add-btn:active {
+          transform: scale(0.95);
         }
 
         /* ============================================
@@ -951,13 +929,11 @@ const Brands = () => {
           margin-bottom: 24px;
           flex-wrap: wrap;
         }
-
         .br-search-wrapper {
           position: relative;
           flex: 1;
           min-width: 200px;
         }
-
         .br-search-icon {
           position: absolute;
           left: 12px;
@@ -965,26 +941,28 @@ const Brands = () => {
           transform: translateY(-50%);
           width: 16px;
           height: 16px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
-
         .br-search-input {
           width: 100%;
           padding: 8px 36px 8px 36px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           outline: none;
           background: #ffffff;
-          color: #0f172a;
-          transition: all 0.2s ease;
+          color: #013E37;
+          transition: all 0.3s ease;
         }
-
         .br-search-input:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
-
+        .br-search-input::placeholder {
+          color: #013E37;
+          opacity: 0.4;
+        }
         .br-search-clear {
           position: absolute;
           right: 8px;
@@ -993,38 +971,40 @@ const Brands = () => {
           padding: 4px;
           background: none;
           border: none;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
           cursor: pointer;
           border-radius: 4px;
           display: flex;
           align-items: center;
+          transition: all 0.3s ease;
         }
-
         .br-search-clear:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          opacity: 1;
         }
-
         .br-search-clear-icon {
           width: 14px;
           height: 14px;
         }
-
         .br-filter-select {
           padding: 8px 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           background: #ffffff;
-          color: #0f172a;
+          color: #013E37;
           outline: none;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           min-width: 140px;
         }
-
         .br-filter-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+        .br-filter-select:hover {
+          border-color: #013E37;
         }
 
         /* ============================================
@@ -1035,31 +1015,42 @@ const Brands = () => {
           grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
           gap: 20px;
         }
-
         .br-card {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           padding: 20px;
-          transition: all 0.3s ease;
-          animation: brSlideUp 0.4s ease both;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          animation: fadeInUp 0.5s ease both;
+          opacity: 0;
+          position: relative;
+          overflow: hidden;
         }
-
+        .br-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, #013E37, #0A5C54, #013E37);
+          transform: scaleX(0);
+          transition: transform 0.4s ease;
+          transform-origin: left;
+        }
+        .br-card:hover::before {
+          transform: scaleX(1);
+        }
+        .br-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 24px rgba(1, 62, 55, 0.1);
+          border-color: #013E37;
+        }
         .br-card:nth-child(1) { animation-delay: 0.05s; }
         .br-card:nth-child(2) { animation-delay: 0.1s; }
         .br-card:nth-child(3) { animation-delay: 0.15s; }
         .br-card:nth-child(4) { animation-delay: 0.2s; }
-
-        @keyframes brSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .br-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-          border-color: #d1d5db;
-        }
+        .br-card:nth-child(5) { animation-delay: 0.25s; }
 
         .br-card-header {
           display: flex;
@@ -1067,7 +1058,6 @@ const Brands = () => {
           justify-content: space-between;
           margin-bottom: 12px;
         }
-
         .br-card-left {
           display: flex;
           align-items: center;
@@ -1075,83 +1065,87 @@ const Brands = () => {
           flex: 1;
           min-width: 0;
         }
-
         .br-card-icon {
           width: 44px;
           height: 44px;
-          background: #eff6ff;
+          background: #FFEFB3;
           border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          transition: all 0.3s ease;
         }
-
+        .br-card:hover .br-card-icon {
+          transform: scale(1.05) rotate(-5deg);
+        }
         .br-card-icon-svg {
           width: 22px;
           height: 22px;
-          color: #3b82f6;
+          color: #013E37;
         }
-
         .br-card-info {
           flex: 1;
           min-width: 0;
         }
-
         .br-card-title {
           font-size: 16px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
-
         .br-card-industry {
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
-
         .br-card-status {
           padding: 4px 10px;
           font-size: 11px;
           font-weight: 500;
           border-radius: 9999px;
           flex-shrink: 0;
+          transition: all 0.3s ease;
         }
-
-        .br-status-active { background: #d1fae5; color: #065f46; }
-        .br-status-onboarded { background: #dbeafe; color: #1d4ed8; }
-        .br-status-interested { background: #fef3c7; color: #92400e; }
-        .br-status-negotiating { background: #f3e8ff; color: #6d28d9; }
-        .br-status-prospect { background: #f1f5f9; color: #475569; }
-        .br-status-inactive { background: #fee2e2; color: #991b1b; }
+        .br-card-status:hover {
+          transform: scale(1.05);
+        }
+        .br-status-active { background: #013E37; color: #FFEFB3; }
+        .br-status-onboarded { background: #0A5C54; color: #FFEFB3; }
+        .br-status-interested { background: #FFEFB3; color: #013E37; }
+        .br-status-negotiating { background: #FFEFB3; color: #013E37; }
+        .br-status-prospect { background: #FFEFB3; color: #013E37; }
+        .br-status-inactive { background: #FEE2E2; color: #991B1B; }
 
         .br-card-desc {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.7;
           margin: 0 0 12px 0;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
-
         .br-card-badges {
           display: flex;
           flex-wrap: wrap;
           gap: 6px;
           margin-bottom: 12px;
         }
-
         .br-badge {
           padding: 4px 10px;
           font-size: 11px;
           font-weight: 500;
           border-radius: 9999px;
+          transition: all 0.3s ease;
         }
-
-        .br-badge-purple { background: #f3e8ff; color: #6d28d9; }
-        .br-badge-green { background: #d1fae5; color: #065f46; }
+        .br-badge:hover {
+          transform: scale(1.05);
+        }
+        .br-badge-purple { background: #FFEFB3; color: #013E37; }
+        .br-badge-green { background: #013E37; color: #FFEFB3; }
 
         .br-card-contact {
           display: flex;
@@ -1159,108 +1153,101 @@ const Brands = () => {
           gap: 6px;
           margin-bottom: 4px;
           font-size: 13px;
-          color: #475569;
+          color: #013E37;
+          opacity: 0.7;
         }
-
         .br-contact-icon {
           width: 14px;
           height: 14px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
-
         .br-contact-text {
           font-size: 13px;
         }
-
         .br-contact-separator {
-          color: #d1d5db;
+          color: #013E37;
+          opacity: 0.3;
           margin: 0 4px;
         }
-
         .br-contact-email {
-          color: #64748b;
+          opacity: 0.6;
         }
-
         .br-card-location {
           display: flex;
           align-items: center;
           gap: 4px;
           margin-bottom: 12px;
           font-size: 13px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
         }
-
         .br-location-icon {
           width: 14px;
           height: 14px;
         }
-
         .br-location-text {
           font-size: 13px;
         }
-
         .br-card-footer {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding-top: 12px;
-          border-top: 1px solid #f1f5f9;
+          border-top: 1px solid #FFEFB3;
+          transition: border-color 0.3s ease;
         }
-
+        .br-card:hover .br-card-footer {
+          border-color: #013E37;
+        }
         .br-card-assignee {
           display: flex;
           align-items: center;
           gap: 4px;
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
         }
-
         .br-assignee-label {
-          color: #94a3b8;
+          opacity: 0.5;
         }
-
         .br-assignee-name {
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
         }
-
         .br-card-actions {
           display: flex;
           gap: 4px;
         }
-
         .br-action-btn {
           padding: 4px;
           border: none;
           background: transparent;
           border-radius: 6px;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #94a3b8;
+          transition: all 0.3s ease;
+          color: #013E37;
+          opacity: 0.4;
           display: flex;
           align-items: center;
         }
-
         .br-action-btn:hover {
-          background: #f1f5f9;
-          color: #475569;
+          background: #FFEFB3;
+          opacity: 1;
+          transform: scale(1.1);
         }
-
         .br-action-view:hover {
-          background: #eff6ff;
-          color: #3b82f6;
+          background: #FFEFB3;
+          color: #013E37;
         }
-
         .br-action-edit:hover {
-          background: #ecfdf5;
-          color: #22c55e;
+          background: #FFEFB3;
+          color: #013E37;
         }
-
         .br-action-delete:hover {
-          background: #fef2f2;
-          color: #ef4444;
+          background: #FEE2E2;
+          color: #EF4444;
         }
-
         .br-action-icon {
           width: 16px;
           height: 16px;
@@ -1276,59 +1263,56 @@ const Brands = () => {
           padding: 60px 20px;
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 2px dashed #FFEFB3;
           text-align: center;
         }
-
         .br-empty-icon-wrapper {
           width: 80px;
           height: 80px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           margin-bottom: 16px;
+          animation: float 3s ease-in-out infinite;
         }
-
         .br-empty-icon {
           width: 36px;
           height: 36px;
-          color: #94a3b8;
+          color: #013E37;
         }
-
         .br-empty-title {
           font-size: 18px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
-
         .br-empty-subtitle {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 4px 0 16px 0;
         }
-
         .br-empty-btn {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 8px 24px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
-
         .br-empty-btn:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
 
         /* ============================================
@@ -1337,330 +1321,352 @@ const Brands = () => {
         .br-modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.5);
-          backdrop-filter: blur(8px);
+          background: rgba(1, 62, 55, 0.5);
+          backdrop-filter: blur(4px);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 9999;
           padding: 16px;
-          animation: brFadeIn 0.3s ease;
+          animation: fadeIn 0.3s ease;
         }
-
         .br-modal {
           background: #ffffff;
           border-radius: 16px;
+          border: 1px solid #FFEFB3;
           max-width: 600px;
           width: 100%;
           max-height: 90vh;
           overflow-y: auto;
-          box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
-          animation: brModalIn 0.3s ease;
+          box-shadow: 0 24px 64px rgba(1, 62, 55, 0.2);
+          animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-
-        @keyframes brModalIn {
-          from { opacity: 0; transform: scale(0.95) translateY(20px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
+        @keyframes modalIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
         }
-
         .br-modal-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 20px 24px;
-          border-bottom: 1px solid #f1f5f9;
+          border-bottom: 1px solid #FFEFB3;
+          background: #FFEFB3;
+          border-radius: 16px 16px 0 0;
         }
-
         .br-modal-title-wrapper {
           display: flex;
           align-items: center;
           gap: 12px;
         }
-
         .br-modal-icon {
           width: 28px;
           height: 28px;
-          color: #3b82f6;
+          color: #013E37;
         }
-
         .br-modal-title {
           font-size: 20px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
-
         .br-modal-close {
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 8px;
           border: none;
-          background: #f1f5f9;
+          background: transparent;
           border-radius: 8px;
-          color: #64748b;
+          color: #013E37;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
+          opacity: 0.5;
         }
-
         .br-modal-close:hover {
-          background: #e2e8f0;
+          background: rgba(1, 62, 55, 0.1);
+          opacity: 1;
           transform: rotate(90deg);
         }
-
         .br-modal-close-icon {
           width: 18px;
           height: 18px;
         }
-
         .br-modal-form {
           padding: 24px;
           display: flex;
           flex-direction: column;
           gap: 16px;
         }
-
         .br-form-group {
           display: flex;
           flex-direction: column;
           gap: 4px;
+          animation: fadeInUp 0.4s ease forwards;
+          opacity: 0;
         }
-
+        .br-form-group:nth-child(1) { animation-delay: 0.05s; }
+        .br-form-group:nth-child(2) { animation-delay: 0.1s; }
+        .br-form-group:nth-child(3) { animation-delay: 0.15s; }
+        .br-form-group:nth-child(4) { animation-delay: 0.2s; }
+        .br-form-group:nth-child(5) { animation-delay: 0.25s; }
+        .br-form-group:nth-child(6) { animation-delay: 0.3s; }
+        .br-form-group:nth-child(7) { animation-delay: 0.35s; }
+        .br-form-group:nth-child(8) { animation-delay: 0.4s; }
         .br-form-label {
           font-size: 14px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
         }
-
         .br-form-required {
-          color: #ef4444;
+          color: #EF4444;
         }
-
         .br-form-input,
         .br-form-select,
         .br-form-textarea {
           padding: 10px 14px;
-          border: 1.5px solid #e2e8f0;
+          border: 1.5px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           outline: none;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           width: 100%;
           font-family: inherit;
           background: #ffffff;
-          color: #0f172a;
+          color: #013E37;
         }
-
         .br-form-input:focus,
         .br-form-select:focus,
         .br-form-textarea:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
-
+        .br-form-input::placeholder,
+        .br-form-textarea::placeholder {
+          color: #013E37;
+          opacity: 0.4;
+        }
         .br-form-textarea {
           resize: vertical;
           min-height: 60px;
         }
-
         .br-form-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 16px;
         }
-
         .br-form-section {
-          background: #f8fafc;
+          background: #FFF9E6;
           border-radius: 8px;
           padding: 16px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
         }
-
         .br-form-section-title {
           font-size: 14px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0 0 12px 0;
         }
-
         .br-form-actions {
           display: flex;
           justify-content: flex-end;
           gap: 12px;
           padding-top: 16px;
-          border-top: 1px solid #f1f5f9;
+          border-top: 1px solid #FFEFB3;
         }
-
         .br-form-cancel {
           padding: 10px 24px;
-          background: #f1f5f9;
-          color: #475569;
-          border: 1px solid #e2e8f0;
+          background: transparent;
+          color: #013E37;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
-
         .br-form-cancel:hover:not(:disabled) {
-          background: #e2e8f0;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
-
         .br-form-cancel:disabled {
           opacity: 0.5;
           cursor: not-allowed;
         }
-
         .br-form-submit {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 10px 24px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
-
         .br-form-submit:hover:not(:disabled) {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
-
         .br-form-submit:disabled {
           opacity: 0.6;
           cursor: not-allowed;
           transform: none;
         }
-
         .br-form-spinner {
           width: 18px;
           height: 18px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-top-color: #ffffff;
+          border: 2px solid rgba(255, 239, 179, 0.3);
+          border-top-color: #FFEFB3;
           border-radius: 50%;
-          animation: brSpin 0.8s linear infinite;
+          animation: spin 0.8s linear infinite;
+        }
+
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
         }
 
         /* ============================================
            RESPONSIVE
            ============================================ */
         @media (max-width: 768px) {
-          .br-container {
-            padding: 16px;
-          }
-
           .br-header {
             flex-direction: column;
             align-items: stretch;
           }
-
           .br-header-right {
             flex-wrap: wrap;
           }
-
           .br-export-btn,
           .br-add-btn {
             flex: 1;
             justify-content: center;
           }
-
           .br-filters {
             flex-direction: column;
           }
-
           .br-search-wrapper {
             width: 100%;
           }
-
           .br-filter-select {
             width: 100%;
           }
-
           .br-grid {
             grid-template-columns: 1fr;
           }
-
           .br-title {
             font-size: 22px;
           }
-
           .br-title-icon {
             width: 40px;
             height: 40px;
           }
-
           .br-title-svg {
             width: 20px;
             height: 20px;
           }
-
           .br-form-grid {
             grid-template-columns: 1fr;
           }
-
           .br-modal {
             margin: 16px;
             max-height: 95vh;
           }
+          .br-header-left {
+            flex-wrap: wrap;
+          }
         }
 
         @media (max-width: 480px) {
-          .br-container {
-            padding: 12px;
-          }
-
           .br-header-right {
             flex-direction: column;
           }
-
           .br-export-btn,
           .br-add-btn {
             width: 100%;
           }
-
           .br-icon-btn {
             align-self: flex-end;
           }
-
           .br-title-wrapper {
             gap: 10px;
           }
-
           .br-title {
             font-size: 20px;
           }
-
           .br-subtitle {
             font-size: 13px;
           }
-
           .br-modal {
             padding: 0;
           }
-
           .br-modal-header {
             padding: 16px 18px;
           }
-
           .br-modal-form {
             padding: 18px;
           }
-
           .br-form-actions {
             flex-direction: column;
           }
-
           .br-form-cancel,
           .br-form-submit {
             width: 100%;
             justify-content: center;
+          }
+          .br-card {
+            padding: 16px;
+          }
+          .br-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
           }
         }
 
@@ -1668,22 +1674,19 @@ const Brands = () => {
         .br-modal::-webkit-scrollbar {
           width: 6px;
         }
-
         .br-modal::-webkit-scrollbar-track {
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 8px;
         }
-
         .br-modal::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
+          background: #013E37;
           border-radius: 8px;
         }
-
         .br-modal::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
+          background: #0A5C54;
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

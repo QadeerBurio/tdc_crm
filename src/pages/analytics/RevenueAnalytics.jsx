@@ -6,7 +6,8 @@ import {
   ArrowUp, ArrowDown, RefreshCw,
   Download, Activity, Users, Briefcase,
   PieChart as PieChartIcon, BarChart2,
-  Calendar, Filter, Clock
+  Calendar, Filter, Clock, Award, Sparkles,
+  Zap, Target, Crown
 } from 'lucide-react';
 import {
   BarChart, LineChart, PieChart,
@@ -167,7 +168,7 @@ const RevenueAnalytics = () => {
     toast.success('Export started. Your report will be downloaded shortly.');
   };
 
-  const COLORS = ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#14B8A6', '#F97316'];
+  const COLORS = ['#013E37', '#0A5C54', '#1A7A6E', '#2A9888', '#3AB6A2', '#FFEFB3', '#D4C89A', '#B8AC80'];
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -219,7 +220,7 @@ const RevenueAnalytics = () => {
   if (loading) {
     return (
       <div className="ra-loading">
-        <div className="ra-spinner"></div>
+        <div className="ra-loading-spinner"></div>
         <p className="ra-loading-text">Loading revenue data...</p>
       </div>
     );
@@ -230,11 +231,14 @@ const RevenueAnalytics = () => {
       {/* Header */}
       <div className="ra-header">
         <div className="ra-header-left">
-          <div className="ra-header-icon">
+          <div className="ra-header-icon" style={{ background: 'linear-gradient(135deg, #013E37, #0A5C54)' }}>
             <DollarSign className="ra-header-svg" />
           </div>
           <div>
-            <h1 className="ra-title">Revenue Analytics</h1>
+            <h1 className="ra-title">
+              <Sparkles className="ra-title-icon" color="#013E37" />
+              Revenue Analytics
+            </h1>
             <p className="ra-subtitle">Track revenue performance and growth metrics</p>
           </div>
         </div>
@@ -303,24 +307,24 @@ const RevenueAnalytics = () => {
       <div className="ra-chart-card">
         <div className="ra-chart-header">
           <h3 className="ra-chart-title">Revenue & Deals Trend</h3>
-          <span className="ra-chart-badge">Monthly</span>
+          <span className="ra-chart-badge" style={{ backgroundColor: '#FFEFB3', color: '#013E37' }}>Monthly</span>
         </div>
         <div className="ra-chart-body">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={revenueData.monthly} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="raRevenueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#013E37" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#013E37" stopOpacity={0}/>
                 </linearGradient>
                 <linearGradient id="raDealsGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#FFEFB3" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#FFEFB3" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
-              <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(value) => formatCompactCurrency(value)} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#FFEFB3" />
+              <XAxis dataKey="month" stroke="#013E37" fontSize={12} opacity={0.6} />
+              <YAxis stroke="#013E37" fontSize={12} opacity={0.6} tickFormatter={(value) => formatCompactCurrency(value)} />
               <Tooltip
                 formatter={(value, name) => {
                   if (name === 'Revenue') return formatCurrency(value);
@@ -328,15 +332,15 @@ const RevenueAnalytics = () => {
                 }}
                 contentStyle={{
                   backgroundColor: '#ffffff',
-                  border: '1px solid #e2e8f0',
+                  border: '1px solid #FFEFB3',
                   borderRadius: '8px',
                   padding: '12px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                  boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
                 }}
               />
               <Legend wrapperStyle={{ paddingTop: '10px' }} />
-              <Area type="monotone" dataKey="revenue" stroke="#3B82F6" fill="url(#raRevenueGradient)" strokeWidth={2} name="Revenue" />
-              <Area type="monotone" dataKey="deals" stroke="#10B981" fill="url(#raDealsGradient)" strokeWidth={2} name="Deals" />
+              <Area type="monotone" dataKey="revenue" stroke="#013E37" fill="url(#raRevenueGradient)" strokeWidth={2} name="Revenue" />
+              <Area type="monotone" dataKey="deals" stroke="#FFEFB3"  fill="url(#raDealsGradient)" strokeWidth={2} name="Deals" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -348,7 +352,7 @@ const RevenueAnalytics = () => {
         <div className="ra-chart-card">
           <div className="ra-chart-header">
             <h3 className="ra-chart-title">Revenue by Source</h3>
-            <PieChartIcon className="ra-chart-header-icon" />
+            <PieChartIcon className="ra-chart-header-icon" color="#013E37" />
           </div>
           <div className="ra-chart-body">
             <ResponsiveContainer width="100%" height="100%">
@@ -374,10 +378,10 @@ const RevenueAnalytics = () => {
                   }}
                   contentStyle={{
                     backgroundColor: '#ffffff',
-                    border: '1px solid #e2e8f0',
+                    border: '1px solid #FFEFB3',
                     borderRadius: '8px',
                     padding: '12px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                    boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
                   }}
                 />
               </PieChart>
@@ -389,7 +393,7 @@ const RevenueAnalytics = () => {
         <div className="ra-chart-card">
           <div className="ra-chart-header">
             <h3 className="ra-chart-title">Top Revenue Clients</h3>
-            <Users className="ra-chart-header-icon" />
+            <Users className="ra-chart-header-icon" color="#013E37" />
           </div>
           <div className="ra-chart-body ra-client-list">
             {revenueData.byClient.length > 0 && revenueData.byClient[0].client !== 'No Data' ? (
@@ -410,7 +414,7 @@ const RevenueAnalytics = () => {
                       </div>
                     </div>
                     <div className="ra-client-revenue-wrapper">
-                      <div className="ra-client-revenue-bar">
+                      <div className="ra-client-revenue-bar" style={{ backgroundColor: '#FFEFB3' }}>
                         <div className="ra-client-revenue-fill" style={{ width: `${Math.min(percentage, 100)}%`, backgroundColor: color }} />
                       </div>
                       <div className="ra-client-revenue">{formatCurrency(client.revenue || 0)}</div>
@@ -420,7 +424,9 @@ const RevenueAnalytics = () => {
               })
             ) : (
               <div className="ra-empty-state">
-                <DollarSign className="ra-empty-icon" />
+                <div className="ra-empty-icon-wrapper" style={{ backgroundColor: '#FFEFB3' }}>
+                  <DollarSign className="ra-empty-icon" color="#013E37" />
+                </div>
                 <p className="ra-empty-text">No client data available</p>
                 <p className="ra-empty-subtext">Start closing deals to see client revenue</p>
               </div>
@@ -433,33 +439,32 @@ const RevenueAnalytics = () => {
       <div className="ra-chart-card">
         <div className="ra-chart-header">
           <h3 className="ra-chart-title">Monthly Revenue Distribution</h3>
-          <BarChart2 className="ra-chart-header-icon" />
+          <BarChart2 className="ra-chart-header-icon" color="#013E37" />
         </div>
         <div className="ra-chart-body">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={revenueData.monthly} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
-              <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(value) => formatCompactCurrency(value)} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#FFEFB3" />
+              <XAxis dataKey="month" stroke="#013E37" fontSize={12} opacity={0.6} />
+              <YAxis stroke="#013E37" fontSize={12} opacity={0.6} tickFormatter={(value) => formatCompactCurrency(value)} />
               <Tooltip
                 formatter={(value) => formatCurrency(value)}
                 contentStyle={{
                   backgroundColor: '#ffffff',
-                  border: '1px solid #e2e8f0',
+                  border: '1px solid #FFEFB3',
                   borderRadius: '8px',
                   padding: '12px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                  boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
                 }}
               />
               <Legend wrapperStyle={{ paddingTop: '10px' }} />
-              <Bar dataKey="revenue" fill="#3B82F6" name="Revenue" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="deals" fill="#10B981" name="Deals" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="revenue" fill="#013E37" name="Revenue" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="deals" fill="#FFEFB3" name="Deals" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Custom CSS */}
       <style>{`
         /* ============================================
            CONTAINER
@@ -468,7 +473,7 @@ const RevenueAnalytics = () => {
           padding: 24px 32px;
           max-width: 1400px;
           margin: 0 auto;
-          background: #f8fafc;
+          background: #FFFFFF;
           min-height: 100vh;
           animation: raFadeIn 0.4s ease;
         }
@@ -487,6 +492,11 @@ const RevenueAnalytics = () => {
           50% { opacity: 1; }
         }
 
+        @keyframes raSlideUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
         .ra-spin {
           animation: raSpin 1s linear infinite;
         }
@@ -503,17 +513,18 @@ const RevenueAnalytics = () => {
           gap: 16px;
         }
 
-        .ra-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #3b82f6;
+        .ra-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
           animation: raSpin 0.8s linear infinite;
         }
 
         .ra-loading-text {
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           font-size: 14px;
           font-weight: 500;
         }
@@ -539,12 +550,16 @@ const RevenueAnalytics = () => {
         .ra-header-icon {
           width: 48px;
           height: 48px;
-          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.25);
+          transition: all 0.3s ease;
+        }
+
+        .ra-header-icon:hover {
+          transform: scale(1.05) rotate(-5deg);
         }
 
         .ra-header-svg {
@@ -556,14 +571,24 @@ const RevenueAnalytics = () => {
         .ra-title {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
           letter-spacing: -0.5px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .ra-title-icon {
+          width: 24px;
+          height: 24px;
+          animation: raPulse 2s ease-in-out infinite;
         }
 
         .ra-subtitle {
           font-size: 15px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
 
@@ -579,16 +604,17 @@ const RevenueAnalytics = () => {
           align-items: center;
           justify-content: center;
           padding: 8px 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s ease;
+          color: #013E37;
         }
 
         .ra-btn-icon:hover:not(:disabled) {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .ra-btn-icon:disabled {
@@ -608,23 +634,23 @@ const RevenueAnalytics = () => {
 
         .ra-select {
           padding: 8px 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           background: #ffffff;
-          color: #0f172a;
+          color: #013E37;
           outline: none;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
 
         .ra-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
 
         .ra-select:hover {
-          border-color: #94a3b8;
+          border-color: #013E37;
         }
 
         /* ============================================
@@ -641,7 +667,7 @@ const RevenueAnalytics = () => {
           background: #ffffff;
           border-radius: 12px;
           padding: 20px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           transition: all 0.3s ease;
           animation: raSlideUp 0.5s ease both;
         }
@@ -651,14 +677,10 @@ const RevenueAnalytics = () => {
         .ra-stat-card:nth-child(3) { animation-delay: 0.15s; }
         .ra-stat-card:nth-child(4) { animation-delay: 0.2s; }
 
-        @keyframes raSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
         .ra-stat-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+          transform: translateY(-4px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
+          border-color: #013E37;
         }
 
         .ra-stat-content {
@@ -674,14 +696,15 @@ const RevenueAnalytics = () => {
         .ra-stat-label {
           font-size: 13px;
           font-weight: 500;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 0;
         }
 
         .ra-stat-value {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 6px 0 0 0;
           line-height: 1.2;
         }
@@ -689,7 +712,7 @@ const RevenueAnalytics = () => {
         .ra-stat-skeleton {
           height: 32px;
           width: 120px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 6px;
           margin-top: 6px;
           animation: raPulse 1.5s ease-in-out infinite;
@@ -703,8 +726,8 @@ const RevenueAnalytics = () => {
           margin-top: 4px;
         }
 
-        .ra-change-up { color: #16a34a; }
-        .ra-change-down { color: #dc2626; }
+        .ra-change-up { color: #013E37; }
+        .ra-change-down { color: #D32F2F; }
 
         .ra-change-icon {
           width: 14px;
@@ -713,14 +736,16 @@ const RevenueAnalytics = () => {
         }
 
         .ra-change-label {
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
           margin-left: 4px;
           font-weight: 400;
         }
 
         .ra-stat-subtitle {
           font-size: 13px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
           margin: 2px 0 0 0;
         }
 
@@ -731,22 +756,23 @@ const RevenueAnalytics = () => {
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          transition: all 0.3s ease;
         }
 
-        .ra-stat-icon-blue { background: #eff6ff; }
-        .ra-stat-icon-green { background: #ecfdf5; }
-        .ra-stat-icon-purple { background: #f5f3ff; }
-        .ra-stat-icon-orange { background: #fffbeb; }
+        .ra-stat-card:hover .ra-stat-icon-wrapper {
+          transform: scale(1.05);
+        }
+
+        .ra-stat-icon-blue { background: #FFEFB3; }
+        .ra-stat-icon-green { background: #FFEFB3; }
+        .ra-stat-icon-purple { background: #FFEFB3; }
+        .ra-stat-icon-orange { background: #FFEFB3; }
 
         .ra-stat-icon {
           width: 20px;
           height: 20px;
+          color: #013E37;
         }
-
-        .ra-stat-icon-blue .ra-stat-icon { color: #3b82f6; }
-        .ra-stat-icon-green .ra-stat-icon { color: #10b981; }
-        .ra-stat-icon-purple .ra-stat-icon { color: #8b5cf6; }
-        .ra-stat-icon-orange .ra-stat-icon { color: #f59e0b; }
 
         /* ============================================
            CHARTS
@@ -754,14 +780,15 @@ const RevenueAnalytics = () => {
         .ra-chart-card {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           overflow: hidden;
           margin-bottom: 24px;
           transition: all 0.3s ease;
         }
 
         .ra-chart-card:hover {
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
+          border-color: #013E37;
         }
 
         .ra-charts-grid {
@@ -776,21 +803,23 @@ const RevenueAnalytics = () => {
           align-items: center;
           justify-content: space-between;
           padding: 16px 24px;
-          border-bottom: 1px solid #e2e8f0;
+          border-bottom: 1px solid #FFEFB3;
+          background: #F8FAFC;
         }
 
         .ra-chart-title {
           font-size: 16px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
 
         .ra-chart-badge {
           font-size: 11px;
           font-weight: 600;
-          color: #3b82f6;
-          background: #eff6ff;
           padding: 4px 12px;
           border-radius: 20px;
           text-transform: uppercase;
@@ -800,7 +829,7 @@ const RevenueAnalytics = () => {
         .ra-chart-header-icon {
           width: 18px;
           height: 18px;
-          color: #94a3b8;
+          opacity: 0.5;
         }
 
         .ra-chart-body {
@@ -821,20 +850,34 @@ const RevenueAnalytics = () => {
           overflow-y: auto;
         }
 
+        .ra-client-list::-webkit-scrollbar {
+          width: 4px;
+        }
+
+        .ra-client-list::-webkit-scrollbar-track {
+          background: #FFEFB3;
+        }
+
+        .ra-client-list::-webkit-scrollbar-thumb {
+          background: #013E37;
+          border-radius: 2px;
+        }
+
         .ra-client-item {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 12px 16px;
-          background: #f8fafc;
+          background: #F8FAFC;
           border-radius: 10px;
-          border: 1px solid #f1f5f9;
-          transition: all 0.2s ease;
+          border: 1px solid #FFEFB3;
+          transition: all 0.3s ease;
         }
 
         .ra-client-item:hover {
-          background: #f1f5f9;
-          border-color: #e2e8f0;
+          background: #FFEFB3;
+          border-color: #013E37;
+          transform: translateX(4px);
         }
 
         .ra-client-info {
@@ -855,17 +898,23 @@ const RevenueAnalytics = () => {
           font-weight: 700;
           font-size: 14px;
           flex-shrink: 0;
+          transition: all 0.3s ease;
+        }
+
+        .ra-client-item:hover .ra-client-avatar {
+          transform: scale(1.05);
         }
 
         .ra-client-name {
           font-size: 14px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
         }
 
         .ra-client-deals {
           font-size: 12px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
         }
 
         .ra-client-revenue-wrapper {
@@ -878,7 +927,6 @@ const RevenueAnalytics = () => {
         .ra-client-revenue-bar {
           flex: 1;
           height: 6px;
-          background: #e2e8f0;
           border-radius: 3px;
           overflow: hidden;
           min-width: 60px;
@@ -893,7 +941,7 @@ const RevenueAnalytics = () => {
         .ra-client-revenue {
           font-size: 14px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           white-space: nowrap;
         }
 
@@ -905,23 +953,33 @@ const RevenueAnalytics = () => {
           padding: 40px 20px;
         }
 
+        .ra-empty-icon-wrapper {
+          width: 64px;
+          height: 64px;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 12px;
+          animation: raPulse 2s ease-in-out infinite;
+        }
+
         .ra-empty-icon {
           width: 32px;
           height: 32px;
-          color: #94a3b8;
-          margin: 0 auto 12px;
         }
 
         .ra-empty-text {
           font-size: 16px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .ra-empty-subtext {
           font-size: 14px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
           margin: 4px 0 0 0;
         }
 

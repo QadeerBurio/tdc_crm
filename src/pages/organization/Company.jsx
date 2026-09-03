@@ -6,7 +6,10 @@ import {
   Building2, Edit, Save, X, RefreshCw,
   Globe, Users, DollarSign, Settings,
   AlertCircle, Clock, Globe2, ChevronRight,
-  Search, Plus, Filter
+  Search, Plus, Filter, Briefcase, Calendar,
+  MapPin, Link, Mail, Phone, Star, Award,
+  TrendingUp, Shield, Layers, Zap, Check,
+  ChevronLeft, Menu
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -24,6 +27,7 @@ const Company = () => {
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [editing, setEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isMobileListOpen, setIsMobileListOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -83,6 +87,7 @@ const Company = () => {
     setSelectedCompany(comp);
     setFormDataFromCompany(comp);
     setEditing(false);
+    setIsMobileListOpen(false);
   };
 
   const handleUpdate = async () => {
@@ -160,9 +165,16 @@ const Company = () => {
               <Building2 className="company-title-icon" />
               Companies
             </h1>
-            <p className="company-subtitle">Manage your companies</p>
+            <p className="company-subtitle">Manage and organize your company profiles</p>
           </div>
           <div className="company-header-right">
+            <button
+              onClick={() => setIsMobileListOpen(!isMobileListOpen)}
+              className="company-mobile-toggle"
+              aria-label="Toggle company list"
+            >
+              <Menu size={20} />
+            </button>
             <button
               onClick={fetchAllCompanies}
               className="company-refresh-btn"
@@ -189,6 +201,7 @@ const Company = () => {
                   status: 'active'
                 });
                 setEditing(true);
+                setIsMobileListOpen(false);
               }}
               className="company-add-btn"
             >
@@ -201,7 +214,7 @@ const Company = () => {
         {/* Two Column Layout */}
         <div className="company-layout">
           {/* Left Column - Company List */}
-          <div className="company-list-panel">
+          <div className={`company-list-panel ${isMobileListOpen ? 'company-list-panel-open' : ''}`}>
             <div className="company-search">
               <Search className="company-search-icon" />
               <input
@@ -211,6 +224,14 @@ const Company = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="company-search-input"
               />
+              {searchTerm && (
+                <button 
+                  className="company-clear-search"
+                  onClick={() => setSearchTerm('')}
+                >
+                  <X size={14} />
+                </button>
+              )}
             </div>
             
             <div className="company-list">
@@ -218,6 +239,7 @@ const Company = () => {
                 <div className="company-list-empty">
                   <Building2 className="company-list-empty-icon" />
                   <p>No companies found</p>
+                  <span>Try adjusting your search</span>
                 </div>
               ) : (
                 filteredCompanies.map((comp) => (
@@ -227,11 +249,11 @@ const Company = () => {
                     onClick={() => handleSelectCompany(comp)}
                   >
                     <div className="company-list-item-left">
-                      <div className="company-list-avatar">
+                      <div className="company-list-avatar" style={{ backgroundColor: '#013E37' }}>
                         {comp.logo ? (
                           <img src={comp.logo} alt={comp.name} />
                         ) : (
-                          <Building2 size={20} />
+                          <Building2 size={20} color="#FFFFFF" />
                         )}
                       </div>
                       <div className="company-list-info">
@@ -245,10 +267,17 @@ const Company = () => {
                         </div>
                       </div>
                     </div>
-                    <ChevronRight size={16} className="company-list-arrow" />
+                    {selectedCompany?._id === comp._id ? (
+                      <Check size={16} className="company-list-check" />
+                    ) : (
+                      <ChevronRight size={16} className="company-list-arrow" />
+                    )}
                   </div>
                 ))
               )}
+            </div>
+            <div className="company-list-footer">
+              <span>{filteredCompanies.length} companies</span>
             </div>
           </div>
 
@@ -256,10 +285,10 @@ const Company = () => {
           <div className="company-detail-panel">
             {selectedCompany ? (
               <>
-                {/* Company Header */}
                 <div className="company-card">
+                  {/* Company Header */}
                   <div className="company-card-header">
-                    <div className="company-logo-wrapper">
+                    <div className="company-logo-wrapper" style={{ background: 'linear-gradient(135deg, #013E37 0%, #0A5C54 100%)' }}>
                       {selectedCompany?.logo ? (
                         <img src={selectedCompany.logo} alt={selectedCompany.name} className="company-logo-img" />
                       ) : (
@@ -281,10 +310,11 @@ const Company = () => {
                           <h2 className="company-name">{selectedCompany?.name || 'Company Name'}</h2>
                         )}
                         <span className={`company-status-badge ${selectedCompany?.status === 'active' ? 'company-status-active' : 'company-status-inactive'}`}>
+                          <span className="company-status-dot-indicator-small"></span>
                           {selectedCompany?.status || 'Active'}
                         </span>
                         {selectedCompany?.industry && (
-                          <span className="company-industry-badge">
+                          <span className="company-industry-badge" style={{ backgroundColor: '#FFEFB3', color: '#013E37' }}>
                             {selectedCompany.industry}
                           </span>
                         )}
@@ -300,7 +330,10 @@ const Company = () => {
                             placeholder="company-slug"
                           />
                         ) : (
-                          <p className="company-slug">{selectedCompany?.slug || 'company-slug'}</p>
+                          <p className="company-slug">
+                            <Link size={14} className="company-slug-icon" />
+                            {selectedCompany?.slug || 'company-slug'}
+                          </p>
                         )}
                       </div>
                       
@@ -321,22 +354,28 @@ const Company = () => {
                       {/* Quick Stats */}
                       {!editing && selectedCompany && (
                         <div className="company-stats">
-                          <div className="company-stat">
-                            <Users className="company-stat-icon" />
-                            <span>Total Users: 0</span>
+                          <div className="company-stat" style={{ backgroundColor: '#FFEFB3' }}>
+                            <Users className="company-stat-icon" color="#013E37" />
+                            <span>0 Users</span>
                           </div>
-                          <div className="company-stat">
-                            <Building2 className="company-stat-icon" />
-                            <span>Segments: 0</span>
+                          <div className="company-stat" style={{ backgroundColor: '#FFEFB3' }}>
+                            <Building2 className="company-stat-icon" color="#013E37" />
+                            <span>0 Segments</span>
                           </div>
-                          <div className="company-stat">
-                            <Globe2 className="company-stat-icon" />
-                            <span>{selectedCompany.settings?.timezone || 'America/New_York'}</span>
+                          <div className="company-stat" style={{ backgroundColor: '#FFEFB3' }}>
+                            <Globe2 className="company-stat-icon" color="#013E37" />
+                            <span>{selectedCompany.settings?.timezone?.split('/')[1]?.replace('_', ' ') || 'EST'}</span>
                           </div>
-                          <div className="company-stat">
-                            <DollarSign className="company-stat-icon" />
+                          <div className="company-stat" style={{ backgroundColor: '#FFEFB3' }}>
+                            <DollarSign className="company-stat-icon" color="#013E37" />
                             <span>{selectedCompany.settings?.currency || 'USD'}</span>
                           </div>
+                          {selectedCompany.foundedDate && (
+                            <div className="company-stat" style={{ backgroundColor: '#FFEFB3' }}>
+                              <Calendar className="company-stat-icon" color="#013E37" />
+                              <span>{new Date(selectedCompany.foundedDate).getFullYear()}</span>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -346,14 +385,14 @@ const Company = () => {
                   <div className="company-details">
                     <div className="company-details-grid">
                       {/* General Information */}
-                      <div className="company-detail-section">
-                        <h3 className="company-section-title">
-                          <Settings className="company-section-icon" />
+                      <div className="company-detail-section" style={{ backgroundColor: '#FFEFB3' }}>
+                        <h3 className="company-section-title" style={{ color: '#013E37' }}>
+                          <Settings className="company-section-icon" color="#013E37" />
                           General Information
                         </h3>
                         <div className="company-section-content">
                           <div className="company-field">
-                            <label className="company-field-label">Industry</label>
+                            <label className="company-field-label" style={{ color: '#013E37' }}>Industry</label>
                             {editing ? (
                               <input
                                 type="text"
@@ -363,11 +402,13 @@ const Company = () => {
                                 placeholder="e.g., Technology, Healthcare"
                               />
                             ) : (
-                              <p className="company-field-value">{selectedCompany?.industry || 'Not specified'}</p>
+                              <p className="company-field-value" style={{ color: '#013E37' }}>
+                                {selectedCompany?.industry || 'Not specified'}
+                              </p>
                             )}
                           </div>
                           <div className="company-field">
-                            <label className="company-field-label">Founded Date</label>
+                            <label className="company-field-label" style={{ color: '#013E37' }}>Founded Date</label>
                             {editing ? (
                               <input
                                 type="date"
@@ -376,7 +417,7 @@ const Company = () => {
                                 className="company-field-input"
                               />
                             ) : (
-                              <p className="company-field-value">
+                              <p className="company-field-value" style={{ color: '#013E37' }}>
                                 {selectedCompany?.foundedDate ? new Date(selectedCompany.foundedDate).toLocaleDateString('en-US', {
                                   year: 'numeric',
                                   month: 'long',
@@ -386,7 +427,7 @@ const Company = () => {
                             )}
                           </div>
                           <div className="company-field">
-                            <label className="company-field-label">Status</label>
+                            <label className="company-field-label" style={{ color: '#013E37' }}>Status</label>
                             {editing ? (
                               <select
                                 value={formData.status}
@@ -407,15 +448,15 @@ const Company = () => {
                         </div>
                       </div>
 
-                      {/* Settings */}
-                      <div className="company-detail-section">
-                        <h3 className="company-section-title">
-                          <Globe className="company-section-icon" />
+                      {/* Regional Settings */}
+                      <div className="company-detail-section" style={{ backgroundColor: '#FFEFB3' }}>
+                        <h3 className="company-section-title" style={{ color: '#013E37' }}>
+                          <Globe className="company-section-icon" color="#013E37" />
                           Regional Settings
                         </h3>
                         <div className="company-section-content">
                           <div className="company-field">
-                            <label className="company-field-label">Timezone</label>
+                            <label className="company-field-label" style={{ color: '#013E37' }}>Timezone</label>
                             {editing ? (
                               <select
                                 value={formData.settings.timezone}
@@ -439,14 +480,14 @@ const Company = () => {
                                 <option value="Australia/Sydney">Sydney (AEST)</option>
                               </select>
                             ) : (
-                              <p className="company-field-value company-field-value-with-icon">
-                                <Clock className="company-field-icon" />
+                              <p className="company-field-value company-field-value-with-icon" style={{ color: '#013E37' }}>
+                                <Clock className="company-field-icon" color="#013E37" />
                                 {selectedCompany?.settings?.timezone || 'America/New_York'}
                               </p>
                             )}
                           </div>
                           <div className="company-field">
-                            <label className="company-field-label">Currency</label>
+                            <label className="company-field-label" style={{ color: '#013E37' }}>Currency</label>
                             {editing ? (
                               <select
                                 value={formData.settings.currency}
@@ -467,14 +508,14 @@ const Company = () => {
                                 <option value="BRL">BRL (R$)</option>
                               </select>
                             ) : (
-                              <p className="company-field-value company-field-value-with-icon">
-                                <DollarSign className="company-field-icon" />
+                              <p className="company-field-value company-field-value-with-icon" style={{ color: '#013E37' }}>
+                                <DollarSign className="company-field-icon" color="#013E37" />
                                 {selectedCompany?.settings?.currency || 'USD'}
                               </p>
                             )}
                           </div>
                           <div className="company-field">
-                            <label className="company-field-label">Language</label>
+                            <label className="company-field-label" style={{ color: '#013E37' }}>Language</label>
                             {editing ? (
                               <select
                                 value={formData.settings.language}
@@ -495,7 +536,9 @@ const Company = () => {
                                 <option value="it">Italian</option>
                               </select>
                             ) : (
-                              <p className="company-field-value">{selectedCompany?.settings?.language || 'en'}</p>
+                              <p className="company-field-value" style={{ color: '#013E37' }}>
+                                {selectedCompany?.settings?.language || 'en'}
+                              </p>
                             )}
                           </div>
                         </div>
@@ -512,12 +555,13 @@ const Company = () => {
                           className="company-cancel-btn"
                           disabled={saving}
                         >
-                          Cancel
+                          <X size={14} /> Cancel
                         </button>
                         <button
                           onClick={handleUpdate}
                           disabled={saving}
                           className="company-save-btn"
+                          style={{ backgroundColor: '#013E37' }}
                         >
                           {saving ? (
                             <>
@@ -536,6 +580,7 @@ const Company = () => {
                       <button
                         onClick={() => setEditing(true)}
                         className="company-edit-btn-full"
+                        style={{ backgroundColor: '#013E37' }}
                       >
                         <Edit className="company-edit-icon" />
                         Edit Company
@@ -546,9 +591,35 @@ const Company = () => {
               </>
             ) : (
               <div className="company-empty-state">
-                <Building2 className="company-empty-state-icon" />
-                <h3>Select a Company</h3>
-                <p>Choose a company from the list to view and manage its settings</p>
+                <div className="company-empty-state-icon-wrapper" style={{ backgroundColor: '#FFEFB3' }}>
+                  <Building2 className="company-empty-state-icon" color="#013E37" />
+                </div>
+                <h3 style={{ color: '#013E37' }}>Select a Company</h3>
+                <p style={{ color: '#013E37', opacity: 0.6 }}>Choose a company from the list to view and manage its settings</p>
+                <button
+                  onClick={() => {
+                    setSelectedCompany(null);
+                    setFormData({
+                      name: '',
+                      slug: '',
+                      description: '',
+                      industry: '',
+                      foundedDate: '',
+                      logo: '',
+                      settings: {
+                        timezone: 'America/New_York',
+                        currency: 'USD',
+                        fiscalYearStart: '',
+                        language: 'en'
+                      },
+                      status: 'active'
+                    });
+                    setEditing(true);
+                  }}
+                  className="company-empty-add-btn"
+                >
+                  <Plus size={16} /> Add Your First Company
+                </button>
               </div>
             )}
           </div>
@@ -578,22 +649,24 @@ const Company = () => {
           gap: 4px;
         }
         .company-title {
-          font-size: 24px;
+          font-size: 28px;
           font-weight: 700;
-          color: #111827;
+          color: #013E37;
           display: flex;
           align-items: center;
           gap: 10px;
           margin: 0;
+          letter-spacing: -0.5px;
         }
         .company-title-icon {
           width: 28px;
           height: 28px;
-          color: #3b82f6;
+          color: #013E37;
         }
         .company-subtitle {
-          color: #6b7280;
-          font-size: 14px;
+          color: #013E37;
+          opacity: 0.6;
+          font-size: 15px;
           margin: 0;
         }
         .company-header-right {
@@ -602,9 +675,23 @@ const Company = () => {
           gap: 8px;
           flex-wrap: wrap;
         }
+        .company-mobile-toggle {
+          display: none;
+          padding: 8px 10px;
+          border: 1px solid #FFEFB3;
+          border-radius: 8px;
+          background: #ffffff;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          color: #013E37;
+        }
+        .company-mobile-toggle:hover {
+          background: #FFEFB3;
+          border-color: #013E37;
+        }
         .company-refresh-btn {
           padding: 8px 10px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
@@ -614,16 +701,17 @@ const Company = () => {
           justify-content: center;
         }
         .company-refresh-btn:hover {
-          background: #f9fafb;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
         .company-refresh-icon {
           width: 16px;
           height: 16px;
-          color: #6b7280;
+          color: #013E37;
         }
         .company-add-btn {
-          padding: 8px 16px;
-          background: #3b82f6;
+          padding: 8px 20px;
+          background: #013E37;
           color: #ffffff;
           border: none;
           border-radius: 8px;
@@ -634,11 +722,12 @@ const Company = () => {
           align-items: center;
           gap: 6px;
           transition: all 0.2s ease;
-          box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2);
+          box-shadow: 0 2px 8px rgba(1, 62, 55, 0.25);
         }
         .company-add-btn:hover {
-          background: #2563eb;
-          transform: translateY(-1px);
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.3);
         }
         .company-add-icon {
           width: 16px;
@@ -651,9 +740,14 @@ const Company = () => {
           grid-template-columns: 340px 1fr;
           gap: 24px;
         }
-        @media (max-width: 768px) {
+        @media (max-width: 992px) {
           .company-layout {
             grid-template-columns: 1fr;
+          }
+          .company-mobile-toggle {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
           }
         }
 
@@ -661,48 +755,98 @@ const Company = () => {
         .company-list-panel {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e5e7eb;
+          border: 1px solid #FFEFB3;
           overflow: hidden;
           height: fit-content;
           max-height: 600px;
           display: flex;
           flex-direction: column;
+          transition: all 0.3s ease;
+        }
+        .company-list-panel:hover {
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
+        }
+        @media (max-width: 992px) {
+          .company-list-panel {
+            display: none;
+            max-height: 400px;
+          }
+          .company-list-panel-open {
+            display: flex !important;
+            animation: slideDown 0.3s ease;
+          }
+        }
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         .company-search {
           padding: 12px 16px;
-          border-bottom: 1px solid #e5e7eb;
+          border-bottom: 1px solid #FFEFB3;
           display: flex;
           align-items: center;
           gap: 8px;
-          background: #f9fafb;
+          background: #FFEFB3;
+          position: relative;
         }
         .company-search-icon {
           width: 16px;
           height: 16px;
-          color: #9ca3af;
+          color: #013E37;
+          opacity: 0.5;
         }
         .company-search-input {
           border: none;
           outline: none;
           background: transparent;
           font-size: 14px;
-          color: #111827;
+          color: #013E37;
           width: 100%;
+        }
+        .company-search-input::placeholder {
+          color: #013E37;
+          opacity: 0.4;
+        }
+        .company-clear-search {
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: #013E37;
+          opacity: 0.4;
+          padding: 2px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .company-clear-search:hover {
+          opacity: 0.8;
         }
         .company-list {
           flex: 1;
           overflow-y: auto;
         }
+        .company-list::-webkit-scrollbar {
+          width: 4px;
+        }
+        .company-list::-webkit-scrollbar-track {
+          background: #FFEFB3;
+        }
+        .company-list::-webkit-scrollbar-thumb {
+          background: #013E37;
+          border-radius: 2px;
+        }
         .company-list-empty {
           padding: 40px 20px;
           text-align: center;
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.6;
         }
         .company-list-empty-icon {
           width: 32px;
           height: 32px;
           margin: 0 auto 8px;
-          color: #d1d5db;
+          color: #013E37;
+          opacity: 0.3;
         }
         .company-list-item {
           padding: 12px 16px;
@@ -711,14 +855,14 @@ const Company = () => {
           justify-content: space-between;
           cursor: pointer;
           transition: all 0.15s ease;
-          border-bottom: 1px solid #f3f4f6;
+          border-bottom: 1px solid #FFEFB3;
         }
         .company-list-item:hover {
-          background: #f9fafb;
+          background: #FFEFB3;
         }
         .company-list-item-active {
-          background: #eff6ff;
-          border-left: 3px solid #3b82f6;
+          background: #FFEFB3;
+          border-left: 3px solid #013E37;
         }
         .company-list-item-left {
           display: flex;
@@ -731,7 +875,6 @@ const Company = () => {
           width: 36px;
           height: 36px;
           border-radius: 8px;
-          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -751,20 +894,22 @@ const Company = () => {
         .company-list-name {
           font-size: 14px;
           font-weight: 500;
-          color: #111827;
+          color: #013E37;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
         .company-list-meta {
           font-size: 12px;
-          color: #6b7280;
+          color: #013E37;
+          opacity: 0.6;
           display: flex;
           align-items: center;
           gap: 6px;
         }
         .company-list-dot {
-          color: #d1d5db;
+          color: #013E37;
+          opacity: 0.3;
         }
         .company-list-status {
           font-size: 10px;
@@ -773,16 +918,30 @@ const Company = () => {
           border-radius: 9999px;
         }
         .company-list-status-active {
-          background: #dcfce7;
-          color: #16a34a;
+          background: #013E37;
+          color: #ffffff;
         }
         .company-list-status-inactive {
-          background: #f3f4f6;
-          color: #6b7280;
+          background: #FFEFB3;
+          color: #013E37;
         }
         .company-list-arrow {
-          color: #9ca3af;
+          color: #013E37;
+          opacity: 0.3;
           flex-shrink: 0;
+        }
+        .company-list-check {
+          color: #013E37;
+          flex-shrink: 0;
+        }
+        .company-list-footer {
+          padding: 8px 16px;
+          border-top: 1px solid #FFEFB3;
+          font-size: 12px;
+          color: #013E37;
+          opacity: 0.5;
+          text-align: center;
+          background: #FAFAFA;
         }
 
         /* Right Panel - Company Details */
@@ -792,37 +951,66 @@ const Company = () => {
         .company-empty-state {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e5e7eb;
+          border: 1px solid #FFEFB3;
           padding: 60px 20px;
           text-align: center;
         }
+        .company-empty-state-icon-wrapper {
+          width: 64px;
+          height: 64px;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 16px;
+        }
         .company-empty-state-icon {
-          width: 48px;
-          height: 48px;
-          color: #d1d5db;
-          margin: 0 auto 12px;
+          width: 32px;
+          height: 32px;
         }
         .company-empty-state h3 {
-          font-size: 18px;
+          font-size: 20px;
           font-weight: 600;
-          color: #111827;
           margin: 0 0 4px;
         }
         .company-empty-state p {
-          color: #6b7280;
           margin: 0;
+        }
+        .company-empty-add-btn {
+          margin-top: 16px;
+          padding: 8px 20px;
+          background: #013E37;
+          color: #ffffff;
+          border: none;
+          border-radius: 8px;
+          font-weight: 500;
+          font-size: 14px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          transition: all 0.2s ease;
+        }
+        .company-empty-add-btn:hover {
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.3);
         }
 
         /* Card */
         .company-card {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e5e7eb;
+          border: 1px solid #FFEFB3;
           overflow: hidden;
+          transition: all 0.3s ease;
+        }
+        .company-card:hover {
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
         }
         .company-card-header {
           padding: 24px;
-          border-bottom: 1px solid #f3f4f6;
+          border-bottom: 1px solid #FFEFB3;
           display: flex;
           align-items: flex-start;
           gap: 20px;
@@ -837,13 +1025,16 @@ const Company = () => {
         .company-logo-wrapper {
           width: 80px;
           height: 80px;
-          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.2);
+          transition: transform 0.3s ease;
+        }
+        .company-logo-wrapper:hover {
+          transform: scale(1.05);
         }
         .company-logo-icon {
           width: 40px;
@@ -867,109 +1058,143 @@ const Company = () => {
           flex-wrap: wrap;
         }
         .company-name {
-          font-size: 20px;
+          font-size: 22px;
           font-weight: 700;
-          color: #111827;
+          color: #013E37;
           margin: 0;
+          letter-spacing: -0.3px;
         }
         .company-name-input {
           padding: 4px 10px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 6px;
           font-size: 18px;
           font-weight: 700;
-          color: #111827;
+          color: #013E37;
           width: 100%;
           max-width: 280px;
           outline: none;
+          background: #ffffff;
+          transition: all 0.2s ease;
         }
         .company-name-input:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
         .company-status-badge {
-          padding: 3px 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 3px 10px;
           font-size: 10px;
           font-weight: 500;
           border-radius: 9999px;
           border: 1px solid;
         }
         .company-status-active {
-          background: #dcfce7;
-          color: #16a34a;
-          border-color: #86efac;
+          background: #013E37;
+          color: #ffffff;
+          border-color: #013E37;
         }
         .company-status-inactive {
-          background: #f3f4f6;
-          color: #6b7280;
-          border-color: #d1d5db;
+          background: #FFEFB3;
+          color: #013E37;
+          border-color: #FFEFB3;
+        }
+        .company-status-dot-indicator-small {
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          display: inline-block;
+          background: currentColor;
         }
         .company-industry-badge {
-          padding: 3px 8px;
+          padding: 3px 10px;
           font-size: 10px;
           font-weight: 500;
-          background: #eff6ff;
-          color: #2563eb;
           border-radius: 9999px;
-          border: 1px solid #bfdbfe;
         }
         .company-slug-row {
           margin-top: 2px;
         }
         .company-slug {
-          color: #6b7280;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          color: #013E37;
+          opacity: 0.5;
           font-size: 13px;
           margin: 0;
         }
+        .company-slug-icon {
+          width: 14px;
+          height: 14px;
+          opacity: 0.5;
+        }
         .company-slug-input {
           padding: 2px 10px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 6px;
           font-size: 13px;
-          color: #111827;
+          color: #013E37;
           width: 100%;
           max-width: 280px;
           outline: none;
+          background: #ffffff;
+          transition: all 0.2s ease;
         }
         .company-slug-input:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
         .company-desc-row {
           margin-top: 4px;
         }
         .company-desc {
-          color: #4b5563;
+          color: #013E37;
+          opacity: 0.7;
           margin: 0;
-          font-size: 13px;
+          font-size: 14px;
+          line-height: 1.5;
         }
         .company-desc-textarea {
           width: 100%;
           max-width: 500px;
           padding: 6px 10px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 6px;
           font-size: 13px;
-          color: #111827;
+          color: #013E37;
           outline: none;
           font-family: inherit;
+          background: #ffffff;
+          transition: all 0.2s ease;
+          resize: vertical;
         }
         .company-desc-textarea:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
         .company-stats {
           margin-top: 12px;
           display: flex;
           flex-wrap: wrap;
-          gap: 16px;
-          font-size: 13px;
-          color: #6b7280;
+          gap: 8px;
         }
         .company-stat {
           display: flex;
           align-items: center;
-          gap: 4px;
+          gap: 6px;
+          padding: 4px 12px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 500;
+          color: #013E37;
+          transition: all 0.2s ease;
+        }
+        .company-stat:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 2px 8px rgba(1, 62, 55, 0.1);
         }
         .company-stat-icon {
           width: 14px;
@@ -983,7 +1208,7 @@ const Company = () => {
         .company-details-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 20px;
+          gap: 16px;
         }
         @media (max-width: 768px) {
           .company-details-grid {
@@ -991,14 +1216,16 @@ const Company = () => {
           }
         }
         .company-detail-section {
-          background: #f9fafb;
-          border-radius: 8px;
+          border-radius: 10px;
           padding: 16px;
+          transition: all 0.2s ease;
+        }
+        .company-detail-section:hover {
+          box-shadow: 0 2px 8px rgba(1, 62, 55, 0.06);
         }
         .company-section-title {
           font-size: 13px;
           font-weight: 600;
-          color: #374151;
           margin: 0 0 12px 0;
           display: flex;
           align-items: center;
@@ -1007,7 +1234,6 @@ const Company = () => {
         .company-section-icon {
           width: 14px;
           height: 14px;
-          color: #9ca3af;
         }
         .company-section-content {
           display: flex;
@@ -1021,124 +1247,141 @@ const Company = () => {
         }
         .company-field-label {
           font-size: 10px;
-          font-weight: 500;
-          color: #6b7280;
+          font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.05em;
         }
         .company-field-value {
-          color: #374151;
           margin: 0;
-          font-size: 13px;
+          font-size: 14px;
+          font-weight: 500;
         }
         .company-field-value-with-icon {
           display: flex;
           align-items: center;
-          gap: 4px;
+          gap: 6px;
         }
         .company-field-icon {
           width: 14px;
           height: 14px;
-          color: #9ca3af;
+          opacity: 0.5;
         }
         .company-field-input {
           width: 100%;
           padding: 6px 10px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 6px;
           font-size: 13px;
-          color: #111827;
+          color: #013E37;
           outline: none;
+          background: #ffffff;
+          transition: all 0.2s ease;
         }
         .company-field-input:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
         .company-field-select {
           width: 100%;
           padding: 6px 10px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 6px;
           font-size: 13px;
-          color: #111827;
+          color: #013E37;
           background: #ffffff;
           outline: none;
+          transition: all 0.2s ease;
+          cursor: pointer;
         }
         .company-field-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
         .company-status-dot {
           display: inline-flex;
           align-items: center;
-          gap: 4px;
-          padding: 3px 8px;
-          font-size: 11px;
+          gap: 6px;
+          padding: 3px 10px;
+          font-size: 12px;
           font-weight: 500;
           border-radius: 9999px;
         }
         .company-status-dot-active {
-          background: #dcfce7;
-          color: #16a34a;
+          background: #013E37;
+          color: #ffffff;
         }
         .company-status-dot-inactive {
-          background: #f3f4f6;
-          color: #6b7280;
+          background: #FFEFB3;
+          color: #013E37;
         }
         .company-status-dot-indicator {
-          width: 5px;
-          height: 5px;
+          width: 6px;
+          height: 6px;
           border-radius: 50%;
           display: inline-block;
         }
         .company-status-dot-active .company-status-dot-indicator {
-          background: #22c55e;
+          background: #ffffff;
         }
         .company-status-dot-inactive .company-status-dot-indicator {
-          background: #9ca3af;
+          background: #013E37;
         }
 
         /* Card Actions */
         .company-card-actions {
           padding: 16px 24px;
-          border-top: 1px solid #f3f4f6;
+          border-top: 1px solid #FFEFB3;
           display: flex;
           justify-content: flex-end;
           gap: 8px;
+          background: #F8FAFC;
         }
         .company-edit-btn-full {
-          padding: 8px 16px;
-          background: #3b82f6;
-          color: #ffffff;
+          padding: 8px 20px;
           border: none;
-          border-radius: 6px;
+          border-radius: 8px;
           font-weight: 500;
-          font-size: 13px;
+          font-size: 14px;
           cursor: pointer;
           display: flex;
           align-items: center;
           gap: 6px;
           transition: all 0.2s ease;
+          color: #ffffff;
         }
         .company-edit-btn-full:hover {
-          background: #2563eb;
+          background: #0A5C54 !important;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.3);
+        }
+        .company-edit-icon {
+          width: 14px;
+          height: 14px;
         }
         .company-cancel-btn {
           padding: 8px 16px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #FFEFB3;
           border-radius: 6px;
           background: transparent;
-          color: #4b5563;
+          color: #013E37;
           font-weight: 500;
           font-size: 13px;
           cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          transition: all 0.2s ease;
         }
-        .company-cancel-btn:hover {
-          background: #f9fafb;
+        .company-cancel-btn:hover:not(:disabled) {
+          background: #FFEFB3;
+          border-color: #013E37;
+        }
+        .company-cancel-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
         }
         .company-save-btn {
-          padding: 8px 16px;
-          background: #3b82f6;
+          padding: 8px 20px;
           border: none;
           border-radius: 6px;
           color: #ffffff;
@@ -1151,7 +1394,9 @@ const Company = () => {
           transition: all 0.2s ease;
         }
         .company-save-btn:hover:not(:disabled) {
-          background: #2563eb;
+          background: #0A5C54 !important;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.3);
         }
         .company-save-btn:disabled {
           opacity: 0.6;
@@ -1184,15 +1429,26 @@ const Company = () => {
         .company-loading-spinner {
           width: 40px;
           height: 40px;
-          border: 4px solid #dbeafe;
-          border-top-color: #3b82f6;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
         }
         .company-loading-text {
           margin-top: 12px;
-          color: #6b7280;
-          font-size: 13px;
+          color: #013E37;
+          opacity: 0.6;
+          font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+          .company-list-panel {
+            display: none;
+          }
+          .company-list-panel-open {
+            display: flex !important;
+          }
         }
       `}</style>
     </>

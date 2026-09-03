@@ -1,4 +1,4 @@
-// pages/partners/Universities.jsx - COMPLETE FIXED VERSION
+// pages/partners/Universities.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -46,7 +46,7 @@ const Universities = () => {
   });
 
   const API_URL = 'https://crmserver-production-4a42.up.railway.app/api';
-
+// https://crmserver-production-4a42.up.railway.app/api
   useEffect(() => {
     fetchUniversities();
   }, [search, filters]);
@@ -385,6 +385,33 @@ const Universities = () => {
     return labels[type] || type;
   };
 
+  // Helper function to safely render location
+  const getLocationDisplay = (location) => {
+    if (!location) return null;
+    
+    // If location is a string, return it
+    if (typeof location === 'string') {
+      return location;
+    }
+    
+    // If location is an object
+    if (typeof location === 'object') {
+      const parts = [];
+      if (location.city) parts.push(location.city);
+      if (location.state) parts.push(location.state);
+      if (location.country) parts.push(location.country);
+      
+      if (parts.length > 0) {
+        return parts.join(', ');
+      }
+      
+      // If it has a display property
+      if (location.display) return location.display;
+    }
+    
+    return null;
+  };
+
   const statusOptions = [
     { value: 'prospect', label: 'Prospect' },
     { value: 'interested', label: 'Interested' },
@@ -403,208 +430,211 @@ const Universities = () => {
   if (loading) {
     return (
       <div className="un-loading">
-        <div className="un-spinner"></div>
+        <div className="un-loading-spinner"></div>
         <p className="un-loading-text">Loading universities...</p>
       </div>
     );
   }
 
   return (
-    <div className="un-container">
-      {/* Header */}
-      <div className="un-header">
-        <div className="un-header-left">
-          <div className="un-title-wrapper">
-            <div className="un-title-icon">
-              <GraduationCap className="un-title-svg" />
+    <>
+      <div className="un-container">
+        {/* Header */}
+        <div className="un-header">
+          <div className="un-header-left">
+            <div className="un-title-wrapper">
+              <div className="un-title-icon">
+                <Layers className="un-title-svg" />
+              </div>
+              <div>
+                <h1 className="un-title">Universities</h1>
+                <p className="un-subtitle">Manage university partnerships</p>
+              </div>
             </div>
-            <div>
-              <h1 className="un-title">Universities</h1>
-              <p className="un-subtitle">Manage university partnerships</p>
-            </div>
+            <span className="un-count">{universities.length} universities</span>
           </div>
-          <span className="un-count">{universities.length} universities</span>
-        </div>
-        <div className="un-header-right">
-          <button className="un-icon-btn" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw className={`un-refresh-icon ${refreshing ? 'un-spin' : ''}`} />
-          </button>
-          <button className="un-export-btn">
-            <Download className="un-btn-icon" />
-            Export
-          </button>
-          <button 
-            onClick={() => openModal()}
-            className="un-add-btn"
-          >
-            <Plus className="un-btn-icon" />
-            Add University
-          </button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="un-filters">
-        <div className="un-search-wrapper">
-          <Search className="un-search-icon" />
-          <input
-            type="text"
-            placeholder="Search universities..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="un-search-input"
-          />
-          {search && (
-            <button className="un-search-clear" onClick={() => setSearch('')}>
-              <X className="un-search-clear-icon" />
+          <div className="un-header-right">
+            <button className="un-icon-btn" onClick={handleRefresh} disabled={refreshing}>
+              <RefreshCw className={`un-refresh-icon ${refreshing ? 'un-spin' : ''}`} />
             </button>
-          )}
+            <button className="un-export-btn">
+              <Download className="un-btn-icon" />
+              Export
+            </button>
+            <button 
+              onClick={() => openModal()}
+              className="un-add-btn"
+            >
+              <Plus className="un-btn-icon" />
+              Add University
+            </button>
+          </div>
         </div>
-        <select
-          value={filters.status}
-          onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-          className="un-filter-select"
-        >
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="onboarded">Onboarded</option>
-          <option value="interested">Interested</option>
-          <option value="negotiating">Negotiating</option>
-          <option value="prospect">Prospect</option>
-        </select>
-      </div>
 
-      {/* Universities Grid */}
-      <div className="un-grid">
-        {universities.map((uni) => (
-          <div key={uni._id} className="un-card">
-            <div className="un-card-header">
-              <div className="un-card-left">
-                <div className="un-card-icon">
-                  <GraduationCap className="un-card-icon-svg" />
-                </div>
-                <div className="un-card-info">
-                  <h3 className="un-card-title">{uni.name}</h3>
-                  <p className="un-card-type">{getTypeLabel(uni.type)}</p>
-                </div>
-              </div>
-              <span className={`un-card-status ${getStatusColor(uni.status)}`}>
-                {getStatusLabel(uni.status)}
-              </span>
-            </div>
-            
-            {uni.description && (
-              <p className="un-card-desc">{uni.description}</p>
+        {/* Filters */}
+        <div className="un-filters">
+          <div className="un-search-wrapper">
+            <Search className="un-search-icon" />
+            <input
+              type="text"
+              placeholder="Search universities..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="un-search-input"
+            />
+            {search && (
+              <button className="un-search-clear" onClick={() => setSearch('')}>
+                <X className="un-search-clear-icon" />
+              </button>
             )}
+          </div>
+          <select
+            value={filters.status}
+            onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+            className="un-filter-select"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="onboarded">Onboarded</option>
+            <option value="interested">Interested</option>
+            <option value="negotiating">Negotiating</option>
+            <option value="prospect">Prospect</option>
+          </select>
+        </div>
+
+        {/* Universities Grid */}
+        <div className="un-grid">
+          {universities.map((uni, index) => {
+            const locationDisplay = getLocationDisplay(uni.location);
             
-            {uni.location && (uni.location.city || uni.location.country) && (
-              <div className="un-card-location">
-                <MapPin className="un-location-icon" />
-                <span className="un-location-text">
-                  {uni.location.city && `${uni.location.city}, `}
-                  {uni.location.country}
-                </span>
-              </div>
-            )}
-            
-            <div className="un-card-badges">
-              {uni.studentCount && (
-                <span className="un-badge un-badge-blue">
-                  <Users className="un-badge-icon" />
-                  {uni.studentCount} students
-                </span>
-              )}
-              {uni.partnerships && uni.partnerships.length > 0 && (
-                <span className="un-badge un-badge-green">
-                  <Star className="un-badge-icon" />
-                  {uni.partnerships.length} partnerships
-                </span>
-              )}
-            </div>
-            
-            {uni.departments && uni.departments.length > 0 && (
-              <div className="un-card-departments">
-                <span className="un-departments-label">Departments:</span>
-                <div className="un-departments-list">
-                  {uni.departments.slice(0, 3).map((dept, idx) => (
-                    <span key={idx} className="un-department-tag">
-                      {dept.name}
+            return (
+              <div key={uni._id} className="un-card" style={{ animationDelay: `${index * 0.05}s` }}>
+                <div className="un-card-header">
+                  <div className="un-card-left">
+                    <div className="un-card-icon">
+                      <GraduationCap className="un-card-icon-svg" />
+                    </div>
+                    <div className="un-card-info">
+                      <h3 className="un-card-title">{uni.name}</h3>
+                      <p className="un-card-type">{getTypeLabel(uni.type)}</p>
+                    </div>
+                  </div>
+                  <span className={`un-card-status ${getStatusColor(uni.status)}`}>
+                    {getStatusLabel(uni.status)}
+                  </span>
+                </div>
+                
+                {uni.description && (
+                  <p className="un-card-desc">{uni.description}</p>
+                )}
+                
+                {locationDisplay && (
+                  <div className="un-card-location">
+                    <MapPin className="un-location-icon" />
+                    <span className="un-location-text">{locationDisplay}</span>
+                  </div>
+                )}
+                
+                <div className="un-card-badges">
+                  {uni.studentCount && (
+                    <span className="un-badge un-badge-blue">
+                      <Users className="un-badge-icon" />
+                      {uni.studentCount} students
                     </span>
-                  ))}
-                  {uni.departments.length > 3 && (
-                    <span className="un-department-more">
-                      +{uni.departments.length - 3} more
+                  )}
+                  {uni.partnerships && uni.partnerships.length > 0 && (
+                    <span className="un-badge un-badge-green">
+                      <Star className="un-badge-icon" />
+                      {uni.partnerships.length} partnerships
                     </span>
                   )}
                 </div>
+                
+                {uni.departments && uni.departments.length > 0 && (
+                  <div className="un-card-departments">
+                    <span className="un-departments-label">Departments:</span>
+                    <div className="un-departments-list">
+                      {uni.departments.slice(0, 3).map((dept, idx) => (
+                        <span key={idx} className="un-department-tag">
+                          {dept.name}
+                        </span>
+                      ))}
+                      {uni.departments.length > 3 && (
+                        <span className="un-department-more">
+                          +{uni.departments.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {uni.contactPerson && uni.contactPerson.name && (
+                  <div className="un-card-contact">
+                    <Users className="un-contact-icon" />
+                    <span className="un-contact-text">
+                      {uni.contactPerson.name}
+                      {uni.contactPerson.position && (
+                        <>
+                          <span className="un-contact-separator">•</span>
+                          <span className="un-contact-position">{uni.contactPerson.position}</span>
+                        </>
+                      )}
+                    </span>
+                  </div>
+                )}
+                
+                <div className="un-card-footer">
+                  <div className="un-card-assignee">
+                    <span className="un-assignee-label">Assigned:</span>
+                    <span className="un-assignee-name">
+                      {uni.assignedTo?.firstName} {uni.assignedTo?.lastName || 'Unassigned'}
+                    </span>
+                  </div>
+                  <div className="un-card-actions">
+                    <button 
+                      className="un-action-btn un-action-view"
+                      onClick={() => {
+                        toast.info('View details coming soon');
+                      }}
+                      title="View"
+                    >
+                      <Eye className="un-action-icon" />
+                    </button>
+                    <button 
+                      className="un-action-btn un-action-edit"
+                      onClick={() => openModal(uni)}
+                      title="Edit"
+                    >
+                      <Edit className="un-action-icon" />
+                    </button>
+                    <button 
+                      className="un-action-btn un-action-delete"
+                      onClick={() => handleDelete(uni._id)}
+                      title="Delete"
+                    >
+                      <Trash2 className="un-action-icon" />
+                    </button>
+                  </div>
+                </div>
               </div>
-            )}
-            
-            {uni.contactPerson && uni.contactPerson.name && (
-              <div className="un-card-contact">
-                <Users className="un-contact-icon" />
-                <span className="un-contact-text">
-                  {uni.contactPerson.name}
-                  {uni.contactPerson.position && (
-                    <>
-                      <span className="un-contact-separator">•</span>
-                      <span className="un-contact-position">{uni.contactPerson.position}</span>
-                    </>
-                  )}
-                </span>
-              </div>
-            )}
-            
-            <div className="un-card-footer">
-              <div className="un-card-assignee">
-                <span className="un-assignee-label">Assigned:</span>
-                <span className="un-assignee-name">
-                  {uni.assignedTo?.firstName} {uni.assignedTo?.lastName || 'Unassigned'}
-                </span>
-              </div>
-              <div className="un-card-actions">
-                <button 
-                  className="un-action-btn un-action-view"
-                  onClick={() => {
-                    toast.info('View details coming soon');
-                  }}
-                  title="View"
-                >
-                  <Eye className="un-action-icon" />
-                </button>
-                <button 
-                  className="un-action-btn un-action-edit"
-                  onClick={() => openModal(uni)}
-                  title="Edit"
-                >
-                  <Edit className="un-action-icon" />
-                </button>
-                <button 
-                  className="un-action-btn un-action-delete"
-                  onClick={() => handleDelete(uni._id)}
-                  title="Delete"
-                >
-                  <Trash2 className="un-action-icon" />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {universities.length === 0 && (
-        <div className="un-empty">
-          <div className="un-empty-icon-wrapper">
-            <GraduationCap className="un-empty-icon" />
-          </div>
-          <h3 className="un-empty-title">No universities found</h3>
-          <p className="un-empty-subtitle">Start by adding your first university partner</p>
-          <button className="un-empty-btn" onClick={() => openModal()}>
-            <Plus className="un-btn-icon" />
-            Add University
-          </button>
+            );
+          })}
         </div>
-      )}
+
+        {universities.length === 0 && (
+          <div className="un-empty">
+            <div className="un-empty-icon-wrapper">
+              <GraduationCap className="un-empty-icon" />
+            </div>
+            <h3 className="un-empty-title">No universities found</h3>
+            <p className="un-empty-subtitle">Start by adding your first university partner</p>
+            <button className="un-empty-btn" onClick={() => openModal()}>
+              <Plus className="un-btn-icon" />
+              Add University
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Create/Edit Modal */}
       {showModal && (
@@ -814,23 +844,13 @@ const Universities = () => {
         </div>
       )}
 
-      {/* Custom CSS */}
       <style>{`
         /* ============================================
            CONTAINER
            ============================================ */
         .un-container {
-          padding: 24px 32px;
-          max-width: 1400px;
-          margin: 0 auto;
-          background: #f8fafc;
-          min-height: 100vh;
-          animation: unFadeIn 0.4s ease;
-        }
-
-        @keyframes unFadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+          padding: 0 0 24px 0;
+          max-width: 100%;
         }
 
         /* ============================================
@@ -841,31 +861,21 @@ const Universities = () => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          min-height: 60vh;
-          gap: 16px;
+          min-height: 400px;
         }
-
-        .un-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #3b82f6;
+        .un-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
-          animation: unSpin 0.8s linear infinite;
+          animation: spin 0.8s linear infinite;
         }
-
         .un-loading-text {
-          color: #64748b;
+          margin-top: 16px;
+          color: #013E37;
+          opacity: 0.6;
           font-size: 14px;
-          font-weight: 500;
-        }
-
-        @keyframes unSpin {
-          to { transform: rotate(360deg); }
-        }
-
-        .un-spin {
-          animation: unSpin 1s linear infinite;
         }
 
         /* ============================================
@@ -878,132 +888,128 @@ const Universities = () => {
           margin-bottom: 24px;
           flex-wrap: wrap;
           gap: 16px;
+          animation: fadeInDown 0.6s ease;
         }
-
         .un-header-left {
           display: flex;
           align-items: center;
           gap: 14px;
         }
-
         .un-title-wrapper {
           display: flex;
           align-items: center;
           gap: 14px;
         }
-
         .un-title-icon {
           width: 48px;
           height: 48px;
-          background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+          background: #013E37;
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.25);
         }
-
         .un-title-svg {
           width: 24px;
           height: 24px;
-          color: #ffffff;
+          color: #FFEFB3;
         }
-
         .un-title {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
           letter-spacing: -0.5px;
         }
-
         .un-subtitle {
           font-size: 15px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
-
         .un-count {
           font-size: 14px;
           font-weight: 500;
-          color: #64748b;
-          background: #f1f5f9;
+          color: #013E37;
+          background: #FFEFB3;
           padding: 2px 14px;
           border-radius: 12px;
         }
-
         .un-header-right {
           display: flex;
           align-items: center;
           gap: 10px;
           flex-wrap: wrap;
         }
-
         .un-icon-btn {
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 8px 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s ease;
+          color: #013E37;
         }
-
         .un-icon-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
-
         .un-refresh-icon {
           width: 16px;
           height: 16px;
+          transition: transform 0.3s ease;
         }
-
+        .un-spin {
+          animation: spin 1s linear infinite;
+        }
         .un-btn-icon {
           width: 16px;
           height: 16px;
         }
-
         .un-export-btn {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 8px 16px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
-          color: #475569;
+          color: #013E37;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
-
         .un-export-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
-
         .un-add-btn {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 8px 20px;
-          background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.3);
         }
-
         .un-add-btn:hover {
+          background: #0A5C54;
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.4);
+        }
+        .un-add-btn:active {
+          transform: scale(0.95);
         }
 
         /* ============================================
@@ -1016,13 +1022,11 @@ const Universities = () => {
           margin-bottom: 24px;
           flex-wrap: wrap;
         }
-
         .un-search-wrapper {
           position: relative;
           flex: 1;
           min-width: 200px;
         }
-
         .un-search-icon {
           position: absolute;
           left: 12px;
@@ -1030,26 +1034,28 @@ const Universities = () => {
           transform: translateY(-50%);
           width: 16px;
           height: 16px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
-
         .un-search-input {
           width: 100%;
           padding: 8px 36px 8px 36px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           outline: none;
           background: #ffffff;
-          color: #0f172a;
-          transition: all 0.2s ease;
+          color: #013E37;
+          transition: all 0.3s ease;
         }
-
         .un-search-input:focus {
-          border-color: #8b5cf6;
-          box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
-
+        .un-search-input::placeholder {
+          color: #013E37;
+          opacity: 0.4;
+        }
         .un-search-clear {
           position: absolute;
           right: 8px;
@@ -1058,38 +1064,40 @@ const Universities = () => {
           padding: 4px;
           background: none;
           border: none;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
           cursor: pointer;
           border-radius: 4px;
           display: flex;
           align-items: center;
+          transition: all 0.3s ease;
         }
-
         .un-search-clear:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          opacity: 1;
         }
-
         .un-search-clear-icon {
           width: 14px;
           height: 14px;
         }
-
         .un-filter-select {
           padding: 8px 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           background: #ffffff;
-          color: #0f172a;
+          color: #013E37;
           outline: none;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           min-width: 140px;
         }
-
         .un-filter-select:focus {
-          border-color: #8b5cf6;
-          box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+        .un-filter-select:hover {
+          border-color: #013E37;
         }
 
         /* ============================================
@@ -1100,31 +1108,42 @@ const Universities = () => {
           grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
           gap: 20px;
         }
-
         .un-card {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           padding: 20px;
-          transition: all 0.3s ease;
-          animation: unSlideUp 0.4s ease both;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          animation: fadeInUp 0.5s ease both;
+          opacity: 0;
+          position: relative;
+          overflow: hidden;
         }
-
+        .un-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, #013E37, #0A5C54, #013E37);
+          transform: scaleX(0);
+          transition: transform 0.4s ease;
+          transform-origin: left;
+        }
+        .un-card:hover::before {
+          transform: scaleX(1);
+        }
+        .un-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 24px rgba(1, 62, 55, 0.1);
+          border-color: #013E37;
+        }
         .un-card:nth-child(1) { animation-delay: 0.05s; }
         .un-card:nth-child(2) { animation-delay: 0.1s; }
         .un-card:nth-child(3) { animation-delay: 0.15s; }
         .un-card:nth-child(4) { animation-delay: 0.2s; }
-
-        @keyframes unSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .un-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-          border-color: #d1d5db;
-        }
+        .un-card:nth-child(5) { animation-delay: 0.25s; }
 
         .un-card-header {
           display: flex;
@@ -1132,7 +1151,6 @@ const Universities = () => {
           justify-content: space-between;
           margin-bottom: 12px;
         }
-
         .un-card-left {
           display: flex;
           align-items: center;
@@ -1140,92 +1158,92 @@ const Universities = () => {
           flex: 1;
           min-width: 0;
         }
-
         .un-card-icon {
           width: 44px;
           height: 44px;
-          background: #f5f3ff;
+          background: #FFEFB3;
           border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          transition: all 0.3s ease;
         }
-
+        .un-card:hover .un-card-icon {
+          transform: scale(1.05) rotate(-5deg);
+        }
         .un-card-icon-svg {
           width: 22px;
           height: 22px;
-          color: #8b5cf6;
+          color: #013E37;
         }
-
         .un-card-info {
           flex: 1;
           min-width: 0;
         }
-
         .un-card-title {
           font-size: 16px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
-
         .un-card-type {
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
-
         .un-card-status {
           padding: 4px 10px;
           font-size: 11px;
           font-weight: 500;
           border-radius: 9999px;
           flex-shrink: 0;
+          transition: all 0.3s ease;
         }
-
-        .un-status-active { background: #d1fae5; color: #065f46; }
-        .un-status-onboarded { background: #dbeafe; color: #1d4ed8; }
-        .un-status-interested { background: #fef3c7; color: #92400e; }
-        .un-status-negotiating { background: #f3e8ff; color: #6d28d9; }
-        .un-status-prospect { background: #f1f5f9; color: #475569; }
+        .un-card-status:hover {
+          transform: scale(1.05);
+        }
+        .un-status-active { background: #013E37; color: #FFEFB3; }
+        .un-status-onboarded { background: #0A5C54; color: #FFEFB3; }
+        .un-status-interested { background: #FFEFB3; color: #013E37; }
+        .un-status-negotiating { background: #FFEFB3; color: #013E37; }
+        .un-status-prospect { background: #FFEFB3; color: #013E37; }
 
         .un-card-desc {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.7;
           margin: 0 0 12px 0;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
-
         .un-card-location {
           display: flex;
           align-items: center;
           gap: 4px;
           margin-bottom: 8px;
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.5;
         }
-
         .un-location-icon {
           width: 14px;
           height: 14px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
-
         .un-location-text {
           font-size: 13px;
         }
-
         .un-card-badges {
           display: flex;
           flex-wrap: wrap;
           gap: 6px;
           margin-bottom: 12px;
         }
-
         .un-badge {
           display: flex;
           align-items: center;
@@ -1234,137 +1252,130 @@ const Universities = () => {
           font-size: 11px;
           font-weight: 500;
           border-radius: 9999px;
+          transition: all 0.3s ease;
         }
-
-        .un-badge-blue { background: #dbeafe; color: #1d4ed8; }
-        .un-badge-green { background: #d1fae5; color: #065f46; }
-
+        .un-badge:hover {
+          transform: scale(1.05);
+        }
+        .un-badge-blue { background: #FFEFB3; color: #013E37; }
+        .un-badge-green { background: #013E37; color: #FFEFB3; }
         .un-badge-icon {
           width: 12px;
           height: 12px;
         }
-
         .un-card-departments {
           margin-bottom: 12px;
         }
-
         .un-departments-label {
           font-size: 11px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
           display: block;
           margin-bottom: 4px;
         }
-
         .un-departments-list {
           display: flex;
           flex-wrap: wrap;
           gap: 4px;
         }
-
         .un-department-tag {
           padding: 2px 8px;
           font-size: 11px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 12px;
-          color: #475569;
+          color: #013E37;
         }
-
         .un-department-more {
           padding: 2px 8px;
           font-size: 11px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
         }
-
         .un-card-contact {
           display: flex;
           align-items: center;
           gap: 6px;
           margin-bottom: 12px;
           font-size: 13px;
-          color: #475569;
+          color: #013E37;
+          opacity: 0.7;
         }
-
         .un-contact-icon {
           width: 14px;
           height: 14px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
-
         .un-contact-text {
           font-size: 13px;
         }
-
         .un-contact-separator {
-          color: #d1d5db;
+          color: #013E37;
+          opacity: 0.3;
           margin: 0 4px;
         }
-
         .un-contact-position {
-          color: #64748b;
+          opacity: 0.6;
         }
-
         .un-card-footer {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding-top: 12px;
-          border-top: 1px solid #f1f5f9;
+          border-top: 1px solid #FFEFB3;
+          transition: border-color 0.3s ease;
         }
-
+        .un-card:hover .un-card-footer {
+          border-color: #013E37;
+        }
         .un-card-assignee {
           display: flex;
           align-items: center;
           gap: 4px;
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
         }
-
         .un-assignee-label {
-          color: #94a3b8;
+          opacity: 0.5;
         }
-
         .un-assignee-name {
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
         }
-
         .un-card-actions {
           display: flex;
           gap: 4px;
         }
-
         .un-action-btn {
           padding: 4px;
           border: none;
           background: transparent;
           border-radius: 6px;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #94a3b8;
+          transition: all 0.3s ease;
+          color: #013E37;
+          opacity: 0.4;
           display: flex;
           align-items: center;
         }
-
         .un-action-btn:hover {
-          background: #f1f5f9;
-          color: #475569;
+          background: #FFEFB3;
+          opacity: 1;
+          transform: scale(1.1);
         }
-
         .un-action-view:hover {
-          background: #eff6ff;
-          color: #3b82f6;
+          background: #FFEFB3;
+          color: #013E37;
         }
-
         .un-action-edit:hover {
-          background: #ecfdf5;
-          color: #22c55e;
+          background: #FFEFB3;
+          color: #013E37;
         }
-
         .un-action-delete:hover {
-          background: #fef2f2;
-          color: #ef4444;
+          background: #FEE2E2;
+          color: #EF4444;
         }
-
         .un-action-icon {
           width: 16px;
           height: 16px;
@@ -1380,59 +1391,56 @@ const Universities = () => {
           padding: 60px 20px;
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 2px dashed #FFEFB3;
           text-align: center;
         }
-
         .un-empty-icon-wrapper {
           width: 80px;
           height: 80px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           margin-bottom: 16px;
+          animation: float 3s ease-in-out infinite;
         }
-
         .un-empty-icon {
           width: 36px;
           height: 36px;
-          color: #94a3b8;
+          color: #013E37;
         }
-
         .un-empty-title {
           font-size: 18px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
-
         .un-empty-subtitle {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 4px 0 16px 0;
         }
-
         .un-empty-btn {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 8px 24px;
-          background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(139, 92, 246, 0.25);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
-
         .un-empty-btn:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35);
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
 
         /* ============================================
@@ -1441,330 +1449,353 @@ const Universities = () => {
         .un-modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.5);
-          backdrop-filter: blur(8px);
+          background: rgba(1, 62, 55, 0.5);
+          backdrop-filter: blur(4px);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 9999;
           padding: 16px;
-          animation: unFadeIn 0.3s ease;
+          animation: fadeIn 0.3s ease;
         }
-
         .un-modal {
           background: #ffffff;
           border-radius: 16px;
+          border: 1px solid #FFEFB3;
           max-width: 600px;
           width: 100%;
           max-height: 90vh;
           overflow-y: auto;
-          box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
-          animation: unModalIn 0.3s ease;
+          box-shadow: 0 24px 64px rgba(1, 62, 55, 0.2);
+          animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-
-        @keyframes unModalIn {
-          from { opacity: 0; transform: scale(0.95) translateY(20px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
+        @keyframes modalIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
         }
-
         .un-modal-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 20px 24px;
-          border-bottom: 1px solid #f1f5f9;
+          border-bottom: 1px solid #FFEFB3;
+          background: #FFEFB3;
+          border-radius: 16px 16px 0 0;
         }
-
         .un-modal-title-wrapper {
           display: flex;
           align-items: center;
           gap: 12px;
         }
-
         .un-modal-icon {
           width: 28px;
           height: 28px;
-          color: #8b5cf6;
+          color: #013E37;
         }
-
         .un-modal-title {
           font-size: 20px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
-
         .un-modal-close {
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 8px;
           border: none;
-          background: #f1f5f9;
+          background: transparent;
           border-radius: 8px;
-          color: #64748b;
+          color: #013E37;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
+          opacity: 0.5;
         }
-
         .un-modal-close:hover {
-          background: #e2e8f0;
+          background: rgba(1, 62, 55, 0.1);
+          opacity: 1;
           transform: rotate(90deg);
         }
-
         .un-modal-close-icon {
           width: 18px;
           height: 18px;
         }
-
         .un-modal-form {
           padding: 24px;
           display: flex;
           flex-direction: column;
           gap: 16px;
         }
-
         .un-form-group {
           display: flex;
           flex-direction: column;
           gap: 4px;
+          animation: fadeInUp 0.4s ease forwards;
+          opacity: 0;
         }
-
+        .un-form-group:nth-child(1) { animation-delay: 0.05s; }
+        .un-form-group:nth-child(2) { animation-delay: 0.1s; }
+        .un-form-group:nth-child(3) { animation-delay: 0.15s; }
+        .un-form-group:nth-child(4) { animation-delay: 0.2s; }
+        .un-form-group:nth-child(5) { animation-delay: 0.25s; }
+        .un-form-group:nth-child(6) { animation-delay: 0.3s; }
+        .un-form-group:nth-child(7) { animation-delay: 0.35s; }
+        .un-form-group:nth-child(8) { animation-delay: 0.4s; }
+        .un-form-group:nth-child(9) { animation-delay: 0.45s; }
         .un-form-label {
           font-size: 14px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
         }
-
         .un-form-required {
-          color: #ef4444;
+          color: #EF4444;
         }
-
         .un-form-input,
         .un-form-select,
         .un-form-textarea {
           padding: 10px 14px;
-          border: 1.5px solid #e2e8f0;
+          border: 1.5px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           outline: none;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           width: 100%;
           font-family: inherit;
           background: #ffffff;
-          color: #0f172a;
+          color: #013E37;
         }
-
         .un-form-input:focus,
         .un-form-select:focus,
         .un-form-textarea:focus {
-          border-color: #8b5cf6;
-          box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
-
+        .un-form-input::placeholder,
+        .un-form-textarea::placeholder {
+          color: #013E37;
+          opacity: 0.4;
+        }
         .un-form-textarea {
           resize: vertical;
           min-height: 60px;
         }
-
         .un-form-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 16px;
         }
-
         .un-form-section {
-          background: #f8fafc;
+          background: #FFF9E6;
           border-radius: 8px;
           padding: 16px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
         }
-
         .un-form-section-title {
           font-size: 14px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0 0 12px 0;
         }
-
         .un-form-actions {
           display: flex;
           justify-content: flex-end;
           gap: 12px;
           padding-top: 16px;
-          border-top: 1px solid #f1f5f9;
+          border-top: 1px solid #FFEFB3;
         }
-
         .un-form-cancel {
           padding: 10px 24px;
-          background: #f1f5f9;
-          color: #475569;
-          border: 1px solid #e2e8f0;
+          background: transparent;
+          color: #013E37;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
         }
-
         .un-form-cancel:hover:not(:disabled) {
-          background: #e2e8f0;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
-
         .un-form-cancel:disabled {
           opacity: 0.5;
           cursor: not-allowed;
         }
-
         .un-form-submit {
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 10px 24px;
-          background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s ease;
-          box-shadow: 0 4px 14px rgba(139, 92, 246, 0.25);
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
-
         .un-form-submit:hover:not(:disabled) {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35);
+          background: #0A5C54;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
-
         .un-form-submit:disabled {
           opacity: 0.6;
           cursor: not-allowed;
           transform: none;
         }
-
         .un-form-spinner {
           width: 18px;
           height: 18px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-top-color: #ffffff;
+          border: 2px solid rgba(255, 239, 179, 0.3);
+          border-top-color: #FFEFB3;
           border-radius: 50%;
-          animation: unSpin 0.8s linear infinite;
+          animation: spin 0.8s linear infinite;
+        }
+
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
         }
 
         /* ============================================
            RESPONSIVE
            ============================================ */
         @media (max-width: 768px) {
-          .un-container {
-            padding: 16px;
-          }
-
           .un-header {
             flex-direction: column;
             align-items: stretch;
           }
-
           .un-header-right {
             flex-wrap: wrap;
           }
-
           .un-export-btn,
           .un-add-btn {
             flex: 1;
             justify-content: center;
           }
-
           .un-filters {
             flex-direction: column;
           }
-
           .un-search-wrapper {
             width: 100%;
           }
-
           .un-filter-select {
             width: 100%;
           }
-
           .un-grid {
             grid-template-columns: 1fr;
           }
-
           .un-title {
             font-size: 22px;
           }
-
           .un-title-icon {
             width: 40px;
             height: 40px;
           }
-
           .un-title-svg {
             width: 20px;
             height: 20px;
           }
-
           .un-form-grid {
             grid-template-columns: 1fr;
           }
-
           .un-modal {
             margin: 16px;
             max-height: 95vh;
           }
+          .un-header-left {
+            flex-wrap: wrap;
+          }
         }
 
         @media (max-width: 480px) {
-          .un-container {
-            padding: 12px;
-          }
-
           .un-header-right {
             flex-direction: column;
           }
-
           .un-export-btn,
           .un-add-btn {
             width: 100%;
           }
-
           .un-icon-btn {
             align-self: flex-end;
           }
-
           .un-title-wrapper {
             gap: 10px;
           }
-
           .un-title {
             font-size: 20px;
           }
-
           .un-subtitle {
             font-size: 13px;
           }
-
           .un-modal {
             padding: 0;
           }
-
           .un-modal-header {
             padding: 16px 18px;
           }
-
           .un-modal-form {
             padding: 18px;
           }
-
           .un-form-actions {
             flex-direction: column;
           }
-
           .un-form-cancel,
           .un-form-submit {
             width: 100%;
             justify-content: center;
+          }
+          .un-card {
+            padding: 16px;
+          }
+          .un-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
           }
         }
 
@@ -1772,22 +1803,19 @@ const Universities = () => {
         .un-modal::-webkit-scrollbar {
           width: 6px;
         }
-
         .un-modal::-webkit-scrollbar-track {
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 8px;
         }
-
         .un-modal::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
+          background: #013E37;
           border-radius: 8px;
         }
-
         .un-modal::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
+          background: #0A5C54;
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

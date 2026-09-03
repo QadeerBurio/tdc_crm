@@ -16,24 +16,24 @@ const DealView = ({ deal, onEdit, onDelete, onStageChange }) => {
 
   const getStageColor = (stage) => {
     const colors = {
-      qualification: 'bg-blue-100 text-blue-700',
-      proposal: 'bg-yellow-100 text-yellow-700',
-      negotiation: 'bg-purple-100 text-purple-700',
-      closed_won: 'bg-green-100 text-green-700',
-      closed_lost: 'bg-red-100 text-red-700',
+      qualification: { bg: '#FFEFB3', text: '#013E37' },
+      proposal: { bg: '#FFEFB3', text: '#013E37' },
+      negotiation: { bg: '#FFEFB3', text: '#013E37' },
+      closed_won: { bg: '#FFEFB3', text: '#013E37' },
+      closed_lost: { bg: '#FFEFB3', text: '#013E37' },
     };
-    return colors[stage] || 'bg-gray-100 text-gray-700';
+    return colors[stage] || { bg: '#FFEFB3', text: '#013E37' };
   };
 
   const getStageStyle = (stage) => {
     const styles = {
-      qualification: { backgroundColor: '#dbeafe', color: '#1e40af' },
-      proposal: { backgroundColor: '#fef3c7', color: '#92400e' },
-      negotiation: { backgroundColor: '#ede9fe', color: '#5b21b6' },
-      closed_won: { backgroundColor: '#d1fae5', color: '#065f46' },
-      closed_lost: { backgroundColor: '#fee2e2', color: '#991b1b' },
+      qualification: { backgroundColor: '#FFEFB3', color: '#013E37' },
+      proposal: { backgroundColor: '#FFEFB3', color: '#013E37' },
+      negotiation: { backgroundColor: '#FFEFB3', color: '#013E37' },
+      closed_won: { backgroundColor: '#FFEFB3', color: '#013E37' },
+      closed_lost: { backgroundColor: '#FFEFB3', color: '#013E37' },
     };
-    return styles[stage] || { backgroundColor: '#f3f4f6', color: '#374151' };
+    return styles[stage] || { backgroundColor: '#FFEFB3', color: '#013E37' };
   };
 
   const formatCurrency = (amount) => {
@@ -97,11 +97,11 @@ const DealView = ({ deal, onEdit, onDelete, onStageChange }) => {
 
         <div style={styles.content}>
           <div style={styles.statsGrid}>
-            <div>
+            <div style={styles.statCard}>
               <p style={styles.statLabel}>Value</p>
               <p style={styles.statValue}>{formatCurrency(deal.value)}</p>
             </div>
-            <div>
+            <div style={styles.statCard}>
               <p style={styles.statLabel}>Stage</p>
               <span style={{
                 ...styles.stageBadge,
@@ -110,11 +110,11 @@ const DealView = ({ deal, onEdit, onDelete, onStageChange }) => {
                 {deal.stage ? deal.stage.replace('_', ' ').toUpperCase() : 'N/A'}
               </span>
             </div>
-            <div>
+            <div style={styles.statCard}>
               <p style={styles.statLabel}>Probability</p>
               <p style={styles.statValue}>{formatPercentage(deal.probability)}</p>
             </div>
-            <div>
+            <div style={styles.statCard}>
               <p style={styles.statLabel}>Expected Close</p>
               <p style={styles.statValue}>
                 {deal.expectedCloseDate ? formatDate(deal.expectedCloseDate) : 'N/A'}
@@ -231,6 +231,7 @@ const styles = {
     borderRadius: '12px',
     boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
     overflow: 'hidden',
+    border: '1px solid #f0f0f0',
   },
   header: {
     display: 'flex',
@@ -244,7 +245,7 @@ const styles = {
   title: {
     fontSize: '20px',
     fontWeight: '600',
-    color: '#111827',
+    color: '#013E37',
     margin: 0,
   },
   subtitle: {
@@ -263,9 +264,9 @@ const styles = {
     alignItems: 'center',
     gap: '4px',
     padding: '6px 12px',
-    backgroundColor: 'transparent',
-    color: '#374151',
-    border: '1px solid #D1D5DB',
+    backgroundColor: '#FFEFB3',
+    color: '#013E37',
+    border: '1px solid #FFEFB3',
     borderRadius: '6px',
     fontSize: '13px',
     fontWeight: '500',
@@ -278,8 +279,8 @@ const styles = {
     gap: '4px',
     padding: '6px 12px',
     backgroundColor: 'transparent',
-    color: '#374151',
-    border: '1px solid #D1D5DB',
+    color: '#013E37',
+    border: '1px solid #013E37',
     borderRadius: '6px',
     fontSize: '13px',
     fontWeight: '500',
@@ -291,14 +292,14 @@ const styles = {
     alignItems: 'center',
     gap: '4px',
     padding: '6px 12px',
-    backgroundColor: '#EF4444',
+    backgroundColor: '#013E37',
     color: '#FFFFFF',
     border: 'none',
     borderRadius: '6px',
     fontSize: '13px',
     fontWeight: '500',
     cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
+    transition: 'all 0.2s ease',
   },
   buttonIcon: {
     width: '16px',
@@ -312,34 +313,41 @@ const styles = {
     gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
     gap: '16px',
   },
+  statCard: {
+    backgroundColor: '#FFEFB3',
+    padding: '16px',
+    borderRadius: '8px',
+  },
   statLabel: {
     fontSize: '14px',
-    color: '#6B7280',
+    color: '#013E37',
     margin: 0,
+    fontWeight: '500',
   },
   statValue: {
     fontSize: '20px',
     fontWeight: '700',
-    color: '#111827',
+    color: '#013E37',
     marginTop: '4px',
     margin: '4px 0 0 0',
   },
   stageBadge: {
     display: 'inline-flex',
-    padding: '4px 8px',
+    padding: '4px 12px',
     borderRadius: '9999px',
     fontSize: '12px',
-    fontWeight: '500',
+    fontWeight: '600',
+    marginTop: '4px',
   },
   descriptionContainer: {
     marginTop: '16px',
     padding: '12px 16px',
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#FFEFB3',
     borderRadius: '8px',
   },
   descriptionText: {
     fontSize: '14px',
-    color: '#374151',
+    color: '#013E37',
     margin: 0,
   },
   productsSection: {
@@ -347,8 +355,8 @@ const styles = {
   },
   sectionTitle: {
     fontSize: '14px',
-    fontWeight: '500',
-    color: '#374151',
+    fontWeight: '600',
+    color: '#013E37',
     margin: '0 0 8px 0',
   },
   productsList: {
@@ -360,14 +368,14 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '8px 12px',
-    backgroundColor: '#F9FAFB',
-    borderRadius: '6px',
+    padding: '12px 16px',
+    backgroundColor: '#FFEFB3',
+    borderRadius: '8px',
   },
   productName: {
     fontSize: '14px',
     fontWeight: '500',
-    color: '#111827',
+    color: '#013E37',
     margin: 0,
   },
   productDetails: {
@@ -378,29 +386,33 @@ const styles = {
   productTotal: {
     fontSize: '14px',
     fontWeight: '600',
-    color: '#111827',
+    color: '#013E37',
   },
   assigneeContainer: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '12px',
     marginTop: '16px',
+    padding: '12px 16px',
+    backgroundColor: '#FFEFB3',
+    borderRadius: '8px',
   },
   assigneeAvatar: {
-    width: '24px',
-    height: '24px',
+    width: '32px',
+    height: '32px',
     borderRadius: '50%',
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#013E37',
     color: '#FFFFFF',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '12px',
-    fontWeight: '500',
+    fontSize: '14px',
+    fontWeight: '600',
   },
   assigneeText: {
     fontSize: '14px',
-    color: '#6B7280',
+    color: '#013E37',
+    fontWeight: '500',
   },
   activitiesSection: {
     marginTop: '16px',
@@ -408,19 +420,23 @@ const styles = {
   activitiesList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '4px',
+    gap: '8px',
   },
   activityItem: {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
     fontSize: '14px',
+    padding: '8px 12px',
+    backgroundColor: '#FFEFB3',
+    borderRadius: '6px',
   },
   activityDate: {
-    color: '#6B7280',
+    color: '#013E37',
+    fontWeight: '500',
   },
   activityDescription: {
-    color: '#374151',
+    color: '#013E37',
   },
   modalContent: {
     display: 'flex',
@@ -431,19 +447,19 @@ const styles = {
     display: 'block',
     fontSize: '14px',
     fontWeight: '500',
-    color: '#374151',
+    color: '#013E37',
     marginBottom: '4px',
   },
   modalSelect: {
     width: '100%',
     padding: '8px 12px',
-    border: '1px solid #D1D5DB',
+    border: '1px solid #013E37',
     borderRadius: '8px',
     fontSize: '14px',
     outline: 'none',
-    transition: 'border-color 0.2s ease',
+    transition: 'all 0.2s ease',
     backgroundColor: '#FFFFFF',
-    color: '#111827',
+    color: '#013E37',
   },
   modalActions: {
     display: 'flex',
@@ -455,8 +471,8 @@ const styles = {
   modalCancelButton: {
     padding: '8px 16px',
     backgroundColor: 'transparent',
-    color: '#374151',
-    border: '1px solid #D1D5DB',
+    color: '#013E37',
+    border: '1px solid #013E37',
     borderRadius: '6px',
     fontSize: '14px',
     fontWeight: '500',
@@ -465,14 +481,14 @@ const styles = {
   },
   modalSubmitButton: {
     padding: '8px 16px',
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#013E37',
     color: '#FFFFFF',
     border: 'none',
     borderRadius: '6px',
     fontSize: '14px',
     fontWeight: '500',
     cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
+    transition: 'all 0.2s ease',
   },
 };
 
@@ -480,33 +496,70 @@ const styles = {
 const styleSheet = document.createElement('style');
 styleSheet.textContent = `
   .stage-button:hover:not(:disabled) {
-    background-color: #F9FAFB !important;
+    background-color: #FFFFFF !important;
+    border-color: #013E37 !important;
+    box-shadow: 0 2px 8px rgba(1, 62, 55, 0.15) !important;
   }
   
   .edit-button:hover:not(:disabled) {
-    background-color: #F9FAFB !important;
+    background-color: #FFEFB3 !important;
+    border-color: #013E37 !important;
+    box-shadow: 0 2px 8px rgba(1, 62, 55, 0.1) !important;
   }
   
   .delete-button:hover:not(:disabled) {
-    background-color: #DC2626 !important;
+    background-color: #FFEFB3 !important;
+    color: #013E37 !important;
+    box-shadow: 0 2px 8px rgba(1, 62, 55, 0.2) !important;
   }
   
   .modal-cancel-button:hover:not(:disabled) {
-    background-color: #F9FAFB !important;
+    background-color: #FFEFB3 !important;
+    border-color: #FFEFB3 !important;
   }
   
   .modal-submit-button:hover:not(:disabled) {
-    background-color: #2563EB !important;
+    background-color: #FFEFB3 !important;
+    color: #013E37 !important;
+    box-shadow: 0 2px 8px rgba(1, 62, 55, 0.2) !important;
   }
   
   .modal-select:focus {
-    border-color: #3B82F6 !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    border-color: #013E37 !important;
+    box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1) !important;
+    background-color: #FFEFB3 !important;
   }
   
   .modal-submit-button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+  
+  .stat-card {
+    transition: all 0.2s ease;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(1, 62, 55, 0.1);
+  }
+  
+  .product-item {
+    transition: all 0.2s ease;
+  }
+  
+  .product-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(1, 62, 55, 0.08);
+  }
+  
+  .activity-item {
+    transition: all 0.2s ease;
+  }
+  
+  .activity-item:hover {
+    background-color: #FFFFFF !important;
+    box-shadow: 0 2px 8px rgba(1, 62, 55, 0.08);
   }
   
   @media (max-width: 768px) {

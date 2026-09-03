@@ -1,10 +1,12 @@
-// pages/projects/CalendarView.jsx
+// pages/projects/CalendarView.jsx - MODERN DESIGN WITH YOUR COLOR PALETTE
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
   ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, 
   Clock, Users, Tag, X, RefreshCw, Filter, Search, ChevronDown,
-  CheckCircle, AlertCircle, FileText, MapPin, Briefcase, Star
+  CheckCircle, AlertCircle, FileText, MapPin, Briefcase, Star,
+  Flag, Eye
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -35,7 +37,6 @@ const CalendarView = () => {
     else setLoading(true);
 
     try {
-      // Fetch all tasks directly from task routes
       const tasksRes = await axios.get(`${API_URL}/tasks`, {
         params: {
           ...(filterType && { type: filterType }),
@@ -46,14 +47,12 @@ const CalendarView = () => {
 
       const tasksData = tasksRes.data?.data || [];
       
-      // Also fetch projects to get project names
       const projectsRes = await axios.get(`${API_URL}/projects`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const projectsData = projectsRes.data?.data || [];
       setProjects(projectsData);
 
-      // Map project names to tasks
       const tasksWithProjectNames = tasksData.map(task => {
         const project = projectsData.find(p => p._id === task.projectId);
         return {
@@ -73,8 +72,6 @@ const CalendarView = () => {
           errorMessage = 'Session expired. Please login again.';
         } else if (err.response.status === 403) {
           errorMessage = 'You do not have permission to view calendar.';
-        } else if (err.response.status === 404) {
-          errorMessage = 'Task routes not found. Please check backend configuration.';
         } else if (err.response.data?.message) {
           errorMessage = err.response.data.message;
         }
@@ -83,7 +80,6 @@ const CalendarView = () => {
       }
       
       toast.error(errorMessage);
-      // Set empty arrays to show empty state
       setTasks([]);
       setProjects([]);
     } finally {
@@ -171,18 +167,18 @@ const CalendarView = () => {
 
   const getEventColor = (type) => {
     const colors = {
-      'task': '#3B82F6',
+      'task': '#013E37',
       'deadline': '#EF4444',
       'meeting': '#8B5CF6',
       'review': '#F59E0B',
-      'default': '#6B7280'
+      'default': '#013E37'
     };
     return colors[type] || colors.default;
   };
 
   const getPriorityColor = (priority) => {
     const colors = {
-      'urgent': '#EF4444',
+      'urgent': '#013E37',
       'high': '#F59E0B',
       'medium': '#3B82F6',
       'low': '#22C55E'
@@ -192,8 +188,8 @@ const CalendarView = () => {
 
   const getStatusBadge = (status) => {
     const styles = {
-      'Backlog': { bg: '#F3F4F6', color: '#6B7280' },
-      'Todo': { bg: '#F3F4F6', color: '#6B7280' },
+      'Backlog': { bg: '#F3F4F6', color: '#374151' },
+      'Todo': { bg: '#F3F4F6', color: '#374151' },
       'In Progress': { bg: '#DBEAFE', color: '#1D4ED8' },
       'Review': { bg: '#EDE9FE', color: '#6D28D9' },
       'Approved': { bg: '#FEF3C7', color: '#D97706' },
@@ -211,7 +207,7 @@ const CalendarView = () => {
     const days = [];
     
     for (let i = 0; i < startingDay; i++) {
-      days.push(<div key={`empty-${i}`} className="cal-empty-day" />);
+      days.push(<div key={`empty-${i}`} style={styles.emptyDay} />);
     }
     
     for (let day = 1; day <= daysInMonth; day++) {
@@ -224,26 +220,36 @@ const CalendarView = () => {
       days.push(
         <div 
           key={day} 
-          className={`cal-day ${isToday ? 'cal-day-today' : ''} ${isSelected ? 'cal-day-selected' : ''} ${isWeekend ? 'cal-day-weekend' : ''}`}
+          style={{
+            ...styles.day,
+            ...(isToday ? styles.dayToday : {}),
+            ...(isSelected ? styles.daySelected : {}),
+            ...(isWeekend ? styles.dayWeekend : {})
+          }}
           onClick={() => {
             setSelectedDate(date);
             setSelectedEvent(null);
           }}
         >
-          <div className="cal-day-header-cal">
-            <span className={`cal-day-number ${isToday ? 'cal-day-number-today' : ''}`}>
+          <div style={styles.dayHeader}>
+            <span style={{
+              ...styles.dayNumber,
+              ...(isToday ? styles.dayNumberToday : {})
+            }}>
               {day}
             </span>
             {dayEvents.length > 0 && (
-              <span className="cal-event-count">{dayEvents.length}</span>
+              <span style={styles.eventCount}>{dayEvents.length}</span>
             )}
           </div>
-          <div className="cal-events-container">
+          <div style={styles.eventsContainer}>
             {dayEvents.slice(0, 3).map((event) => (
               <div 
                 key={event._id}
-                className="cal-event-chip"
-                style={{ backgroundColor: getEventColor(event.type || 'task') }}
+                style={{
+                  ...styles.eventChip,
+                  backgroundColor: getEventColor(event.type || 'task')
+                }}
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelectedEvent(event);
@@ -251,11 +257,11 @@ const CalendarView = () => {
                 }}
                 title={event.title}
               >
-                <span className="cal-event-chip-text">{event.title}</span>
+                <span style={styles.eventChipText}>{event.title}</span>
               </div>
             ))}
             {dayEvents.length > 3 && (
-              <div className="cal-more-events">
+              <div style={styles.moreEvents}>
                 +{dayEvents.length - 3} more
               </div>
             )}
@@ -276,31 +282,34 @@ const CalendarView = () => {
 
   if (loading) {
     return (
-      <div className="cal-loading">
-        <div className="cal-spinner"></div>
-        <p className="cal-loading-text">Loading calendar...</p>
+      <div style={styles.loadingContainer}>
+        <div style={styles.spinner} />
+        <p style={styles.loadingText}>Loading calendar...</p>
       </div>
     );
   }
 
   return (
-    <div className="cal-container">
+    <div style={styles.container}>
       {/* Header */}
-      <div className="cal-header">
+      <div style={styles.header}>
         <div>
-          <h1 className="cal-title">Calendar</h1>
-          <p className="cal-subtitle">View your project tasks and deadlines</p>
+          <h1 style={styles.title}>Calendar</h1>
+          <p style={styles.subtitle}>View your project tasks and deadlines</p>
         </div>
-        <div className="cal-header-actions">
-          <button className="cal-icon-btn" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw size={16} className={refreshing ? 'cal-spin' : ''} />
+        <div style={styles.headerActions}>
+          <button style={styles.iconBtn} onClick={handleRefresh} disabled={refreshing}>
+            <RefreshCw size={16} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
           </button>
-          <button className="cal-filter-btn" onClick={() => setShowFilters(!showFilters)}>
+          <button style={styles.filterBtn} onClick={() => setShowFilters(!showFilters)}>
             <Filter size={16} />
             Filters
-            <ChevronDown size={12} className={`cal-chevron ${showFilters ? 'cal-chevron-open' : ''}`} />
+            <ChevronDown size={12} style={{
+              transform: showFilters ? 'rotate(180deg)' : 'none',
+              transition: 'transform 0.2s ease'
+            }} />
           </button>
-          <button className="cal-primary-btn" onClick={showAddTaskInfo}>
+          <button style={styles.primaryBtn} onClick={showAddTaskInfo}>
             <Plus size={16} />
             Add Task
           </button>
@@ -308,35 +317,43 @@ const CalendarView = () => {
       </div>
 
       {/* Stats */}
-      <div className="cal-stats">
-        <div className="cal-stat">
-          <div className="cal-stat-icon cal-stat-icon-blue"><CalendarIcon size={14} /></div>
-          <div><p className="cal-stat-number">{stats.total}</p><p className="cal-stat-label">Total</p></div>
+      <div style={styles.stats}>
+        <div style={styles.stat}>
+          <div style={{...styles.statIcon, backgroundColor: '#FFEFB3'}}>
+            <CalendarIcon size={14} style={{color: '#013E37'}} />
+          </div>
+          <div><p style={styles.statNumber}>{stats.total}</p><p style={styles.statLabel}>Total</p></div>
         </div>
-        <div className="cal-stat">
-          <div className="cal-stat-icon cal-stat-icon-yellow"><AlertCircle size={14} /></div>
-          <div><p className="cal-stat-number">{stats.backlog}</p><p className="cal-stat-label">Backlog</p></div>
+        <div style={styles.stat}>
+          <div style={{...styles.statIcon, backgroundColor: '#FFEFB3'}}>
+            <AlertCircle size={14} style={{color: '#013E37'}} />
+          </div>
+          <div><p style={styles.statNumber}>{stats.backlog}</p><p style={styles.statLabel}>Backlog</p></div>
         </div>
-        <div className="cal-stat">
-          <div className="cal-stat-icon cal-stat-icon-blue"><Clock size={14} /></div>
-          <div><p className="cal-stat-number">{stats.inProgress}</p><p className="cal-stat-label">In Progress</p></div>
+        <div style={styles.stat}>
+          <div style={{...styles.statIcon, backgroundColor: '#FFEFB3'}}>
+            <Clock size={14} style={{color: '#013E37'}} />
+          </div>
+          <div><p style={styles.statNumber}>{stats.inProgress}</p><p style={styles.statLabel}>In Progress</p></div>
         </div>
-        <div className="cal-stat">
-          <div className="cal-stat-icon cal-stat-icon-green"><CheckCircle size={14} /></div>
-          <div><p className="cal-stat-number">{stats.completed}</p><p className="cal-stat-label">Completed</p></div>
+        <div style={styles.stat}>
+          <div style={{...styles.statIcon, backgroundColor: '#FFEFB3'}}>
+            <CheckCircle size={14} style={{color: '#013E37'}} />
+          </div>
+          <div><p style={styles.statNumber}>{stats.completed}</p><p style={styles.statLabel}>Completed</p></div>
         </div>
       </div>
 
       {/* Filters */}
       {showFilters && (
-        <div className="cal-filter-panel">
-          <div className="cal-filter-row">
-            <div className="cal-filter-group">
-              <label className="cal-filter-label">Type</label>
+        <div style={styles.filterPanel}>
+          <div style={styles.filterRow}>
+            <div style={styles.filterGroup}>
+              <label style={styles.filterLabel}>Type</label>
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="cal-filter-select"
+                style={styles.filterSelect}
               >
                 <option value="">All Types</option>
                 <option value="task">Task</option>
@@ -345,25 +362,25 @@ const CalendarView = () => {
                 <option value="review">Review</option>
               </select>
             </div>
-            <div className="cal-filter-group">
-              <label className="cal-filter-label">Search</label>
-              <div className="cal-search">
-                <Search size={14} className="cal-search-icon" />
+            <div style={styles.filterGroup}>
+              <label style={styles.filterLabel}>Search</label>
+              <div style={styles.search}>
+                <Search size={14} style={styles.searchIcon} />
                 <input
                   type="text"
                   placeholder="Search tasks..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="cal-search-input"
+                  style={styles.searchInput}
                 />
                 {searchTerm && (
-                  <button className="cal-search-clear" onClick={() => setSearchTerm('')}>
+                  <button style={styles.searchClear} onClick={() => setSearchTerm('')}>
                     <X size={12} />
                   </button>
                 )}
               </div>
             </div>
-            <button className="cal-clear-filters" onClick={() => {
+            <button style={styles.clearFilters} onClick={() => {
               setFilterType('');
               setSearchTerm('');
             }}>
@@ -374,30 +391,33 @@ const CalendarView = () => {
       )}
 
       {/* Calendar Controls */}
-      <div className="cal-controls">
-        <div className="cal-controls-left">
-          <button className="cal-nav-btn" onClick={() => navigateMonth(-1)}>
+      <div style={styles.controls}>
+        <div style={styles.controlsLeft}>
+          <button style={styles.navBtn} onClick={() => navigateMonth(-1)}>
             <ChevronLeft size={16} />
           </button>
-          <span className="cal-month-label">
+          <span style={styles.monthLabel}>
             {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
           </span>
-          <button className="cal-nav-btn" onClick={() => navigateMonth(1)}>
+          <button style={styles.navBtn} onClick={() => navigateMonth(1)}>
             <ChevronRight size={16} />
           </button>
         </div>
-        <div className="cal-controls-right">
-          <button className="cal-today-btn" onClick={navigateToday}>
+        <div style={styles.controlsRight}>
+          <button style={styles.todayBtn} onClick={navigateToday}>
             Today
           </button>
         </div>
       </div>
 
       {/* Calendar Grid */}
-      <div className="cal-wrapper">
-        <div className="cal-grid">
+      <div style={styles.wrapper}>
+        <div style={styles.grid}>
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className={`cal-day-header ${day === 'Sun' || day === 'Sat' ? 'cal-day-header-weekend' : ''}`}>
+            <div key={day} style={{
+              ...styles.dayHeader,
+              ...((day === 'Sun' || day === 'Sat') ? styles.dayHeaderWeekend : {})
+            }}>
               {day}
             </div>
           ))}
@@ -407,42 +427,43 @@ const CalendarView = () => {
 
       {/* Event Details Panel */}
       {selectedDate && (
-        <div className="cal-details">
-          <div className="cal-details-header">
-            <h3 className="cal-details-title">{formatDate(selectedDate)}</h3>
-            <button className="cal-details-add" onClick={showAddTaskInfo}>
+        <div style={styles.details}>
+          <div style={styles.detailsHeader}>
+            <h3 style={styles.detailsTitle}>{formatDate(selectedDate)}</h3>
+            <button style={styles.detailsAdd} onClick={showAddTaskInfo}>
               <Plus size={14} />
               Add Task
             </button>
           </div>
           
           {selectedEvent ? (
-            <div className="cal-event-detail">
-              <div className="cal-event-detail-header">
-                <div className="cal-event-color-bar" style={{ backgroundColor: getEventColor(selectedEvent.type || 'task') }} />
-                <div className="cal-event-detail-info">
-                  <h4 className="cal-event-detail-title">{selectedEvent.title}</h4>
-                  <span className="cal-event-detail-type">
+            <div style={styles.eventDetail}>
+              <div style={styles.eventDetailHeader}>
+                <div style={{...styles.eventColorBar, backgroundColor: getEventColor(selectedEvent.type || 'task')}} />
+                <div style={styles.eventDetailInfo}>
+                  <h4 style={styles.eventDetailTitle}>{selectedEvent.title}</h4>
+                  <span style={styles.eventDetailType}>
                     {selectedEvent.type || 'Task'} • {selectedEvent._projectName || 'Project'}
                   </span>
                 </div>
-                <button className="cal-event-delete" onClick={() => handleDeleteTask(selectedEvent._id)}>
+                <button style={styles.eventDelete} onClick={() => handleDeleteTask(selectedEvent._id)}>
                   <X size={14} />
                 </button>
               </div>
               
               {selectedEvent.description && (
-                <p className="cal-event-description">{selectedEvent.description}</p>
+                <p style={styles.eventDescription}>{selectedEvent.description}</p>
               )}
               
-              <div className="cal-event-meta">
-                <div className="cal-event-meta-item">
+              <div style={styles.eventMeta}>
+                <div style={styles.eventMetaItem}>
                   <Clock size={12} />
                   <span>{formatTime(selectedEvent.deadline || selectedEvent.dueDate)}</span>
                 </div>
                 {selectedEvent.status && (
-                  <div className="cal-event-meta-item">
-                    <span className="cal-status-badge" style={{
+                  <div style={styles.eventMetaItem}>
+                    <span style={{
+                      ...styles.statusBadge,
                       backgroundColor: getStatusBadge(selectedEvent.status).bg,
                       color: getStatusBadge(selectedEvent.status).color
                     }}>
@@ -451,16 +472,18 @@ const CalendarView = () => {
                   </div>
                 )}
                 {selectedEvent.priority && (
-                  <div className="cal-event-meta-item">
-                    <span className="cal-priority-badge" style={{
+                  <div style={styles.eventMetaItem}>
+                    <span style={{
+                      ...styles.priorityBadge,
                       backgroundColor: getPriorityColor(selectedEvent.priority),
                     }}>
+                      <Flag size={10} />
                       {selectedEvent.priority}
                     </span>
                   </div>
                 )}
                 {selectedEvent._projectName && (
-                  <div className="cal-event-meta-item">
+                  <div style={styles.eventMetaItem}>
                     <Briefcase size={12} />
                     <span>{selectedEvent._projectName}</span>
                   </div>
@@ -468,382 +491,658 @@ const CalendarView = () => {
               </div>
             </div>
           ) : (
-            <div className="cal-no-events">
-              <div className="cal-no-events-icon-wrapper">
-                <CalendarIcon size={24} />
+            <div style={styles.noEvents}>
+              <div style={styles.noEventsIconWrapper}>
+                <CalendarIcon size={24} style={{color: '#013E37', opacity: 0.4}} />
               </div>
-              <p className="cal-no-events-text">No tasks scheduled</p>
-              <p className="cal-no-events-subtext">Click "Add Task" to create one</p>
+              <p style={styles.noEventsText}>No tasks scheduled</p>
+              <p style={styles.noEventsSubtext}>Click "Add Task" to create one</p>
             </div>
           )}
         </div>
       )}
 
       <style>{`
-        .cal-container {
-          padding: 20px 24px;
-          max-width: 1400px;
-          margin: 0 auto;
-          background: #f8fafc;
-          min-height: 100vh;
-        }
-
-        .cal-loading {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 64vh;
-          gap: 16px;
-        }
-
-        .cal-loading-text { color: #64748b; font-size: 14px; font-weight: 500; }
-        .cal-spinner {
-          width: 36px; height: 36px; border-radius: 50%;
-          border: 3px solid #e5e7eb; border-top-color: #3b82f6;
-          animation: spin 0.8s linear infinite;
-        }
-
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
-        }
-
-        .cal-spin { animation: spin 1s linear infinite; }
-
-        .cal-header {
-          display: flex; align-items: center; justify-content: space-between;
-          margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
-        }
-
-        .cal-title { font-size: 24px; font-weight: 700; color: #0f172a; margin: 0; }
-        .cal-subtitle { font-size: 14px; color: #64748b; margin-top: 2px; }
-
-        .cal-header-actions {
-          display: flex; gap: 8px; flex-wrap: wrap;
-        }
-
-        .cal-icon-btn {
-          display: flex; align-items: center; justify-content: center;
-          padding: 8px; background: #fff; border: 1px solid #e2e8f0;
-          border-radius: 8px; color: #64748b; cursor: pointer; transition: all 0.2s;
-        }
-
-        .cal-icon-btn:hover { background: #f1f5f9; }
-
-        .cal-filter-btn {
-          display: flex; align-items: center; gap: 4px;
-          padding: 8px 14px; background: #fff; border: 1px solid #e2e8f0;
-          border-radius: 8px; font-size: 13px; font-weight: 500;
-          color: #475569; cursor: pointer; transition: all 0.2s;
-        }
-
-        .cal-filter-btn:hover { background: #f1f5f9; }
-
-        .cal-chevron { transition: transform 0.2s; }
-        .cal-chevron-open { transform: rotate(180deg); }
-
-        .cal-primary-btn {
-          display: flex; align-items: center; gap: 6px;
-          padding: 8px 18px; background: #3b82f6; color: #fff;
-          border: none; border-radius: 8px; font-size: 13px;
-          font-weight: 600; cursor: pointer; transition: all 0.2s;
-          box-shadow: 0 2px 4px rgba(59, 130, 246, 0.25);
-        }
-
-        .cal-primary-btn:hover { background: #2563eb; }
-
-        .cal-stats {
-          display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-          gap: 12px; margin-bottom: 20px;
-        }
-
-        .cal-stat {
-          display: flex; align-items: center; gap: 10px;
-          background: #fff; border-radius: 10px; padding: 12px 16px;
-          border: 1px solid #e2e8f0; transition: all 0.2s;
-        }
-
-        .cal-stat:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-
-        .cal-stat-icon {
-          width: 32px; height: 32px; border-radius: 8px;
-          display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-        }
-
-        .cal-stat-icon-blue { background: #eff6ff; }
-        .cal-stat-icon-yellow { background: #fef3c7; }
-        .cal-stat-icon-green { background: #ecfdf5; }
-
-        .cal-stat-number { font-size: 18px; font-weight: 700; color: #0f172a; margin: 0; line-height: 1.2; }
-        .cal-stat-label { font-size: 11px; color: #64748b; margin: 0; font-weight: 500; }
-
-        .cal-filter-panel {
-          background: #fff; border: 1px solid #e2e8f0;
-          border-radius: 10px; padding: 14px 18px; margin-bottom: 16px;
-        }
-
-        .cal-filter-row {
-          display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap;
-        }
-
-        .cal-filter-group {
-          display: flex; flex-direction: column; gap: 4px;
-          flex: 1; min-width: 120px;
-        }
-
-        .cal-filter-label {
-          font-size: 11px; font-weight: 600; color: #64748b;
-          text-transform: uppercase; letter-spacing: 0.3px;
-        }
-
-        .cal-filter-select {
-          padding: 6px 10px; border: 1px solid #e2e8f0;
-          border-radius: 6px; font-size: 13px; background: #fff;
-          color: #0f172a; outline: none; cursor: pointer;
-        }
-
-        .cal-filter-select:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.1); }
-
-        .cal-search {
-          display: flex; align-items: center; background: #fff;
-          border: 1px solid #e2e8f0; border-radius: 6px; padding: 0 10px;
-        }
-
-        .cal-search:focus-within { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.1); }
-
-        .cal-search-icon { color: #94a3b8; flex-shrink: 0; }
-        .cal-search-input {
-          flex: 1; padding: 6px 8px; border: none; outline: none;
-          font-size: 13px; background: transparent; color: #0f172a;
-        }
-
-        .cal-search-clear {
-          display: flex; align-items: center; justify-content: center;
-          padding: 2px; background: none; border: none; color: #94a3b8;
-          cursor: pointer; border-radius: 4px;
-        }
-
-        .cal-search-clear:hover { background: #f1f5f9; }
-
-        .cal-clear-filters {
-          padding: 6px 14px; background: #f1f5f9; border: none;
-          border-radius: 6px; font-size: 12px; font-weight: 500;
-          color: #475569; cursor: pointer; transition: all 0.2s;
-          white-space: nowrap; align-self: center;
-        }
-
-        .cal-clear-filters:hover { background: #e2e8f0; }
-
-        .cal-controls {
-          display: flex; align-items: center; justify-content: space-between;
-          margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
-        }
-
-        .cal-controls-left { display: flex; align-items: center; gap: 10px; }
-        .cal-controls-right { display: flex; align-items: center; gap: 10px; }
-
-        .cal-nav-btn {
-          display: flex; align-items: center; justify-content: center;
-          padding: 6px; background: #fff; border: 1px solid #e2e8f0;
-          border-radius: 6px; color: #475569; cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .cal-nav-btn:hover { background: #f1f5f9; }
-
-        .cal-month-label {
-          font-size: 16px; font-weight: 600; color: #0f172a;
-          min-width: 140px; text-align: center;
-        }
-
-        .cal-today-btn {
-          padding: 6px 14px; background: #fff; color: #3b82f6;
-          border: 1px solid #e2e8f0; border-radius: 6px;
-          font-size: 13px; font-weight: 500; cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .cal-today-btn:hover { background: #f1f5f9; }
-
-        .cal-wrapper {
-          background: #fff; border-radius: 10px; border: 1px solid #e2e8f0;
-          overflow: hidden; margin-bottom: 20px;
-        }
-
-        .cal-grid {
-          display: grid; grid-template-columns: repeat(7, 1fr);
-          gap: 1px; background: #e2e8f0;
-        }
-
-        .cal-day-header {
-          background: #f8fafc; padding: 8px; text-align: center;
-          font-size: 11px; font-weight: 600; color: #64748b;
-          text-transform: uppercase; letter-spacing: 0.3px;
-        }
-
-        .cal-day-header-weekend { color: #94a3b8; }
-
-        .cal-empty-day { background: #fff; min-height: 80px; }
-
-        .cal-day {
-          background: #fff; min-height: 80px; padding: 6px;
-          cursor: pointer; transition: all 0.2s;
-          display: flex; flex-direction: column;
-        }
-
-        .cal-day:hover { background: #f8fafc; }
-        .cal-day-today { background: #f0f9ff; }
-        .cal-day-selected { background: #eff6ff; border: 2px solid #3b82f6; margin: -1px; border-radius: 2px; }
-        .cal-day-weekend { background: #fafbfc; }
-
-        .cal-day-header-cal {
-          display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;
-        }
-
-        .cal-day-number { font-size: 13px; font-weight: 500; color: #475569; }
-        .cal-day-number-today { color: #3b82f6; font-weight: 700; }
-
-        .cal-event-count {
-          font-size: 9px; background: #3b82f6; color: #fff;
-          padding: 1px 5px; border-radius: 9999px; font-weight: 600;
-        }
-
-        .cal-events-container {
-          display: flex; flex-direction: column; gap: 2px; flex: 1;
-        }
-
-        .cal-event-chip {
-          padding: 2px 6px; border-radius: 3px; font-size: 9px;
-          color: #fff; overflow: hidden; text-overflow: ellipsis;
-          white-space: nowrap; cursor: pointer; font-weight: 500;
-          transition: all 0.2s;
-        }
-
-        .cal-event-chip:hover { transform: scale(1.02); opacity: 0.9; }
-        .cal-event-chip-text { font-size: 9px; }
-
-        .cal-more-events {
-          font-size: 9px; color: #64748b; padding: 1px 4px; font-weight: 500;
-        }
-
-        .cal-details {
-          background: #fff; border-radius: 10px; border: 1px solid #e2e8f0;
-          padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        }
-
-        .cal-details-header {
-          display: flex; align-items: center; justify-content: space-between;
-          margin-bottom: 12px; flex-wrap: wrap; gap: 10px;
-        }
-
-        .cal-details-title { font-size: 16px; font-weight: 600; color: #0f172a; margin: 0; }
-
-        .cal-details-add {
-          display: flex; align-items: center; gap: 4px;
-          padding: 4px 12px; background: #eff6ff; color: #3b82f6;
-          border: none; border-radius: 6px; font-size: 12px;
-          font-weight: 500; cursor: pointer; transition: all 0.2s;
-        }
-
-        .cal-details-add:hover { background: #dbeafe; }
-
-        .cal-event-detail { display: flex; flex-direction: column; gap: 8px; }
-
-        .cal-event-detail-header {
-          display: flex; align-items: center; gap: 10px;
-          padding: 10px 14px; background: #f8fafc;
-          border-radius: 6px; border: 1px solid #f1f5f9;
-        }
-
-        .cal-event-color-bar {
-          width: 3px; height: 32px; border-radius: 3px; flex-shrink: 0;
-        }
-
-        .cal-event-detail-info { flex: 1; }
-        .cal-event-detail-title { font-size: 14px; font-weight: 600; color: #0f172a; margin: 0; }
-        .cal-event-detail-type { font-size: 11px; color: #64748b; }
-
-        .cal-event-delete {
-          display: flex; align-items: center; justify-content: center;
-          padding: 4px; background: #fef2f2; color: #ef4444;
-          border: none; border-radius: 4px; cursor: pointer; transition: all 0.2s;
-        }
-
-        .cal-event-delete:hover { background: #fee2e2; }
-
-        .cal-event-description { font-size: 13px; color: #475569; margin: 0; padding: 0 4px; }
-
-        .cal-event-meta {
-          display: flex; gap: 12px; flex-wrap: wrap; padding: 0 4px;
-        }
-
-        .cal-event-meta-item {
-          display: flex; align-items: center; gap: 4px;
-          font-size: 12px; color: #64748b;
-        }
-
-        .cal-status-badge {
-          padding: 1px 8px; border-radius: 3px; font-size: 10px; font-weight: 600;
-        }
-
-        .cal-priority-badge {
-          padding: 1px 8px; border-radius: 3px; font-size: 10px;
-          font-weight: 600; color: #fff; text-transform: uppercase;
-        }
-
-        .cal-no-events { text-align: center; padding: 24px 0; }
-
-        .cal-no-events-icon-wrapper {
-          display: inline-flex; padding: 12px; background: #f1f5f9;
-          border-radius: 50%; margin-bottom: 8px;
-          color: #94a3b8;
-        }
-
-        .cal-no-events-text { font-size: 14px; font-weight: 500; color: #0f172a; margin: 0; }
-        .cal-no-events-subtext { font-size: 12px; color: #94a3b8; margin: 2px 0 0 0; }
-
-        @media (max-width: 768px) {
-          .cal-container { padding: 16px; }
-          .cal-header { flex-direction: column; align-items: stretch; }
-          .cal-header-actions { width: 100%; justify-content: flex-start; }
-          .cal-primary-btn { flex: 1; justify-content: center; }
-          .cal-filter-btn { flex: 1; justify-content: center; }
-          .cal-stats { grid-template-columns: repeat(2, 1fr); }
-          .cal-controls { flex-direction: column; align-items: stretch; }
-          .cal-controls-left { justify-content: center; }
-          .cal-controls-right { justify-content: center; width: 100%; }
-          .cal-today-btn { width: 100%; justify-content: center; }
-          .cal-day { min-height: 60px; padding: 4px; }
-          .cal-event-chip { display: none; }
-          .cal-event-count { display: inline-block; }
-          .cal-filter-row { flex-direction: column; align-items: stretch; }
-          .cal-filter-group { min-width: unset; }
-          .cal-clear-filters { align-self: stretch; }
-          .cal-details-header { flex-direction: column; align-items: stretch; }
-          .cal-details-add { width: 100%; justify-content: center; }
-          .cal-event-detail-header { flex-wrap: wrap; }
-          .cal-event-meta { flex-direction: column; }
-          .cal-day-header { font-size: 10px; padding: 6px; }
-          .cal-day-number { font-size: 12px; }
-        }
-
-        @media (max-width: 480px) {
-          .cal-container { padding: 12px; }
-          .cal-stats { grid-template-columns: 1fr; }
-          .cal-stat { padding: 10px 14px; }
-          .cal-stat-number { font-size: 16px; }
-          .cal-title { font-size: 20px; }
-          .cal-month-label { font-size: 14px; min-width: 100px; }
-          .cal-day { min-height: 50px; padding: 2px; }
-          .cal-day-number { font-size: 11px; }
-          .cal-header-actions { flex-wrap: wrap; }
-          .cal-primary-btn, .cal-filter-btn { flex: 1; min-width: 100px; }
-          .cal-icon-btn { padding: 6px; }
         }
       `}</style>
     </div>
   );
 };
+
+const styles = {
+  container: {
+    padding: '24px 32px',
+    maxWidth: '1400px',
+    margin: '0 auto',
+    backgroundColor: '#FFFFFF',
+    minHeight: '100vh',
+    borderRadius: '24px',
+    boxShadow: '0 2px 12px rgba(1, 62, 55, 0.04)',
+  },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '64vh',
+    gap: '16px',
+  },
+  loadingText: {
+    color: '#013E37',
+    fontSize: '14px',
+    fontWeight: '500',
+  },
+  spinner: {
+    width: '36px',
+    height: '36px',
+    borderRadius: '50%',
+    border: '3px solid #FFEFB3',
+    borderTopColor: '#013E37',
+    animation: 'spin 0.8s linear infinite',
+  },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '20px',
+    flexWrap: 'wrap',
+    gap: '12px',
+  },
+  title: {
+    fontSize: '28px',
+    fontWeight: '700',
+    color: '#013E37',
+    margin: 0,
+    letterSpacing: '-0.5px',
+  },
+  subtitle: {
+    fontSize: '15px',
+    color: '#013E37',
+    opacity: 0.7,
+    marginTop: '2px',
+  },
+  headerActions: {
+    display: 'flex',
+    gap: '8px',
+    flexWrap: 'wrap',
+  },
+  iconBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '8px 10px',
+    background: '#FFFFFF',
+    border: '1px solid #FFEFB3',
+    borderRadius: '10px',
+    color: '#013E37',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  filterBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '8px 16px',
+    background: '#FFFFFF',
+    border: '1px solid #FFEFB3',
+    borderRadius: '10px',
+    fontSize: '13px',
+    fontWeight: '500',
+    color: '#013E37',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  primaryBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 20px',
+    background: '#013E37',
+    color: '#FFFFFF',
+    border: 'none',
+    borderRadius: '10px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 4px 12px rgba(1, 62, 55, 0.2)',
+  },
+  stats: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+    gap: '12px',
+    marginBottom: '20px',
+  },
+  stat: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    background: '#FFFFFF',
+    borderRadius: '12px',
+    padding: '12px 16px',
+    border: '1px solid #FFEFB3',
+    transition: 'all 0.2s ease',
+  },
+  statIcon: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  statNumber: {
+    fontSize: '18px',
+    fontWeight: '700',
+    color: '#013E37',
+    margin: 0,
+    lineHeight: 1.2,
+  },
+  statLabel: {
+    fontSize: '11px',
+    color: '#013E37',
+    opacity: 0.6,
+    margin: 0,
+    fontWeight: '500',
+  },
+  filterPanel: {
+    background: '#FFFFFF',
+    border: '1px solid #FFEFB3',
+    borderRadius: '12px',
+    padding: '14px 18px',
+    marginBottom: '16px',
+  },
+  filterRow: {
+    display: 'flex',
+    alignItems: 'flex-end',
+    gap: '12px',
+    flexWrap: 'wrap',
+  },
+  filterGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+    flex: 1,
+    minWidth: '120px',
+  },
+  filterLabel: {
+    fontSize: '11px',
+    fontWeight: '600',
+    color: '#013E37',
+    opacity: 0.7,
+    textTransform: 'uppercase',
+    letterSpacing: '0.3px',
+  },
+  filterSelect: {
+    padding: '6px 12px',
+    border: '1px solid #FFEFB3',
+    borderRadius: '8px',
+    fontSize: '13px',
+    background: '#FFFFFF',
+    color: '#013E37',
+    outline: 'none',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  search: {
+    display: 'flex',
+    alignItems: 'center',
+    background: '#FFFFFF',
+    border: '1px solid #FFEFB3',
+    borderRadius: '8px',
+    padding: '0 10px',
+    transition: 'all 0.2s ease',
+  },
+  searchIcon: {
+    color: '#013E37',
+    opacity: 0.5,
+    flexShrink: 0,
+  },
+  searchInput: {
+    flex: 1,
+    padding: '6px 8px',
+    border: 'none',
+    outline: 'none',
+    fontSize: '13px',
+    background: 'transparent',
+    color: '#013E37',
+  },
+  searchClear: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '2px',
+    background: 'none',
+    border: 'none',
+    color: '#013E37',
+    opacity: 0.5,
+    cursor: 'pointer',
+    borderRadius: '4px',
+  },
+  clearFilters: {
+    padding: '6px 16px',
+    background: '#FFEFB3',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '12px',
+    fontWeight: '500',
+    color: '#013E37',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    whiteSpace: 'nowrap',
+    alignSelf: 'center',
+  },
+  controls: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '16px',
+    flexWrap: 'wrap',
+    gap: '10px',
+  },
+  controlsLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  controlsRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  navBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '6px 8px',
+    background: '#FFFFFF',
+    border: '1px solid #FFEFB3',
+    borderRadius: '8px',
+    color: '#013E37',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  monthLabel: {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: '#013E37',
+    minWidth: '140px',
+    textAlign: 'center',
+  },
+  todayBtn: {
+    padding: '6px 16px',
+    background: '#FFFFFF',
+    color: '#013E37',
+    border: '1px solid #FFEFB3',
+    borderRadius: '8px',
+    fontSize: '13px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  wrapper: {
+    background: '#FFFFFF',
+    borderRadius: '16px',
+    border: '1px solid #FFEFB3',
+    overflow: 'hidden',
+    marginBottom: '20px',
+    boxShadow: '0 2px 8px rgba(1, 62, 55, 0.04)',
+  },
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(7, 1fr)',
+    gap: '1px',
+    background: '#FFEFB3',
+  },
+  dayHeader: {
+    background: '#FFFFFF',
+    padding: '10px',
+    textAlign: 'center',
+    fontSize: '11px',
+    fontWeight: '600',
+    color: '#013E37',
+    opacity: 0.6,
+    textTransform: 'uppercase',
+    letterSpacing: '0.3px',
+  },
+  dayHeaderWeekend: {
+    opacity: 0.4,
+  },
+  emptyDay: {
+    background: '#FFFFFF',
+    minHeight: '80px',
+  },
+  day: {
+    background: '#FFFFFF',
+    minHeight: '80px',
+    padding: '6px 8px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  dayToday: {
+    background: '#FFFDF5',
+  },
+  daySelected: {
+    background: '#FFEFB3',
+    border: '2px solid #013E37',
+    margin: '-1px',
+    borderRadius: '4px',
+  },
+  dayWeekend: {
+    background: '#FFFDF5',
+  },
+  dayHeaderCal: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '2px',
+  },
+  dayNumber: {
+    fontSize: '13px',
+    fontWeight: '500',
+    color: '#013E37',
+    opacity: 0.7,
+  },
+  dayNumberToday: {
+    color: '#013E37',
+    fontWeight: '700',
+    opacity: 1,
+  },
+  eventCount: {
+    fontSize: '9px',
+    background: '#013E37',
+    color: '#FFFFFF',
+    padding: '1px 6px',
+    borderRadius: '9999px',
+    fontWeight: '600',
+  },
+  eventsContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+    flex: 1,
+  },
+  eventChip: {
+    padding: '2px 8px',
+    borderRadius: '4px',
+    fontSize: '9px',
+    color: '#FFFFFF',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    cursor: 'pointer',
+    fontWeight: '500',
+    transition: 'all 0.2s ease',
+  },
+  eventChipText: {
+    fontSize: '9px',
+  },
+  moreEvents: {
+    fontSize: '9px',
+    color: '#013E37',
+    opacity: 0.5,
+    padding: '1px 4px',
+    fontWeight: '500',
+  },
+  details: {
+    background: '#FFFFFF',
+    borderRadius: '16px',
+    border: '1px solid #FFEFB3',
+    padding: '20px',
+    boxShadow: '0 2px 8px rgba(1, 62, 55, 0.04)',
+  },
+  detailsHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '12px',
+    flexWrap: 'wrap',
+    gap: '10px',
+  },
+  detailsTitle: {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: '#013E37',
+    margin: 0,
+  },
+  detailsAdd: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '4px 14px',
+    background: '#FFEFB3',
+    color: '#013E37',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '12px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  eventDetail: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  eventDetailHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '10px 14px',
+    background: '#FFFDF5',
+    borderRadius: '8px',
+    border: '1px solid #FFEFB3',
+  },
+  eventColorBar: {
+    width: '3px',
+    height: '32px',
+    borderRadius: '3px',
+    flexShrink: 0,
+  },
+  eventDetailInfo: {
+    flex: 1,
+  },
+  eventDetailTitle: {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#013E37',
+    margin: 0,
+  },
+  eventDetailType: {
+    fontSize: '11px',
+    color: '#013E37',
+    opacity: 0.6,
+  },
+  eventDelete: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '4px',
+    background: '#FEF2F2',
+    color: '#EF4444',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  eventDescription: {
+    fontSize: '13px',
+    color: '#013E37',
+    opacity: 0.8,
+    margin: 0,
+    padding: '0 4px',
+  },
+  eventMeta: {
+    display: 'flex',
+    gap: '12px',
+    flexWrap: 'wrap',
+    padding: '0 4px',
+  },
+  eventMetaItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    fontSize: '12px',
+    color: '#013E37',
+    opacity: 0.6,
+  },
+  statusBadge: {
+    padding: '2px 10px',
+    borderRadius: '6px',
+    fontSize: '10px',
+    fontWeight: '600',
+  },
+  priorityBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '2px 10px',
+    borderRadius: '6px',
+    fontSize: '10px',
+    fontWeight: '600',
+    color: '#FFFFFF',
+    textTransform: 'uppercase',
+  },
+  noEvents: {
+    textAlign: 'center',
+    padding: '24px 0',
+  },
+  noEventsIconWrapper: {
+    display: 'inline-flex',
+    padding: '12px',
+    background: '#FFEFB3',
+    borderRadius: '50%',
+    marginBottom: '8px',
+  },
+  noEventsText: {
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#013E37',
+    margin: 0,
+  },
+  noEventsSubtext: {
+    fontSize: '12px',
+    color: '#013E37',
+    opacity: 0.5,
+    margin: '2px 0 0 0',
+  },
+};
+
+// Add keyframe animations and hover styles
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .icon-btn:hover:not(:disabled) {
+    background-color: #FFEFB3 !important;
+  }
+
+  .filter-btn:hover:not(:disabled) {
+    background-color: #FFEFB3 !important;
+  }
+
+  .primary-btn:hover:not(:disabled) {
+    background-color: #025a50 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(1, 62, 55, 0.25) !important;
+  }
+
+  .stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(1, 62, 55, 0.06) !important;
+  }
+
+  .day:hover {
+    background-color: #FFFDF5 !important;
+  }
+
+  .event-chip:hover {
+    transform: scale(1.04) !important;
+    opacity: 0.9 !important;
+  }
+
+  .details-add:hover:not(:disabled) {
+    background-color: #e6d69e !important;
+  }
+
+  .event-delete:hover {
+    background-color: #FEE2E2 !important;
+  }
+
+  .clear-filters:hover:not(:disabled) {
+    background-color: #e6d69e !important;
+  }
+
+  .search:focus-within {
+    border-color: #013E37 !important;
+    box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.08) !important;
+  }
+
+  .filter-select:focus {
+    border-color: #013E37 !important;
+    box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.08) !important;
+  }
+
+  .search-clear:hover {
+    background-color: #FFEFB3 !important;
+  }
+
+  .nav-btn:hover:not(:disabled) {
+    background-color: #FFEFB3 !important;
+  }
+
+  .today-btn:hover:not(:disabled) {
+    background-color: #FFEFB3 !important;
+  }
+
+  @media (max-width: 768px) {
+    .container { padding: 16px !important; }
+    .header { flex-direction: column; align-items: stretch; }
+    .header-actions { width: 100%; justify-content: flex-start; }
+    .primary-btn { flex: 1; justify-content: center; }
+    .filter-btn { flex: 1; justify-content: center; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .controls { flex-direction: column; align-items: stretch; }
+    .controls-left { justify-content: center; }
+    .controls-right { justify-content: center; width: 100%; }
+    .today-btn { width: 100%; justify-content: center; }
+    .day { min-height: 60px; padding: 4px; }
+    .event-chip { display: none; }
+    .event-count { display: inline-block; }
+    .filter-row { flex-direction: column; align-items: stretch; }
+    .filter-group { min-width: unset; }
+    .clear-filters { align-self: stretch; }
+    .details-header { flex-direction: column; align-items: stretch; }
+    .details-add { width: 100%; justify-content: center; }
+    .event-detail-header { flex-wrap: wrap; }
+    .event-meta { flex-direction: column; }
+    .day-header { font-size: 10px; padding: 6px; }
+    .day-number { font-size: 12px; }
+  }
+
+  @media (max-width: 480px) {
+    .container { padding: 12px !important; }
+    .stats { grid-template-columns: 1fr; }
+    .stat { padding: 10px 14px; }
+    .stat-number { font-size: 16px; }
+    .title { font-size: 22px; }
+    .month-label { font-size: 14px; min-width: 100px; }
+    .day { min-height: 50px; padding: 2px; }
+    .day-number { font-size: 11px; }
+    .header-actions { flex-wrap: wrap; }
+    .primary-btn, .filter-btn { flex: 1; min-width: 100px; }
+    .icon-btn { padding: 6px; }
+  }
+`;
+document.head.appendChild(styleSheet);
 
 export default CalendarView;

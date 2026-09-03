@@ -4,7 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import {
   TrendingUp, Users, Building, DollarSign,
   ArrowUp, ArrowDown, RefreshCw, Download,
-  Filter, Calendar, Activity
+  Filter, Calendar, Activity, Sparkles,
+  Zap, Target, Award, Crown, BarChart3
 } from 'lucide-react';
 import {
   LineChart, BarChart,
@@ -82,7 +83,7 @@ const GrowthMetrics = () => {
       console.error('Error fetching growth data:', error);
       toast.error(error.message || 'Failed to load growth metrics');
       setMockData();
-      toast.info('Showing sample growth data');
+      toast.success('Showing sample growth data');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -165,8 +166,8 @@ const GrowthMetrics = () => {
             <p className="gm-metric-subtitle">{subtitle}</p>
           )}
         </div>
-        <div className={`gm-metric-icon-wrapper gm-metric-icon-${color}`}>
-          <Icon className="gm-metric-icon" />
+        <div className={`gm-metric-icon-wrapper gm-metric-icon-${color}`} style={{ backgroundColor: '#FFEFB3' }}>
+          <Icon className="gm-metric-icon" color="#013E37" />
         </div>
       </div>
     </div>
@@ -186,7 +187,7 @@ const GrowthMetrics = () => {
   if (loading) {
     return (
       <div className="gm-loading">
-        <div className="gm-spinner"></div>
+        <div className="gm-loading-spinner"></div>
         <p className="gm-loading-text">Loading growth metrics...</p>
       </div>
     );
@@ -197,11 +198,14 @@ const GrowthMetrics = () => {
       {/* Header */}
       <div className="gm-header">
         <div className="gm-header-left">
-          <div className="gm-header-icon">
+          <div className="gm-header-icon" style={{ background: 'linear-gradient(135deg, #013E37, #0A5C54)' }}>
             <TrendingUp className="gm-header-svg" />
           </div>
           <div>
-            <h1 className="gm-title">Growth Metrics</h1>
+            <h1 className="gm-title">
+              <Sparkles className="gm-title-icon" color="#013E37" />
+              Growth Metrics
+            </h1>
             <p className="gm-subtitle">Track business growth and scaling</p>
           </div>
         </div>
@@ -258,40 +262,40 @@ const GrowthMetrics = () => {
       <div className="gm-chart-card">
         <div className="gm-chart-header">
           <h3 className="gm-chart-title">Lead Growth Over Time</h3>
-          <span className="gm-chart-badge">Line Chart</span>
+          <span className="gm-chart-badge" style={{ backgroundColor: '#FFEFB3', color: '#013E37' }}>Line Chart</span>
         </div>
         <div className="gm-chart-body">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={leadData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="period" stroke="#94a3b8" fontSize={12} />
-              <YAxis stroke="#94a3b8" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#FFEFB3" />
+              <XAxis dataKey="period" stroke="#013E37" fontSize={12} opacity={0.6} />
+              <YAxis stroke="#013E37" fontSize={12} opacity={0.6} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: '#ffffff',
-                  border: '1px solid #e2e8f0',
+                  border: '1px solid #FFEFB3',
                   borderRadius: '8px',
                   padding: '12px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                  boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
                 }}
               />
               <Legend wrapperStyle={{ paddingTop: '10px' }} />
               <Line
                 type="monotone"
                 dataKey="new"
-                stroke="#3B82F6"
-                strokeWidth={2}
+                stroke="#013E37"
+                strokeWidth={3}
                 name="New Leads"
-                dot={{ fill: '#3B82F6', strokeWidth: 2 }}
+                dot={{ fill: '#013E37', strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6 }}
               />
               <Line
                 type="monotone"
                 dataKey="total"
-                stroke="#10B981"
-                strokeWidth={2}
+                stroke="#0A5C54"
+                strokeWidth={3}
                 name="Total Leads"
-                dot={{ fill: '#10B981', strokeWidth: 2 }}
+                dot={{ fill: '#0A5C54', strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6 }}
               />
             </LineChart>
@@ -305,26 +309,26 @@ const GrowthMetrics = () => {
         <div className="gm-chart-card">
           <div className="gm-chart-header">
             <h3 className="gm-chart-title">Client Growth</h3>
-            <span className="gm-chart-badge">Bar Chart</span>
+            <span className="gm-chart-badge" style={{ backgroundColor: '#FFEFB3', color: '#013E37' }}>Bar Chart</span>
           </div>
           <div className="gm-chart-body">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={clientData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="period" stroke="#94a3b8" fontSize={12} />
-                <YAxis stroke="#94a3b8" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#FFEFB3" />
+                <XAxis dataKey="period" stroke="#013E37" fontSize={12} opacity={0.6} />
+                <YAxis stroke="#013E37" fontSize={12} opacity={0.6} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: '#ffffff',
-                    border: '1px solid #e2e8f0',
+                    border: '1px solid #FFEFB3',
                     borderRadius: '8px',
                     padding: '12px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                    boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
                   }}
                 />
                 <Legend wrapperStyle={{ paddingTop: '10px' }} />
-                <Bar dataKey="new" fill="#8B5CF6" name="New Clients" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="total" fill="#14B8A6" name="Total Clients" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="new" fill="#013E37" name="New Clients" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="total" fill="#FFEFB3" name="Total Clients" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -334,32 +338,32 @@ const GrowthMetrics = () => {
         <div className="gm-chart-card">
           <div className="gm-chart-header">
             <h3 className="gm-chart-title">Revenue Growth</h3>
-            <span className="gm-chart-badge">Line Chart</span>
+            <span className="gm-chart-badge" style={{ backgroundColor: '#FFEFB3', color: '#013E37' }}>Line Chart</span>
           </div>
           <div className="gm-chart-body">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="period" stroke="#94a3b8" fontSize={12} />
-                <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(value) => formatCurrency(value)} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#FFEFB3" />
+                <XAxis dataKey="period" stroke="#013E37" fontSize={12} opacity={0.6} />
+                <YAxis stroke="#013E37" fontSize={12} opacity={0.6} tickFormatter={(value) => formatCurrency(value)} />
                 <Tooltip
                   formatter={(value) => formatCurrency(value)}
                   contentStyle={{
                     backgroundColor: '#ffffff',
-                    border: '1px solid #e2e8f0',
+                    border: '1px solid #FFEFB3',
                     borderRadius: '8px',
                     padding: '12px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                    boxShadow: '0 4px 12px rgba(1, 62, 55, 0.08)'
                   }}
                 />
                 <Legend wrapperStyle={{ paddingTop: '10px' }} />
                 <Line
                   type="monotone"
                   dataKey="revenue"
-                  stroke="#F59E0B"
-                  strokeWidth={2}
+                  stroke="#013E37"
+                  strokeWidth={3}
                   name="Revenue"
-                  dot={{ fill: '#F59E0B', strokeWidth: 2 }}
+                  dot={{ fill: '#013E37', strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
@@ -368,7 +372,6 @@ const GrowthMetrics = () => {
         </div>
       </div>
 
-      {/* Custom CSS */}
       <style>{`
         /* ============================================
            CONTAINER
@@ -377,7 +380,7 @@ const GrowthMetrics = () => {
           padding: 24px 32px;
           max-width: 1400px;
           margin: 0 auto;
-          background: #f8fafc;
+          background: #FFFFFF;
           min-height: 100vh;
           animation: gmFadeIn 0.4s ease;
         }
@@ -396,6 +399,11 @@ const GrowthMetrics = () => {
           50% { opacity: 1; }
         }
 
+        @keyframes gmSlideUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
         .gm-spin {
           animation: gmSpin 1s linear infinite;
         }
@@ -412,17 +420,18 @@ const GrowthMetrics = () => {
           gap: 16px;
         }
 
-        .gm-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #f59e0b;
+        .gm-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid #FFEFB3;
+          border-top-color: #013E37;
           border-radius: 50%;
           animation: gmSpin 0.8s linear infinite;
         }
 
         .gm-loading-text {
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           font-size: 14px;
           font-weight: 500;
         }
@@ -448,12 +457,16 @@ const GrowthMetrics = () => {
         .gm-header-icon {
           width: 48px;
           height: 48px;
-          background: linear-gradient(135deg, #f59e0b, #d97706);
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.25);
+          transition: all 0.3s ease;
+        }
+
+        .gm-header-icon:hover {
+          transform: scale(1.05) rotate(-5deg);
         }
 
         .gm-header-svg {
@@ -465,14 +478,24 @@ const GrowthMetrics = () => {
         .gm-title {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
           letter-spacing: -0.5px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .gm-title-icon {
+          width: 24px;
+          height: 24px;
+          animation: gmPulse 2s ease-in-out infinite;
         }
 
         .gm-subtitle {
           font-size: 15px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
 
@@ -488,16 +511,17 @@ const GrowthMetrics = () => {
           align-items: center;
           justify-content: center;
           padding: 8px 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           background: #ffffff;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s ease;
+          color: #013E37;
         }
 
         .gm-btn-icon:hover:not(:disabled) {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
         }
 
         .gm-btn-icon:disabled {
@@ -517,24 +541,24 @@ const GrowthMetrics = () => {
 
         .gm-select {
           padding: 8px 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           background: #ffffff;
-          color: #0f172a;
+          color: #013E37;
           outline: none;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           min-width: 140px;
         }
 
         .gm-select:focus {
-          border-color: #f59e0b;
-          box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
         }
 
         .gm-select:hover {
-          border-color: #94a3b8;
+          border-color: #013E37;
         }
 
         /* ============================================
@@ -551,7 +575,7 @@ const GrowthMetrics = () => {
           background: #ffffff;
           border-radius: 12px;
           padding: 20px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           transition: all 0.3s ease;
           animation: gmSlideUp 0.5s ease both;
         }
@@ -560,14 +584,10 @@ const GrowthMetrics = () => {
         .gm-metric-card:nth-child(2) { animation-delay: 0.1s; }
         .gm-metric-card:nth-child(3) { animation-delay: 0.15s; }
 
-        @keyframes gmSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
         .gm-metric-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+          transform: translateY(-4px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
+          border-color: #013E37;
         }
 
         .gm-metric-content {
@@ -583,14 +603,15 @@ const GrowthMetrics = () => {
         .gm-metric-title {
           font-size: 13px;
           font-weight: 500;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 0;
         }
 
         .gm-metric-value {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 6px 0 0 0;
           line-height: 1.2;
         }
@@ -598,7 +619,7 @@ const GrowthMetrics = () => {
         .gm-metric-skeleton {
           height: 32px;
           width: 80px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 6px;
           margin-top: 6px;
           animation: gmPulse 1.5s ease-in-out infinite;
@@ -612,8 +633,8 @@ const GrowthMetrics = () => {
           margin-top: 4px;
         }
 
-        .gm-change-up { color: #16a34a; }
-        .gm-change-down { color: #dc2626; }
+        .gm-change-up { color: #013E37; }
+        .gm-change-down { color: #D32F2F; }
 
         .gm-change-icon {
           width: 14px;
@@ -622,14 +643,16 @@ const GrowthMetrics = () => {
         }
 
         .gm-change-label {
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
           margin-left: 4px;
           font-weight: 400;
         }
 
         .gm-metric-subtitle {
           font-size: 13px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
           margin: 2px 0 0 0;
         }
 
@@ -640,20 +663,17 @@ const GrowthMetrics = () => {
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          transition: all 0.3s ease;
         }
 
-        .gm-metric-icon-blue { background: #eff6ff; }
-        .gm-metric-icon-green { background: #ecfdf5; }
-        .gm-metric-icon-purple { background: #f5f3ff; }
+        .gm-metric-card:hover .gm-metric-icon-wrapper {
+          transform: scale(1.05);
+        }
 
         .gm-metric-icon {
           width: 20px;
           height: 20px;
         }
-
-        .gm-metric-icon-blue .gm-metric-icon { color: #3b82f6; }
-        .gm-metric-icon-green .gm-metric-icon { color: #10b981; }
-        .gm-metric-icon-purple .gm-metric-icon { color: #8b5cf6; }
 
         /* ============================================
            CHARTS
@@ -661,14 +681,15 @@ const GrowthMetrics = () => {
         .gm-chart-card {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           overflow: hidden;
           margin-bottom: 24px;
           transition: all 0.3s ease;
         }
 
         .gm-chart-card:hover {
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.06);
+          border-color: #013E37;
         }
 
         .gm-charts-grid {
@@ -682,21 +703,20 @@ const GrowthMetrics = () => {
           align-items: center;
           justify-content: space-between;
           padding: 16px 24px;
-          border-bottom: 1px solid #e2e8f0;
+          border-bottom: 1px solid #FFEFB3;
+          background: #F8FAFC;
         }
 
         .gm-chart-title {
           font-size: 16px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .gm-chart-badge {
           font-size: 11px;
           font-weight: 600;
-          color: #f59e0b;
-          background: #fffbeb;
           padding: 4px 12px;
           border-radius: 20px;
           text-transform: uppercase;

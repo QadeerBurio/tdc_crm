@@ -1,4 +1,4 @@
-// pages/reports/Reports.jsx - FIXED VERSION WITH STATS ALWAYS VISIBLE
+// pages/reports/Reports.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -9,7 +9,7 @@ import {
   RefreshCw, Copy, Share2, MoreVertical,
   BarChart2, PieChart, Activity, Users,
   Target, CheckCircle, AlertCircle,
-  X, Loader
+  X, Loader, Layers
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -297,10 +297,8 @@ const Reports = () => {
     { value: 'failed', label: 'Failed' }
   ];
 
-  // ✅ Ensure reports is an array before calculating stats
   const reportsArray = Array.isArray(reports) ? reports : [];
   
-  // ✅ Calculate stats - always show even if zero
   const stats = {
     total: reportsArray.length,
     active: reportsArray.filter(r => r.status === 'active').length,
@@ -311,356 +309,387 @@ const Reports = () => {
   if (loading) {
     return (
       <div className="rp-loading">
-        <div className="rp-spinner"></div>
+        <div className="rp-loading-spinner"></div>
         <p className="rp-loading-text">Loading reports...</p>
       </div>
     );
   }
 
   return (
-    <div className="rp-container">
-      {/* Header */}
-      <div className="rp-header">
-        <div className="rp-header-left">
-          <div className="rp-header-icon">
-            <FileText className="rp-header-svg" />
+    <>
+      <div className="rp-container">
+        {/* Header */}
+        <div className="rp-header">
+          <div className="rp-header-left">
+            <div className="rp-header-icon">
+              <Layers className="rp-header-svg" />
+            </div>
+            <div>
+              <h1 className="rp-title">Reports</h1>
+              <p className="rp-subtitle">Manage and generate reports</p>
+            </div>
+            <span className="rp-count">{reportsArray.length} reports</span>
           </div>
-          <div>
-            <h1 className="rp-title">Reports</h1>
-            <p className="rp-subtitle">Manage and generate reports</p>
+          <div className="rp-header-right">
+            <button className="rp-btn-icon" onClick={handleRefresh} disabled={refreshing}>
+              <RefreshCw className={`rp-refresh-icon ${refreshing ? 'rp-spin' : ''}`} />
+            </button>
+            <button 
+              onClick={handleNewReport}
+              className="rp-btn-primary"
+            >
+              <Plus className="rp-btn-svg" />
+              New Report
+            </button>
           </div>
-          <span className="rp-count">{reportsArray.length} reports</span>
         </div>
-        <div className="rp-header-right">
-          <button className="rp-btn-icon" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw className={`rp-refresh-icon ${refreshing ? 'rp-spin' : ''}`} />
-          </button>
-          <button 
-            onClick={handleNewReport}
-            className="rp-btn-primary"
+
+        {/* Stats */}
+        <div className="rp-stats">
+          <div className="rp-stat-card">
+            <div className="rp-stat-content">
+              <div className="rp-stat-left">
+                <p className="rp-stat-label">Total Reports</p>
+                <p className="rp-stat-value">{stats.total}</p>
+              </div>
+              <div className="rp-stat-icon-wrapper rp-stat-icon-total">
+                <FileText className="rp-stat-svg" />
+              </div>
+            </div>
+          </div>
+          <div className="rp-stat-card">
+            <div className="rp-stat-content">
+              <div className="rp-stat-left">
+                <p className="rp-stat-label">Active</p>
+                <p className="rp-stat-value rp-stat-value-active">{stats.active}</p>
+              </div>
+              <div className="rp-stat-icon-wrapper rp-stat-icon-active">
+                <CheckCircle className="rp-stat-svg" />
+              </div>
+            </div>
+          </div>
+          <div className="rp-stat-card">
+            <div className="rp-stat-content">
+              <div className="rp-stat-left">
+                <p className="rp-stat-label">Pending</p>
+                <p className="rp-stat-value rp-stat-value-pending">{stats.pending}</p>
+              </div>
+              <div className="rp-stat-icon-wrapper rp-stat-icon-pending">
+                <Clock className="rp-stat-svg" />
+              </div>
+            </div>
+          </div>
+          <div className="rp-stat-card">
+            <div className="rp-stat-content">
+              <div className="rp-stat-left">
+                <p className="rp-stat-label">Scheduled</p>
+                <p className="rp-stat-value rp-stat-value-scheduled">{stats.scheduled}</p>
+              </div>
+              <div className="rp-stat-icon-wrapper rp-stat-icon-scheduled">
+                <Calendar className="rp-stat-svg" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="rp-filters">
+          <div className="rp-search-wrapper">
+            <Search className="rp-search-icon" />
+            <input
+              type="text"
+              placeholder="Search reports..."
+              value={search}
+              onChange={handleSearch}
+              className="rp-search-input"
+            />
+            {search && (
+              <button className="rp-search-clear" onClick={() => setSearch('')}>
+                <X className="rp-search-clear-icon" />
+              </button>
+            )}
+          </div>
+
+          <select
+            value={filters.category}
+            onChange={(e) => handleFilterChange('category', e.target.value)}
+            className="rp-filter-select"
           >
-            <Plus className="rp-btn-svg" />
-            New Report
-          </button>
-        </div>
-      </div>
+            {categories.map(cat => (
+              <option key={cat.value} value={cat.value}>{cat.label}</option>
+            ))}
+          </select>
 
-      {/* ✅ Stats - Always visible even if zero */}
-      <div className="rp-stats">
-        <div className="rp-stat-card">
-          <div className="rp-stat-content">
-            <div className="rp-stat-left">
-              <p className="rp-stat-label">Total Reports</p>
-              <p className="rp-stat-value">{stats.total}</p>
-            </div>
-            <div className="rp-stat-icon-wrapper rp-stat-icon-total">
-              <FileText className="rp-stat-svg" />
-            </div>
-          </div>
-        </div>
-        <div className="rp-stat-card">
-          <div className="rp-stat-content">
-            <div className="rp-stat-left">
-              <p className="rp-stat-label">Active</p>
-              <p className="rp-stat-value rp-stat-value-active">{stats.active}</p>
-            </div>
-            <div className="rp-stat-icon-wrapper rp-stat-icon-active">
-              <CheckCircle className="rp-stat-svg" />
-            </div>
-          </div>
-        </div>
-        <div className="rp-stat-card">
-          <div className="rp-stat-content">
-            <div className="rp-stat-left">
-              <p className="rp-stat-label">Pending</p>
-              <p className="rp-stat-value rp-stat-value-pending">{stats.pending}</p>
-            </div>
-            <div className="rp-stat-icon-wrapper rp-stat-icon-pending">
-              <Clock className="rp-stat-svg" />
-            </div>
-          </div>
-        </div>
-        <div className="rp-stat-card">
-          <div className="rp-stat-content">
-            <div className="rp-stat-left">
-              <p className="rp-stat-label">Scheduled</p>
-              <p className="rp-stat-value rp-stat-value-scheduled">{stats.scheduled}</p>
-            </div>
-            <div className="rp-stat-icon-wrapper rp-stat-icon-scheduled">
-              <Calendar className="rp-stat-svg" />
-            </div>
-          </div>
-        </div>
-      </div>
+          <select
+            value={filters.type}
+            onChange={(e) => handleFilterChange('type', e.target.value)}
+            className="rp-filter-select"
+          >
+            {types.map(type => (
+              <option key={type.value} value={type.value}>{type.label}</option>
+            ))}
+          </select>
 
-      {/* Filters */}
-      <div className="rp-filters">
-        <div className="rp-search-wrapper">
-          <Search className="rp-search-icon" />
-          <input
-            type="text"
-            placeholder="Search reports..."
-            value={search}
-            onChange={handleSearch}
-            className="rp-search-input"
-          />
-          {search && (
-            <button className="rp-search-clear" onClick={() => setSearch('')}>
-              <X className="rp-search-clear-icon" />
+          <select
+            value={filters.status}
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+            className="rp-filter-select"
+          >
+            {statuses.map(status => (
+              <option key={status.value} value={status.value}>{status.label}</option>
+            ))}
+          </select>
+
+          {(filters.category !== 'all' || filters.type !== 'all' || filters.status !== 'all' || search) && (
+            <button
+              onClick={() => {
+                setFilters({ category: 'all', type: 'all', status: 'all' });
+                setSearch('');
+              }}
+              className="rp-clear-btn"
+            >
+              <X className="rp-clear-icon" />
+              Clear
             </button>
           )}
         </div>
 
-        <select
-          value={filters.category}
-          onChange={(e) => handleFilterChange('category', e.target.value)}
-          className="rp-filter-select"
-        >
-          {categories.map(cat => (
-            <option key={cat.value} value={cat.value}>{cat.label}</option>
-          ))}
-        </select>
-
-        <select
-          value={filters.type}
-          onChange={(e) => handleFilterChange('type', e.target.value)}
-          className="rp-filter-select"
-        >
-          {types.map(type => (
-            <option key={type.value} value={type.value}>{type.label}</option>
-          ))}
-        </select>
-
-        <select
-          value={filters.status}
-          onChange={(e) => handleFilterChange('status', e.target.value)}
-          className="rp-filter-select"
-        >
-          {statuses.map(status => (
-            <option key={status.value} value={status.value}>{status.label}</option>
-          ))}
-        </select>
-
-        {(filters.category !== 'all' || filters.type !== 'all' || filters.status !== 'all' || search) && (
-          <button
-            onClick={() => {
-              setFilters({ category: 'all', type: 'all', status: 'all' });
-              setSearch('');
-            }}
-            className="rp-clear-btn"
-          >
-            <X className="rp-clear-icon" />
-            Clear
-          </button>
-        )}
-      </div>
-
-      {/* Report List */}
-      <div className="rp-list-container">
-        {reportsArray.length === 0 ? (
-          <div className="rp-empty">
-            <div className="rp-empty-icon-wrapper">
-              <FileText className="rp-empty-icon" />
+        {/* Report List */}
+        <div className="rp-list-container">
+          {reportsArray.length === 0 ? (
+            <div className="rp-empty">
+              <div className="rp-empty-icon-wrapper">
+                <FileText className="rp-empty-icon" />
+              </div>
+              <h3 className="rp-empty-title">No reports found</h3>
+              <p className="rp-empty-subtitle">Create your first report</p>
+              <button 
+                onClick={handleNewReport}
+                className="rp-empty-btn"
+              >
+                <Plus className="rp-btn-svg" />
+                Create Report
+              </button>
             </div>
-            <h3 className="rp-empty-title">No reports found</h3>
-            <p className="rp-empty-subtitle">Create your first report</p>
-            <button 
-              onClick={handleNewReport}
-              className="rp-empty-btn"
-            >
-              <Plus className="rp-btn-svg" />
-              Create Report
-            </button>
-          </div>
-        ) : (
-          <div className="rp-list">
-            {reportsArray.map((report) => (
-              <div key={report._id} className="rp-card">
-                <div className="rp-card-header" onClick={() => toggleExpand(report._id)}>
-                  <div className="rp-card-left">
-                    <div className="rp-expand-btn">
-                      {expanded[report._id] ? (
-                        <ChevronDown className="rp-expand-icon" />
-                      ) : (
-                        <ChevronRight className="rp-expand-icon" />
-                      )}
-                    </div>
-
-                    <div className="rp-card-icon-wrapper">
-                      {getTypeIcon(report.type)}
-                    </div>
-
-                    <div className="rp-card-info">
-                      <div className="rp-card-title-row">
-                        <h4 className="rp-card-title">{report.name}</h4>
-                        <span className={`rp-card-category ${getCategoryColor(report.category)}`}>
-                          {getCategoryLabel(report.category)}
-                        </span>
-                        <span className={`rp-card-status ${getStatusColor(report.status)}`}>
-                          {getStatusLabel(report.status)}
-                        </span>
-                        <span className="rp-card-date">
-                          {new Date(report.createdAt).toLocaleDateString()}
-                        </span>
+          ) : (
+            <div className="rp-list">
+              {reportsArray.map((report, index) => (
+                <div key={report._id} className="rp-card" style={{ animationDelay: `${index * 0.05}s` }}>
+                  <div className="rp-card-header" onClick={() => toggleExpand(report._id)}>
+                    <div className="rp-card-left">
+                      <div className="rp-expand-btn">
+                        {expanded[report._id] ? (
+                          <ChevronDown className="rp-expand-icon" />
+                        ) : (
+                          <ChevronRight className="rp-expand-icon" />
+                        )}
                       </div>
 
-                      <p className="rp-card-description">{report.description}</p>
+                      <div className="rp-card-icon-wrapper">
+                        {getTypeIcon(report.type)}
+                      </div>
 
-                      <div className="rp-card-meta">
-                        <span className="rp-card-meta-item">
-                          <Calendar className="rp-card-meta-icon" />
-                          Period: {report.period}
-                        </span>
-                        <span className="rp-card-meta-item">
-                          <FileText className="rp-card-meta-icon" />
-                          Format: {report.format}
-                        </span>
-                        {report.recipients && report.recipients.length > 0 && (
-                          <span className="rp-card-meta-item">
-                            <Users className="rp-card-meta-icon" />
-                            {report.recipients.length} recipients
+                      <div className="rp-card-info">
+                        <div className="rp-card-title-row">
+                          <h4 className="rp-card-title">{report.name}</h4>
+                          <span className={`rp-card-category ${getCategoryColor(report.category)}`}>
+                            {getCategoryLabel(report.category)}
                           </span>
+                          <span className={`rp-card-status ${getStatusColor(report.status)}`}>
+                            <span className="rp-status-dot"></span>
+                            {getStatusLabel(report.status)}
+                          </span>
+                          <span className="rp-card-date">
+                            {new Date(report.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+
+                        <p className="rp-card-description">{report.description}</p>
+
+                        <div className="rp-card-meta">
+                          <span className="rp-card-meta-item">
+                            <Calendar className="rp-card-meta-icon" />
+                            Period: {report.period}
+                          </span>
+                          <span className="rp-card-meta-item">
+                            <FileText className="rp-card-meta-icon" />
+                            Format: {report.format}
+                          </span>
+                          {report.recipients && report.recipients.length > 0 && (
+                            <span className="rp-card-meta-item">
+                              <Users className="rp-card-meta-icon" />
+                              {report.recipients.length} recipients
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rp-card-actions" onClick={(e) => e.stopPropagation()}>
+                      <button 
+                        className="rp-action-btn rp-action-view" 
+                        title="View"
+                        onClick={() => handleViewReport(report._id)}
+                      >
+                        <Eye className="rp-action-icon" />
+                      </button>
+                      <button 
+                        className="rp-action-btn rp-action-edit" 
+                        title="Edit"
+                        onClick={() => handleEditReport(report._id)}
+                      >
+                        <Edit className="rp-action-icon" />
+                      </button>
+                      <button 
+                        className="rp-action-btn rp-action-copy" 
+                        title="Copy"
+                        onClick={() => handleCopyReport(report._id)}
+                      >
+                        <Copy className="rp-action-icon" />
+                      </button>
+                      <button 
+                        className="rp-action-btn rp-action-delete" 
+                        title="Delete"
+                        onClick={() => handleDeleteReport(report._id)}
+                      >
+                        <Trash2 className="rp-action-icon" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Expanded Details */}
+                  {expanded[report._id] && (
+                    <div className="rp-card-expanded">
+                      <div className="rp-expanded-content">
+                        <div className="rp-expanded-grid">
+                          <div className="rp-expanded-section">
+                            <h5 className="rp-expanded-label">Report Details</h5>
+                            <div className="rp-expanded-details">
+                              <div className="rp-expanded-item">
+                                <span className="rp-expanded-key">Type</span>
+                                <span className="rp-expanded-value">{getTypeLabel(report.type)}</span>
+                              </div>
+                              <div className="rp-expanded-item">
+                                <span className="rp-expanded-key">Category</span>
+                                <span className={`rp-expanded-value ${getCategoryColor(report.category)}`}>
+                                  {getCategoryLabel(report.category)}
+                                </span>
+                              </div>
+                              <div className="rp-expanded-item">
+                                <span className="rp-expanded-key">Format</span>
+                                <span className="rp-expanded-value">{report.format}</span>
+                              </div>
+                              <div className="rp-expanded-item">
+                                <span className="rp-expanded-key">Period</span>
+                                <span className="rp-expanded-value">{report.period}</span>
+                              </div>
+                              <div className="rp-expanded-item">
+                                <span className="rp-expanded-key">Group By</span>
+                                <span className="rp-expanded-value">{report.groupBy}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="rp-expanded-section">
+                            <h5 className="rp-expanded-label">Schedule</h5>
+                            <div className="rp-expanded-details">
+                              <div className="rp-expanded-item">
+                                <span className="rp-expanded-key">Frequency</span>
+                                <span className="rp-expanded-value">
+                                  {report.schedule?.frequency || 'None'}
+                                </span>
+                              </div>
+                              {report.schedule?.frequency && report.schedule.frequency !== 'none' && (
+                                <>
+                                  <div className="rp-expanded-item">
+                                    <span className="rp-expanded-key">Day</span>
+                                    <span className="rp-expanded-value">{report.schedule.day || 'N/A'}</span>
+                                  </div>
+                                  <div className="rp-expanded-item">
+                                    <span className="rp-expanded-key">Time</span>
+                                    <span className="rp-expanded-value">{report.schedule.time || 'N/A'}</span>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {report.metrics && report.metrics.length > 0 && (
+                          <div className="rp-expanded-metrics">
+                            <h5 className="rp-expanded-label">Metrics</h5>
+                            <div className="rp-expanded-tags">
+                              {report.metrics.map((metric, idx) => (
+                                <span key={idx} className="rp-expanded-tag">{metric}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {report.recipients && report.recipients.length > 0 && (
+                          <div className="rp-expanded-recipients">
+                            <h5 className="rp-expanded-label">Recipients</h5>
+                            <div className="rp-expanded-tags">
+                              {report.recipients.map((recipient, idx) => (
+                                <span key={idx} className="rp-expanded-tag rp-expanded-tag-blue">
+                                  {recipient}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
                         )}
                       </div>
                     </div>
-                  </div>
-
-                  <div className="rp-card-actions" onClick={(e) => e.stopPropagation()}>
-                    <button 
-                      className="rp-action-btn rp-action-view" 
-                      title="View"
-                      onClick={() => handleViewReport(report._id)}
-                    >
-                      <Eye className="rp-action-icon" />
-                    </button>
-                    <button 
-                      className="rp-action-btn rp-action-edit" 
-                      title="Edit"
-                      onClick={() => handleEditReport(report._id)}
-                    >
-                      <Edit className="rp-action-icon" />
-                    </button>
-                    <button 
-                      className="rp-action-btn rp-action-copy" 
-                      title="Copy"
-                      onClick={() => handleCopyReport(report._id)}
-                    >
-                      <Copy className="rp-action-icon" />
-                    </button>
-                    <button 
-                      className="rp-action-btn rp-action-delete" 
-                      title="Delete"
-                      onClick={() => handleDeleteReport(report._id)}
-                    >
-                      <Trash2 className="rp-action-icon" />
-                    </button>
-                  </div>
+                  )}
                 </div>
-
-                {/* Expanded Details */}
-                {expanded[report._id] && (
-                  <div className="rp-card-expanded">
-                    <div className="rp-expanded-content">
-                      <div className="rp-expanded-grid">
-                        <div className="rp-expanded-section">
-                          <h5 className="rp-expanded-label">Report Details</h5>
-                          <div className="rp-expanded-details">
-                            <div className="rp-expanded-item">
-                              <span className="rp-expanded-key">Type</span>
-                              <span className="rp-expanded-value">{getTypeLabel(report.type)}</span>
-                            </div>
-                            <div className="rp-expanded-item">
-                              <span className="rp-expanded-key">Category</span>
-                              <span className={`rp-expanded-value ${getCategoryColor(report.category)}`}>
-                                {getCategoryLabel(report.category)}
-                              </span>
-                            </div>
-                            <div className="rp-expanded-item">
-                              <span className="rp-expanded-key">Format</span>
-                              <span className="rp-expanded-value">{report.format}</span>
-                            </div>
-                            <div className="rp-expanded-item">
-                              <span className="rp-expanded-key">Period</span>
-                              <span className="rp-expanded-value">{report.period}</span>
-                            </div>
-                            <div className="rp-expanded-item">
-                              <span className="rp-expanded-key">Group By</span>
-                              <span className="rp-expanded-value">{report.groupBy}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="rp-expanded-section">
-                          <h5 className="rp-expanded-label">Schedule</h5>
-                          <div className="rp-expanded-details">
-                            <div className="rp-expanded-item">
-                              <span className="rp-expanded-key">Frequency</span>
-                              <span className="rp-expanded-value">
-                                {report.schedule?.frequency || 'None'}
-                              </span>
-                            </div>
-                            {report.schedule?.frequency && report.schedule.frequency !== 'none' && (
-                              <>
-                                <div className="rp-expanded-item">
-                                  <span className="rp-expanded-key">Day</span>
-                                  <span className="rp-expanded-value">{report.schedule.day || 'N/A'}</span>
-                                </div>
-                                <div className="rp-expanded-item">
-                                  <span className="rp-expanded-key">Time</span>
-                                  <span className="rp-expanded-value">{report.schedule.time || 'N/A'}</span>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {report.metrics && report.metrics.length > 0 && (
-                        <div className="rp-expanded-metrics">
-                          <h5 className="rp-expanded-label">Metrics</h5>
-                          <div className="rp-expanded-tags">
-                            {report.metrics.map((metric, idx) => (
-                              <span key={idx} className="rp-expanded-tag">{metric}</span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {report.recipients && report.recipients.length > 0 && (
-                        <div className="rp-expanded-recipients">
-                          <h5 className="rp-expanded-label">Recipients</h5>
-                          <div className="rp-expanded-tags">
-                            {report.recipients.map((recipient, idx) => (
-                              <span key={idx} className="rp-expanded-tag rp-expanded-tag-blue">
-                                {recipient}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Custom CSS - same as before */}
       <style>{`
+        /* ============================================
+           CONTAINER
+           ============================================ */
         .rp-container {
-          padding: 24px 32px;
-          max-width: 1400px;
-          margin: 0 auto;
-          background: #f8fafc;
-          min-height: 100vh;
-          animation: rpFadeIn 0.4s ease;
+          padding: 0 0 24px 0;
+          max-width: 100%;
         }
 
-        @keyframes rpFadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+        /* ============================================
+           LOADING
+           ============================================ */
+        .rp-loading {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 400px;
+          gap: 20px;
+        }
+
+        .rp-loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid rgba(1, 62, 55, 0.06);
+          border-top-color: #013E37;
+          border-radius: 50%;
+          animation: rpSpin 0.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+        }
+
+        .rp-loading-text {
+          color: #013E37;
+          opacity: 0.4;
+          font-size: 14px;
+          font-weight: 500;
+          letter-spacing: 0.3px;
+          animation: pulseText 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseText {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 0.8; }
         }
 
         @keyframes rpSpin {
@@ -671,30 +700,9 @@ const Reports = () => {
           animation: rpSpin 1s linear infinite;
         }
 
-        .rp-loading {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          min-height: 60vh;
-          gap: 16px;
-        }
-
-        .rp-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid #e2e8f0;
-          border-top-color: #3b82f6;
-          border-radius: 50%;
-          animation: rpSpin 0.8s linear infinite;
-        }
-
-        .rp-loading-text {
-          color: #64748b;
-          font-size: 14px;
-          font-weight: 500;
-        }
-
+        /* ============================================
+           HEADER
+           ============================================ */
         .rp-header {
           display: flex;
           align-items: center;
@@ -702,6 +710,7 @@ const Reports = () => {
           margin-bottom: 24px;
           flex-wrap: wrap;
           gap: 16px;
+          animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .rp-header-left {
@@ -713,39 +722,40 @@ const Reports = () => {
         .rp-header-icon {
           width: 48px;
           height: 48px;
-          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+          background: #013E37;
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 12px rgba(1, 62, 55, 0.25);
         }
 
         .rp-header-svg {
           width: 24px;
           height: 24px;
-          color: #ffffff;
+          color: #FFEFB3;
         }
 
         .rp-title {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
           letter-spacing: -0.5px;
         }
 
         .rp-subtitle {
           font-size: 15px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 2px 0 0 0;
         }
 
         .rp-count {
           font-size: 14px;
           font-weight: 500;
-          color: #64748b;
-          background: #f1f5f9;
+          color: #013E37;
+          background: #FFEFB3;
           padding: 2px 14px;
           border-radius: 12px;
         }
@@ -762,16 +772,20 @@ const Reports = () => {
           align-items: center;
           justify-content: center;
           padding: 8px 10px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
-          background: #ffffff;
+          background: #FFFFFF;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #64748b;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          color: #013E37;
+          box-shadow: 0 2px 8px rgba(1, 62, 55, 0.04);
         }
 
         .rp-btn-icon:hover:not(:disabled) {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          border-color: #013E37;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
         }
 
         .rp-btn-icon:disabled {
@@ -780,8 +794,9 @@ const Reports = () => {
         }
 
         .rp-refresh-icon {
-          width: 16px;
-          height: 16px;
+          width: 18px;
+          height: 18px;
+          transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .rp-btn-svg {
@@ -794,22 +809,26 @@ const Reports = () => {
           align-items: center;
           gap: 8px;
           padding: 8px 20px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.3);
         }
 
         .rp-btn-primary:hover {
+          background: #0A5C54;
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.4);
         }
 
+        /* ============================================
+           STATS
+           ============================================ */
         .rp-stats {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -818,12 +837,13 @@ const Reports = () => {
         }
 
         .rp-stat-card {
-          background: #ffffff;
+          background: #FFFFFF;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           padding: 16px 20px;
-          transition: all 0.3s ease;
-          animation: rpSlideUp 0.5s ease both;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+          opacity: 0;
         }
 
         .rp-stat-card:nth-child(1) { animation-delay: 0.05s; }
@@ -831,14 +851,10 @@ const Reports = () => {
         .rp-stat-card:nth-child(3) { animation-delay: 0.15s; }
         .rp-stat-card:nth-child(4) { animation-delay: 0.2s; }
 
-        @keyframes rpSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
         .rp-stat-card:hover {
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+          border-color: #013E37;
+          box-shadow: 0 4px 16px rgba(1, 62, 55, 0.08);
         }
 
         .rp-stat-content {
@@ -853,7 +869,8 @@ const Reports = () => {
 
         .rp-stat-label {
           font-size: 13px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           font-weight: 500;
           margin: 0;
         }
@@ -861,14 +878,14 @@ const Reports = () => {
         .rp-stat-value {
           font-size: 28px;
           font-weight: 700;
-          color: #0f172a;
+          color: #013E37;
           margin: 4px 0 0 0;
           line-height: 1.2;
         }
 
-        .rp-stat-value-active { color: #22c55e; }
-        .rp-stat-value-pending { color: #f59e0b; }
-        .rp-stat-value-scheduled { color: #8b5cf6; }
+        .rp-stat-value-active { color: #013E37; }
+        .rp-stat-value-pending { color: #013E37; }
+        .rp-stat-value-scheduled { color: #013E37; }
 
         .rp-stat-icon-wrapper {
           width: 44px;
@@ -880,21 +897,24 @@ const Reports = () => {
           flex-shrink: 0;
         }
 
-        .rp-stat-icon-total { background: #eff6ff; }
-        .rp-stat-icon-active { background: #d1fae5; }
-        .rp-stat-icon-pending { background: #fef3c7; }
-        .rp-stat-icon-scheduled { background: #f3e8ff; }
+        .rp-stat-icon-total { background: #E8F0FE; }
+        .rp-stat-icon-active { background: #E8F5E9; }
+        .rp-stat-icon-pending { background: #FFEFB3; }
+        .rp-stat-icon-scheduled { background: #F0ECFA; }
 
         .rp-stat-svg {
           width: 20px;
           height: 20px;
         }
 
-        .rp-stat-icon-total .rp-stat-svg { color: #3b82f6; }
-        .rp-stat-icon-active .rp-stat-svg { color: #22c55e; }
-        .rp-stat-icon-pending .rp-stat-svg { color: #f59e0b; }
-        .rp-stat-icon-scheduled .rp-stat-svg { color: #8b5cf6; }
+        .rp-stat-icon-total .rp-stat-svg { color: #013E37; }
+        .rp-stat-icon-active .rp-stat-svg { color: #013E37; }
+        .rp-stat-icon-pending .rp-stat-svg { color: #013E37; }
+        .rp-stat-icon-scheduled .rp-stat-svg { color: #013E37; }
 
+        /* ============================================
+           FILTERS
+           ============================================ */
         .rp-filters {
           display: flex;
           flex-wrap: wrap;
@@ -902,9 +922,14 @@ const Reports = () => {
           gap: 12px;
           margin-bottom: 24px;
           padding: 16px 20px;
-          background: #ffffff;
+          background: #FFFFFF;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .rp-filters:hover {
+          border-color: #013E37;
         }
 
         .rp-search-wrapper {
@@ -920,24 +945,30 @@ const Reports = () => {
           transform: translateY(-50%);
           width: 16px;
           height: 16px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .rp-search-input {
           width: 100%;
           padding: 8px 36px 8px 36px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
           outline: none;
-          background: #ffffff;
-          color: #0f172a;
-          transition: all 0.2s ease;
+          background: #FFFFFF;
+          color: #013E37;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .rp-search-input:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+
+        .rp-search-input::placeholder {
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .rp-search-clear {
@@ -948,15 +979,18 @@ const Reports = () => {
           padding: 4px;
           background: none;
           border: none;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
           cursor: pointer;
           border-radius: 4px;
           display: flex;
           align-items: center;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .rp-search-clear:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
+          opacity: 1;
         }
 
         .rp-search-clear-icon {
@@ -966,38 +1000,45 @@ const Reports = () => {
 
         .rp-filter-select {
           padding: 8px 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           border-radius: 8px;
           font-size: 14px;
-          background: #ffffff;
-          color: #0f172a;
+          background: #FFFFFF;
+          color: #013E37;
           outline: none;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           min-width: 130px;
         }
 
         .rp-filter-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #013E37;
+          box-shadow: 0 0 0 3px rgba(1, 62, 55, 0.1);
+        }
+
+        .rp-filter-select:hover {
+          border-color: #013E37;
         }
 
         .rp-clear-btn {
           display: flex;
           align-items: center;
           gap: 4px;
-          padding: 6px 12px;
-          background: #f1f5f9;
+          padding: 6px 14px;
+          background: #FFEFB3;
           border: none;
           border-radius: 6px;
           font-size: 13px;
-          color: #64748b;
+          font-weight: 500;
+          color: #013E37;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .rp-clear-btn:hover {
-          background: #e2e8f0;
+          background: #013E37;
+          color: #FFEFB3;
+          transform: scale(1.02);
         }
 
         .rp-clear-icon {
@@ -1005,20 +1046,30 @@ const Reports = () => {
           height: 14px;
         }
 
+        /* ============================================
+           LIST
+           ============================================ */
         .rp-list-container {
-          background: #ffffff;
+          background: #FFFFFF;
           border-radius: 12px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
           overflow: hidden;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .rp-list-container:hover {
+          border-color: #013E37;
         }
 
         .rp-list {
-          divide-y: 1px solid #e2e8f0;
+          divide-y: 1px solid #FFEFB3;
         }
 
         .rp-card {
-          border-bottom: 1px solid #f1f5f9;
-          transition: background 0.2s ease;
+          border-bottom: 1px solid #FFEFB3;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          opacity: 0;
         }
 
         .rp-card:last-child {
@@ -1026,7 +1077,7 @@ const Reports = () => {
         }
 
         .rp-card:hover {
-          background: #fafafa;
+          background: #FFF9E6;
         }
 
         .rp-card-header {
@@ -1050,34 +1101,41 @@ const Reports = () => {
           margin-top: 2px;
           padding: 4px;
           border-radius: 4px;
-          transition: background 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .rp-expand-btn:hover {
-          background: #f1f5f9;
+          background: #FFEFB3;
         }
 
         .rp-expand-icon {
           width: 16px;
           height: 16px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
+          transition: transform 0.3s ease;
         }
 
         .rp-card-icon-wrapper {
           width: 40px;
           height: 40px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .rp-card:hover .rp-card-icon-wrapper {
+          transform: scale(1.05);
         }
 
         .rp-type-icon {
           width: 20px;
           height: 20px;
-          color: #64748b;
+          color: #013E37;
         }
 
         .rp-card-info {
@@ -1095,46 +1153,70 @@ const Reports = () => {
         .rp-card-title {
           font-size: 15px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .rp-card-category {
           padding: 2px 10px;
           font-size: 11px;
-          font-weight: 500;
+          font-weight: 600;
           border-radius: 9999px;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .rp-category-operations { background: #dbeafe; color: #1d4ed8; }
-        .rp-category-financial { background: #d1fae5; color: #065f46; }
-        .rp-category-crm { background: #f3e8ff; color: #6d28d9; }
-        .rp-category-productivity { background: #fef3c7; color: #92400e; }
-        .rp-category-client { background: #fce7f3; color: #9d174d; }
-        .rp-category-custom { background: #f1f5f9; color: #475569; }
-        .rp-category-default { background: #f1f5f9; color: #475569; }
+        .rp-card-category:hover {
+          transform: scale(1.05);
+        }
+
+        .rp-category-operations { background: #013E37; color: #FFEFB3; }
+        .rp-category-financial { background: #0A5C54; color: #FFEFB3; }
+        .rp-category-crm { background: #1A7A6E; color: #FFEFB3; }
+        .rp-category-productivity { background: #FFEFB3; color: #013E37; }
+        .rp-category-client { background: #2A9A8A; color: #FFEFB3; }
+        .rp-category-custom { background: #FFEFB3; color: #013E37; }
+        .rp-category-default { background: #FFEFB3; color: #013E37; }
 
         .rp-card-status {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
           padding: 2px 10px;
           font-size: 11px;
-          font-weight: 500;
+          font-weight: 600;
           border-radius: 9999px;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .rp-status-active { background: #d1fae5; color: #065f46; }
-        .rp-status-pending { background: #fef3c7; color: #92400e; }
-        .rp-status-completed { background: #dbeafe; color: #1d4ed8; }
-        .rp-status-failed { background: #fee2e2; color: #991b1b; }
-        .rp-status-default { background: #f1f5f9; color: #475569; }
+        .rp-card-status:hover {
+          transform: scale(1.05);
+        }
+
+        .rp-status-dot {
+          display: inline-block;
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: currentColor;
+          opacity: 0.6;
+        }
+
+        .rp-status-active { background: #013E37; color: #FFEFB3; }
+        .rp-status-pending { background: #FFEFB3; color: #013E37; }
+        .rp-status-completed { background: #0A5C54; color: #FFEFB3; }
+        .rp-status-failed { background: #FEE2E2; color: #991B1B; }
+        .rp-status-default { background: #FFEFB3; color: #013E37; }
 
         .rp-card-date {
           font-size: 12px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .rp-card-description {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.7;
           margin: 6px 0 0 0;
           display: -webkit-box;
           -webkit-line-clamp: 2;
@@ -1149,7 +1231,8 @@ const Reports = () => {
           gap: 12px;
           margin-top: 6px;
           font-size: 12px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
         }
 
         .rp-card-meta-item {
@@ -1161,7 +1244,8 @@ const Reports = () => {
         .rp-card-meta-icon {
           width: 14px;
           height: 14px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .rp-card-actions {
@@ -1178,37 +1262,43 @@ const Reports = () => {
           background: transparent;
           border-radius: 6px;
           cursor: pointer;
-          transition: all 0.2s ease;
-          color: #94a3b8;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          color: #013E37;
+          opacity: 0.3;
           display: flex;
           align-items: center;
         }
 
         .rp-action-btn:hover {
-          background: #f1f5f9;
-          color: #475569;
+          background: #FFEFB3;
+          opacity: 1;
+          transform: scale(1.1);
         }
 
-        .rp-action-view:hover { background: #eff6ff; color: #3b82f6; }
-        .rp-action-edit:hover { background: #ecfdf5; color: #22c55e; }
-        .rp-action-copy:hover { background: #f3e8ff; color: #8b5cf6; }
-        .rp-action-delete:hover { background: #fef2f2; color: #ef4444; }
+        .rp-action-view:hover { background: #FFEFB3; color: #013E37; }
+        .rp-action-edit:hover { background: #FFEFB3; color: #013E37; }
+        .rp-action-copy:hover { background: #FFEFB3; color: #013E37; }
+        .rp-action-delete:hover { background: #FEE2E2; color: #EF4444; }
 
         .rp-action-icon {
           width: 16px;
           height: 16px;
         }
 
+        /* ============================================
+           EXPANDED
+           ============================================ */
         .rp-card-expanded {
           padding: 0 20px 16px 20px;
           margin-left: 40px;
+          animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .rp-expanded-content {
-          background: #f8fafc;
+          background: #FFF9E6;
           border-radius: 8px;
           padding: 16px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #FFEFB3;
         }
 
         .rp-expanded-grid {
@@ -1225,8 +1315,9 @@ const Reports = () => {
 
         .rp-expanded-label {
           font-size: 12px;
-          font-weight: 500;
-          color: #64748b;
+          font-weight: 600;
+          color: #013E37;
+          opacity: 0.5;
           text-transform: uppercase;
           letter-spacing: 0.3px;
           margin: 0;
@@ -1246,20 +1337,26 @@ const Reports = () => {
 
         .rp-expanded-key {
           font-size: 11px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.4;
         }
 
         .rp-expanded-value {
           font-size: 14px;
           font-weight: 500;
-          color: #0f172a;
+          color: #013E37;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .rp-expanded-value:hover {
+          transform: scale(1.02);
         }
 
         .rp-expanded-metrics,
         .rp-expanded-recipients {
           margin-top: 12px;
           padding-top: 12px;
-          border-top: 1px solid #e2e8f0;
+          border-top: 1px solid #FFEFB3;
         }
 
         .rp-expanded-tags {
@@ -1272,16 +1369,25 @@ const Reports = () => {
         .rp-expanded-tag {
           padding: 2px 10px;
           font-size: 12px;
-          background: #f1f5f9;
-          color: #475569;
+          font-weight: 500;
+          background: #FFEFB3;
+          color: #013E37;
           border-radius: 4px;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .rp-expanded-tag:hover {
+          transform: scale(1.05);
         }
 
         .rp-expanded-tag-blue {
-          background: #dbeafe;
-          color: #1d4ed8;
+          background: #013E37;
+          color: #FFEFB3;
         }
 
+        /* ============================================
+           EMPTY STATE
+           ============================================ */
         .rp-empty {
           display: flex;
           flex-direction: column;
@@ -1293,30 +1399,33 @@ const Reports = () => {
         .rp-empty-icon-wrapper {
           width: 80px;
           height: 80px;
-          background: #f1f5f9;
+          background: #FFEFB3;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           margin-bottom: 16px;
+          animation: float 3s ease-in-out infinite;
         }
 
         .rp-empty-icon {
           width: 36px;
           height: 36px;
-          color: #94a3b8;
+          color: #013E37;
+          opacity: 0.5;
         }
 
         .rp-empty-title {
           font-size: 18px;
           font-weight: 600;
-          color: #0f172a;
+          color: #013E37;
           margin: 0;
         }
 
         .rp-empty-subtitle {
           font-size: 14px;
-          color: #64748b;
+          color: #013E37;
+          opacity: 0.6;
           margin: 4px 0 16px 0;
         }
 
@@ -1325,54 +1434,178 @@ const Reports = () => {
           align-items: center;
           gap: 8px;
           padding: 8px 24px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          color: #ffffff;
+          background: #013E37;
+          color: #FFEFB3;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 4px 14px rgba(1, 62, 55, 0.25);
         }
 
         .rp-empty-btn:hover {
+          background: #0A5C54;
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+          box-shadow: 0 6px 20px rgba(1, 62, 55, 0.35);
         }
 
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-12px); }
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
         @media (max-width: 768px) {
-          .rp-container { padding: 16px; }
-          .rp-header { flex-direction: column; align-items: stretch; }
-          .rp-header-right { flex-wrap: wrap; }
-          .rp-btn-primary { flex: 1; justify-content: center; }
-          .rp-filters { flex-direction: column; }
-          .rp-search-wrapper { width: 100%; }
-          .rp-filter-select { width: 100%; }
-          .rp-stats { grid-template-columns: 1fr 1fr; }
-          .rp-title { font-size: 22px; }
-          .rp-header-icon { width: 40px; height: 40px; }
-          .rp-header-svg { width: 20px; height: 20px; }
-          .rp-card-header { flex-direction: column; }
-          .rp-card-actions { width: 100%; justify-content: flex-end; margin-top: 4px; }
-          .rp-expanded-grid { grid-template-columns: 1fr; }
-          .rp-expanded-details { grid-template-columns: 1fr; }
-          .rp-card-expanded { margin-left: 0; padding: 0 16px 12px 16px; }
+          .rp-header {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .rp-header-right {
+            flex-wrap: wrap;
+          }
+
+          .rp-btn-primary {
+            flex: 1;
+            justify-content: center;
+          }
+
+          .rp-filters {
+            flex-direction: column;
+          }
+
+          .rp-search-wrapper {
+            width: 100%;
+          }
+
+          .rp-filter-select {
+            width: 100%;
+          }
+
+          .rp-stats {
+            grid-template-columns: 1fr 1fr;
+          }
+
+          .rp-title {
+            font-size: 22px;
+          }
+
+          .rp-header-icon {
+            width: 40px;
+            height: 40px;
+          }
+
+          .rp-header-svg {
+            width: 20px;
+            height: 20px;
+          }
+
+          .rp-card-header {
+            flex-direction: column;
+          }
+
+          .rp-card-actions {
+            width: 100%;
+            justify-content: flex-end;
+            margin-top: 4px;
+          }
+
+          .rp-expanded-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .rp-expanded-details {
+            grid-template-columns: 1fr;
+          }
+
+          .rp-card-expanded {
+            margin-left: 0;
+            padding: 0 16px 12px 16px;
+          }
         }
 
         @media (max-width: 480px) {
-          .rp-container { padding: 12px; }
-          .rp-header-right { flex-direction: column; }
-          .rp-btn-primary { width: 100%; }
-          .rp-btn-icon { align-self: flex-end; }
-          .rp-stats { grid-template-columns: 1fr; }
-          .rp-title { font-size: 20px; }
-          .rp-subtitle { font-size: 13px; }
-          .rp-card-title-row { flex-wrap: wrap; }
-          .rp-card-actions { flex-wrap: wrap; }
+          .rp-header-right {
+            flex-direction: column;
+          }
+
+          .rp-btn-primary {
+            width: 100%;
+          }
+
+          .rp-btn-icon {
+            align-self: flex-end;
+          }
+
+          .rp-stats {
+            grid-template-columns: 1fr;
+          }
+
+          .rp-title {
+            font-size: 20px;
+          }
+
+          .rp-subtitle {
+            font-size: 13px;
+          }
+
+          .rp-card-title-row {
+            flex-wrap: wrap;
+          }
+
+          .rp-card-actions {
+            flex-wrap: wrap;
+          }
         }
       `}</style>
-    </div>
+    </>
   );
 };
 
